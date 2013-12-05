@@ -24,7 +24,7 @@ def main():
 	nick = args['<nick>']
 	channel = '#' + args['<channel>']
 
-	bot = RzBot(channel, nick, server, port)
+	bot = Bot(channel, nick, server, port)
 	
 	try:
 		bot.start()
