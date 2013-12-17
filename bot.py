@@ -18,7 +18,7 @@ class Bot(SingleServerIRCBot):
 	def on_welcome(self, connection, event):
 		print('Connected!')
 		connection.join(self.channel)
-		self.thread = Thread(target=self.ticker.run, args=(60,))
+		self.thread = Thread(target=self.ticker.run, args=(120,))
 		self.thread.start()
 
 	def on_pubmsg(self, connection, event):

@@ -1,15 +1,28 @@
+from mods.rss import LioRssChecker, StackRssChecker
 import time
 
 class Ticker():
-	checks = ['test']
+	checks = ['lio_rss', 'so_rss']
 
-	def test(self):
-		self.bot.msg_chan('Ticker test!')
+	def lio_rss(self):
+		self.lio.update()
+		if self.lio.has_news():
+			for news in self.lio.get_news():
+				self.bot.msg_chan(news)
+
+	def so_rss(self):
+		self.so.update()
+		if self.so.has_news():
+			for news in self.so.get_news():
+				self.bot.msg_chan(news)
+
+	###############################################
 
 	def __init__(self, bot):
 		self.bot = bot
-		self.streamchecker = StreamChecker()
 		self.stopped = False
+		self.lio = LioRssChecker()
+		self.so = StackRssChecker()
 
 	def run(self, sleepfor):
 		while self.stopped is not True:
