@@ -1,7 +1,8 @@
 from threading import Thread
+from irc.bot import SingleServerIRCBot
+
 from handler import MsgHandler
 from ticker import Ticker
-from irc.bot import SingleServerIRCBot
 
 class Bot(SingleServerIRCBot):
 	def __init__(self, channel, nick, server, port=6667):
