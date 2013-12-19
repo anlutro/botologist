@@ -1,11 +1,12 @@
 from mods.docs import docs_cmd, apidocs_cmd, ghsearch_cmd
 from mods.paste import repaste
+from mods.packagist import pkg_search
 
 class MsgHandler():
 	# commands are methods that reply to commands prefixed with an exclamation
 	# mark, like '!help' or '!foo bar'
 	commands = ['help', 'helpme', 'dataja', 'ugt', 'nick', 'welcome', 'docscontrib',
-		'paste', 'docs', 'api', 'gh', 'no', 'massassign', 'xy', 'tableflip']
+		'paste', 'docs', 'api', 'gh', 'no', 'massassign', 'xy', 'tableflip', 'pkg']
 
 	# replies are methods that scan a full message. if they return anything,
 	# the return value will be the bot's reply in the channel
@@ -86,6 +87,11 @@ class MsgHandler():
 			return ghsearch_cmd(search)
 		else:
 			return 'https://github.com/laravel/framework'
+
+	def pkg(self, source, args):
+		if len(args) > 0:
+			search = ' '.join(args)
+			return pkg_search(search)
 
 	def hello(self, source, message):
 		match = "hello " + self.bot.nick
