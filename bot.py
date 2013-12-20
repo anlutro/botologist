@@ -3,6 +3,7 @@ from irc.bot import SingleServerIRCBot
 
 from handler import MsgHandler
 from ticker import Ticker
+from mods.welcome import greet
 
 class Bot(SingleServerIRCBot):
 	def __init__(self, channel, nick, server, port=6667):
@@ -25,6 +26,13 @@ class Bot(SingleServerIRCBot):
 	def on_pubmsg(self, connection, event):
 		print(event.source, '->', event.target, ':', event.arguments[0])
 		response = self.handler.handle(event)
+
+		if response is not None:
+			self.msg_chan(response)
+
+	def on_join(self, connection, event):
+		nick = event.source.split('!')[0]
+		response = greet(nick)
 
 		if response is not None:
 			self.msg_chan(response)
