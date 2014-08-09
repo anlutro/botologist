@@ -1,35 +1,17 @@
 #!/usr/bin/env python3
 
-"""IRC bot
+import os.path
 
-Usage:
-  run.py <server> <nick> <channel>
-"""
-
-from docopt import docopt
-from bot import Bot
-
-def parse_server(input):
-	args = input.split(':')
-	server = args[0]
-	if len(args) > 1:
-		port = args[1]
-	else:
-		port = 6667
-	return server, port
-
-def main():
-	args = docopt(__doc__)
-	server, port = parse_server(args['<server>'])
-	nick = args['<nick>']
-	channel = '#' + args['<channel>']
-
-	bot = Bot(channel, nick, server, port)
-	
-	try:
-		bot.start()
-	except KeyboardInterrupt:
-		bot.stop()
+from ircbot import run_bot
 
 if __name__ == '__main__':
-	main()
+	cwd = os.path.dirname(os.path.realpath(__file__))
+	storage_path = os.path.join(cwd, 'storage')
+
+	run_bot(
+		server='irc.quakenet.org',
+		port=6667,
+		channel='#rzbot',
+		nick='rzbot',
+		storage_path=storage_path
+	)
