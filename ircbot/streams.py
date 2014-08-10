@@ -1,5 +1,6 @@
 import json
 import urllib.request
+import urllib.error
 import os.path
 from datetime import datetime
 
@@ -41,11 +42,14 @@ def get_online_streams(bot):
 	now = datetime.now()
 	if _last_fetch is not None:
 		diff = now - _last_fetch
-		if diff.seconds < 60:
+		if diff.seconds < 30:
 			return _cached_streams
 	_last_fetch = now
 
-	_cached_streams = _fetch_streams(streams)
+	try:
+		_cached_streams = _fetch_streams(streams)
+	except urllib.error.HTTPError:
+		pass
 
 	return _cached_streams
 
@@ -60,7 +64,10 @@ def get_new_streams(bot):
 	if not streams:
 		return None
 
-	streams = _fetch_streams(streams)
+	try:
+		streams = _fetch_streams(streams)
+	except urllib.error.HTTPError:
+		return []
 
 	diff = []
 	global _cached_streams
