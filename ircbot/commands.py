@@ -1,10 +1,6 @@
 from ircbot.streams import get_online_streams, add_stream
+from ircbot.web import get_google_result
 
-def hello(bot, args):
-	return 'Hello world!'
-
-def whoareyou(bot, args):
-	return 'I am ' + bot.nick
 
 def streams(bot, args):
 	streams = get_online_streams(bot)
@@ -16,8 +12,16 @@ def streams(bot, args):
 	else:
 		return 'No streams online!'
 
+
 def addstream(bot, args):
 	if add_stream(args[0], bot):
 		return 'Stream added!'
 	else:
 		return 'Stream could not be added.'
+
+
+def g(bot, args):
+	result = get_google_result(args)
+
+	if result:
+		return result
