@@ -13,7 +13,7 @@ class Bot(SingleServerIRCBot):
 	timer = None
 
 	# commands have to be whitelisted here
-	commands = ('streams', 'addstream', 'g')
+	commands = ('streams', 'addstream')
 
 	# the same goes for functions that are called on every "tick"
 	tickers = ('check_online_streams',)
