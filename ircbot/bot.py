@@ -1,5 +1,6 @@
 from irc.bot import SingleServerIRCBot
 from threading import Timer
+from datetime import datetime
 
 import ircbot.commands
 import ircbot.tickers
@@ -96,7 +97,7 @@ class Bot(SingleServerIRCBot):
 		self.timer.start()
 
 	def _tick(self):
-		print('Tick!')
+		print(str(datetime.now()) + ' - Tick!')
 		for func in self.tickers:
 			result = getattr(ircbot.tickers, func)(self)
 			if result is not None:

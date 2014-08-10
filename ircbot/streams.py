@@ -12,6 +12,9 @@ class Stream:
 		self.name = name
 		self.url = url
 
+	def __eq__(self, other):
+		return self.url == other.url
+
 	@classmethod
 	def from_twitch_data(cls, data):
 		channel = data['channel']['display_name']
@@ -42,12 +45,50 @@ def get_online_streams(bot):
 			return _cached_streams
 	_last_fetch = now
 
+	_cached_streams = _fetch_streams(streams)
+
+	return _cached_streams
+
+
+def get_new_streams(bot):
+	streams_path = os.path.join(bot.storage_path, 'streams.txt')
+
+	with open(streams_path, 'r') as f:
+		text = f.read()
+		streams = text.strip().split('\n')
+
+	if not streams:
+		return None
+
+	streams = _fetch_streams(streams)
+
+	diff = []
+	global _cached_streams
+	if _cached_streams is not None:
+		cached_stream_urls = [stream.url for stream in _cached_streams]
+		diff = [stream for stream in streams if stream.url not in cached_stream_urls]
+
+	_cached_streams = streams
+
+	return diff
+
+
+def _get_streams_from_file(bot):
+	streams_path = os.path.join(bot.storage_path, 'streams.txt')
+
+	with open(streams_path, 'r') as f:
+		text = f.read()
+		streams = text.strip().split('\n')
+
+	return streams
+
+
+def _fetch_streams(streams):
 	twitch_streams = _get_twitch_streams([s for s in streams if 'twitch.tv' in s])
 	hitbox_streams = _get_hitbox_streams([s for s in streams if 'hitbox.tv' in s])
 
 	streams = twitch_streams + hitbox_streams
 
-	_cached_streams = streams
 	return streams
 
 
@@ -71,7 +112,7 @@ def _get_twitch_streams(urls):
 		return []
 
 	url = 'https://api.twitch.tv/kraken/streams' + '?channel=' + ','.join(channels)
-	print(url)
+	print(str(datetime.now()) + ' - ' + url)
 
 	result = urllib.request.urlopen(url)
 	response = result.read().decode()
@@ -90,7 +131,7 @@ def _get_hitbox_streams(urls):
 		return []
 
 	url = 'http://api.hitbox.tv/media/live/' + ','.join(channels)
-	print(url)
+	print(str(datetime.now()) + ' - ' + url)
 
 	result = urllib.request.urlopen(url)
 	response = result.read().decode()
