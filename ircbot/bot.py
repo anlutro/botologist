@@ -6,6 +6,11 @@ import ircbot.tickers
 import ircbot.replies
 
 class Bot(SingleServerIRCBot):
+	channel = None
+	nick = None
+	storage_path = None
+	timer = None
+
 	# commands have to be whitelisted here
 	commands = ('hello', 'whoareyou', 'streams', 'addstream')
 
@@ -42,6 +47,11 @@ class Bot(SingleServerIRCBot):
 			self._handle_targetted_cmd(words)
 		else:
 			self._handle_regular_msg(words, event.source)
+
+	def disconnect(self, msg="Leaving"):
+		if self.timer is not None:
+			self.timer.cancel()
+		self.connection.disconnect(msg)
 
 	def _handle_cmd(self, words):
 		cmd = words[0][1:].strip()
@@ -82,7 +92,8 @@ class Bot(SingleServerIRCBot):
 		print(self.channel, '<-', message)		
 
 	def _start_tick_timer(self):
-		Timer(self.tick_interval, self._tick).start()
+		self.timer = Timer(self.tick_interval, self._tick)
+		self.timer.start()
 
 	def _tick(self):
 		print('Tick!')
@@ -91,3 +102,14 @@ class Bot(SingleServerIRCBot):
 			if result is not None:
 				self._msg_chan(result)
 		self._start_tick_timer()
+
+
+def run_bot(**kwargs):
+	bot = Bot(**kwargs)
+
+	try:
+		bot.start()
+	except KeyboardInterrupt:
+		print('Quitting!')
+		bot.disconnect()
+		return
