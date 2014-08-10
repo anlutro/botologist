@@ -4,6 +4,7 @@ import os.path
 from datetime import datetime
 
 _last_fetch = None
+_cached_streams = None
 
 
 class Stream:
@@ -33,11 +34,12 @@ def get_online_streams(bot):
 		return None
 
 	global _last_fetch
+	global _cached_streams
 	now = datetime.now()
 	if _last_fetch is not None:
 		diff = now - _last_fetch
 		if diff.seconds < 60:
-			return None
+			return _cached_streams
 	_last_fetch = now
 
 	twitch_streams = _get_twitch_streams([s for s in streams if 'twitch.tv' in s])
@@ -45,6 +47,7 @@ def get_online_streams(bot):
 
 	streams = twitch_streams + hitbox_streams
 
+	_cached_streams = streams
 	return streams
 
 
