@@ -28,11 +28,7 @@ class Stream:
 
 
 def get_online_streams(bot):
-	streams_path = os.path.join(bot.storage_path, 'streams.txt')
-
-	with open(streams_path, 'r') as f:
-		text = f.read()
-		streams = text.strip().split('\n')
+	streams = _get_streams_from_file(bot)
 
 	if not streams:
 		return None
@@ -55,11 +51,7 @@ def get_online_streams(bot):
 
 
 def get_new_streams(bot):
-	streams_path = os.path.join(bot.storage_path, 'streams.txt')
-
-	with open(streams_path, 'r') as f:
-		text = f.read()
-		streams = text.strip().split('\n')
+	streams = _get_streams_from_file(bot)
 
 	if not streams:
 		return None
