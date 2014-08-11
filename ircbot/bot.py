@@ -98,11 +98,13 @@ class Bot(SingleServerIRCBot):
 
 	def _tick(self):
 		print(str(datetime.now()) + ' - Tick!')
-		for func in self.tickers:
-			result = getattr(ircbot.tickers, func)(self)
-			if result is not None:
-				self._msg_chan(result)
-		self._start_tick_timer()
+		try:
+			for func in self.tickers:
+				result = getattr(ircbot.tickers, func)(self)
+				if result is not None:
+					self._msg_chan(result)
+		finally:
+			self._start_tick_timer()
 
 
 def run_bot(**kwargs):
