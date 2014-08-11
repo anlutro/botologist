@@ -48,7 +48,7 @@ def get_online_streams(bot):
 
 	try:
 		_cached_streams = _fetch_streams(streams)
-	except urllib.error.HTTPError, TimeoutError:
+	except (urllib.error.HTTPError, TimeoutError):
 		pass
 
 	return _cached_streams
@@ -66,7 +66,7 @@ def get_new_streams(bot):
 
 	try:
 		streams = _fetch_streams(streams)
-	except urllib.error.HTTPError, TimeoutError:
+	except (urllib.error.HTTPError, TimeoutError):
 		return []
 
 	diff = []
