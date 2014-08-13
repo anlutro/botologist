@@ -1,4 +1,4 @@
-from ircbot.streams import get_new_streams, get_all_subs
+from ircbot.streams import get_new_streams, get_all_subs, Stream
 
 def check_online_streams(bot):
 	streams = get_new_streams(bot)
@@ -8,13 +8,14 @@ def check_online_streams(bot):
 
 	retval = 'New streams online: ' + ' - '.join([stream.url for stream in streams])
 
-	subs = get_all_subs(bot)
+	subs = get_all_subs(bot).get('streams', {})
 	highlights = []
 
 	for stream in streams:
-		stream_subs = subs.get('streams', {}).get(stream.url, [])
-		for sub in stream_subs:
-			highlights.append(sub)
+		for key, stream_subs in subs.items():
+			if key in stream.url or stream.url in key:
+				for user in stream_subs:
+					highlights.append(user)
 
 	if highlights:
 		retval += ' (' + ' '.join(highlights) + ')'

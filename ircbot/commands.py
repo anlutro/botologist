@@ -18,7 +18,7 @@ def addstream(bot, args, user):
 	if len(args) < 1:
 		return
 
-	if add_stream(args[0], bot):
+	if add_stream(args[0].lower(), bot):
 		return 'Stream added!'
 	else:
 		return 'Stream could not be added.'
@@ -27,12 +27,12 @@ def addstream(bot, args, user):
 def sub(bot, args, user):
 	if len(args) > 0:
 		try:
-			sub_stream(bot, user, args[0])
+			sub_stream(bot, user, args[0].lower())
 			return 'You ('+user+') are now subscribed!'
 		except StreamNotFoundException:
 			return 'That stream has not been added.'
 		except AlreadySubscribedException:
-			return 'Already subscribed to ' + args[0]
+			return 'Already subscribed to ' + args[0].lower()
 	else:
 		streams = list_user_subs(bot, user)
 		if streams:
