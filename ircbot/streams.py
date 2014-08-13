@@ -8,6 +8,12 @@ _last_fetch = None
 _cached_streams = None
 
 
+class StreamNotFoundException(Exception):
+	pass
+
+class AlreadySubscribedException(Exception):
+	pass
+
 class Stream:
 	def __init__(self, name, url):
 		self.name = name
@@ -164,3 +170,56 @@ def _extract_channel(url, service):
 			return parts[key + 1].lower()
 
 	return None
+
+
+def sub_stream(bot, user, stream):
+	if stream not in _get_streams_from_file(bot):
+		raise StreamNotFoundException()
+
+	subs = get_all_subs(bot)
+
+	if not subs.get('streams'):
+		subs['streams'] = {}
+	if not subs['streams'].get(stream):
+		subs['streams'][stream] = []
+
+	if stream in list_user_subs(bot, user):
+		raise AlreadySubscribedException()
+
+	subs['streams'][stream].append(user)
+
+	subs_path = os.path.join(bot.storage_path, 'subscriptions.json')
+	with open(subs_path, 'w') as f:
+		f.write(json.dumps(subs))
+
+	return True
+
+
+def list_user_subs(bot, user):
+	subs_path = os.path.join(bot.storage_path, 'subscriptions.json')
+
+	with open(subs_path, 'r') as f:
+		all_subs = json.loads(f.read())
+
+	user_subs = []
+	
+	for stream, subs in all_subs.get('streams', {}).items():
+		if user in subs:
+			user_subs.append(stream)
+
+	return user_subs
+
+
+def list_stream_subs(bot, stream_url):
+	subs = get_all_subs(bot)
+
+	return subs.get('streams', {}).get(stream_url, [])
+
+
+def get_all_subs(bot):
+	subs_path = os.path.join(bot.storage_path, 'subscriptions.json')
+
+	with open(subs_path, 'r') as f:
+		subs = json.loads(f.read())
+
+	return subs
