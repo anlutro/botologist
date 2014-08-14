@@ -13,9 +13,9 @@ def main():
 	deets = dict.fromkeys(options)
 	deets.update({'storage_path': storage_path})
 
-	parser = argparse.ArgumentParser(description='Raziel IRC Bot')
+	parser = argparse.ArgumentParser(description='IRC Bot')
 	parser.add_argument('-c', '--config',
-		help="Specify config file",
+		help='Specify config file',
 		type=argparse.FileType('r'),
 		default='{path}/ircbot.conf'.format(path=storage_path),
 	)
@@ -33,16 +33,16 @@ def main():
 		help='IRC channel',
 	)
 	args = parser.parse_args()
-	
+
 	config = configparser.ConfigParser()
 	config.read_file(args.config)
-	
+
 
 	if 'server' in config:
 		for option in options:
 			if option in config['server']:
 				deets[option] = config['server'][option]
-	
+
 	# Overwrite if cmd line specified
 	for option in options:
 		if getattr(args, option):
