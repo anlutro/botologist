@@ -13,18 +13,18 @@ class Bot(SingleServerIRCBot):
 	storage_path = None
 	timer = None
 
-	# commands have to be whitelisted here
+	# Commands have to be whitelisted here
 	commands = ('streams', 'addstream', 'sub')
 
-	# the same goes for functions that are called on every "tick"
+	# The same goes for functions that are called on every "tick"
 	tickers = ('check_online_streams',)
 
-	# tick interval in seconds
+	# Tick interval in seconds
 	tick_interval = 120
 
-	def __init__(self, server, channel, nick, port=6667, storage_path=None):
-		print('Connecting...')
-		super().__init__([(server, port)], nick, nick)
+	def __init__(self, server, channel, nick, port, storage_path=None):
+		print('Connecting to {server}:{port}...'.format(server=server, port=port))
+		super().__init__([(server, int(port))], nick, nick)
 		self.channel = channel
 		self.nick = nick
 		self.storage_path = storage_path
@@ -34,7 +34,7 @@ class Bot(SingleServerIRCBot):
 		connection.nick(self.nick)
 
 	def on_welcome(self, connection, event):
-		print('Connected!')
+		print('Connected, joining {channel}'.format(channel=self.channel))
 		connection.join(self.channel)
 		self._start_tick_timer()
 
