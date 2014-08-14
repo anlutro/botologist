@@ -3,8 +3,6 @@ import os.path
 import configparser
 import argparse
 
-import pprint
-
 from ircbot.bot import run_bot
 
 def main():
