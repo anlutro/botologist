@@ -47,7 +47,7 @@ class Bot(SingleServerIRCBot):
 		message = event.arguments[0]
 		print(event.source, '->', event.target, ':', message)
 		user = event.source.split('!')[0]
-		words = message.strip().split(' ')
+		words = message.strip().split()
 
 		if len(message) > 1 and message[0] == '!':
 			self._handle_cmd(words, user)
