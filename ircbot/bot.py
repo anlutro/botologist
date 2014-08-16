@@ -90,9 +90,16 @@ class Bot(SingleServerIRCBot):
 			if response:
 				self._msg_chan(response)
 
-	def _msg_chan(self, message):
-		self.connection.privmsg(self.channel, message)
-		print(self.channel, '<-', message)		
+	def _msg_chan(self, messages):
+		if not messages:
+			return
+
+		if type(messages) is str:
+			messages = [messages]
+
+		for message in messages:
+			self.connection.privmsg(self.channel, message)
+			print(self.channel, '<-', message)
 
 	def _start_tick_timer(self):
 		self.timer = Timer(self.tick_interval, self._tick)

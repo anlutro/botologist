@@ -6,18 +6,21 @@ def check_online_streams(bot):
 	if not streams:
 		return None
 
-	retval = 'New streams online: ' + ' - '.join([stream.url for stream in streams])
+	retval = []
 
-	subs = get_all_subs(bot).get('streams', {})
-	highlights = []
+	subs = get_all_subs(bot).get('streams', {}).items()
 
 	for stream in streams:
-		for key, stream_subs in subs.items():
+		highlights = []
+		for key, stream_subs in subs:
 			if key in stream.url or stream.url in key:
 				for user in stream_subs:
 					highlights.append(user)
-
-	if highlights:
-		retval += ' (' + ' '.join(highlights) + ')'
+		stream_str = 'New stream online: ' + stream.url
+		if stream.title:
+			stream_str += ' - ' + stream.title
+		if highlights:
+			stream_str += ' (' + ' '.join(highlights) + ')'
+		retval.append(stream_str)
 
 	return retval

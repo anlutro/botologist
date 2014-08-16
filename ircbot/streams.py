@@ -14,23 +14,27 @@ class StreamNotFoundException(Exception):
 class AlreadySubscribedException(Exception):
 	pass
 
+
 class Stream:
-	def __init__(self, name, url):
-		self.name = name
+	def __init__(self, user, url, title=None):
+		self.user = user
 		self.url = url
+		self.title = title
 
 	def __eq__(self, other):
 		return self.url == other.url
 
 	@classmethod
 	def from_twitch_data(cls, data):
-		channel = data['channel']['display_name']
-		return cls(channel, 'http://twitch.tv/' + channel.lower())
+		channel = data.get('channel', {}).get('display_name', '').lower()
+		title = data.get('channel', {}).get('status')
+		return cls(channel, 'http://twitch.tv/' + channel, title)
 
 	@classmethod
 	def from_hitbox_data(cls, data):
-		channel = data['media_user_name']
-		return cls(channel, 'http://twitch.tv/' + channel.lower())
+		channel = data.get('media_user_name', '').lower()
+		title = data.get('media_status')
+		return cls(channel, 'http://hitbox.tv/' + channel, title)
 
 
 def get_online_streams(bot):
