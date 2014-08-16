@@ -16,7 +16,8 @@ class AmbiguousStreamException(Exception):
 		self.streams = streams
 
 class AlreadySubscribedException(Exception):
-	pass
+	def __init__(self, stream):
+		self.stream = stream
 
 
 class Stream:
@@ -205,7 +206,7 @@ def sub_stream(bot, user, stream):
 		subs['streams'][stream] = []
 
 	if stream in list_user_subs(bot, user):
-		raise AlreadySubscribedException()
+		raise AlreadySubscribedException(stream)
 
 	subs['streams'][stream].append(user)
 

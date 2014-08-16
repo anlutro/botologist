@@ -34,8 +34,8 @@ def sub(bot, args, user):
 			return 'Ambiguous stream choice - options: ' + ', '.join(e.streams)
 		except StreamNotFoundException:
 			return 'That stream has not been added.'
-		except AlreadySubscribedException:
-			return 'Already subscribed to ' + args[0].lower()
+		except AlreadySubscribedException as e:
+			return 'Already subscribed to ' + e.stream
 	else:
 		streams = list_user_subs(bot, user)
 		if streams:
