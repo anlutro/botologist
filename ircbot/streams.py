@@ -190,11 +190,10 @@ def sub_stream(bot, user, stream):
 
 	if not streams:
 		raise StreamNotFoundException()
-	elif stream in streams:
-		# exact match, so there's no ambiguity
-		pass
 	elif len(streams) > 1:
-		raise AmbiguousStreamException(streams)
+		# don't raise if there is an exact match
+		if stream not in streams:
+			raise AmbiguousStreamException(streams)
 	else:
 		stream = streams[0]
 
