@@ -11,6 +11,10 @@ _cached_streams = None
 class StreamNotFoundException(Exception):
 	pass
 
+class AmbiguousStreamException(Exception):
+	def __init__(self, streams):
+		self.streams = streams
+
 class AlreadySubscribedException(Exception):
 	pass
 
@@ -177,8 +181,21 @@ def _extract_channel(url, service):
 
 
 def sub_stream(bot, user, stream):
-	if stream not in _get_streams_from_file(bot):
+	stream = stream.replace('http://', '') \
+		.replace('https://', '') \
+		.replace('www.', '')
+
+	streams = [s for s in _get_streams_from_file(bot) if stream in s]
+
+	if not streams:
 		raise StreamNotFoundException()
+	elif stream in streams:
+		# exact match, so there's no ambiguity
+		pass
+	elif len(streams) > 1:
+		raise AmbiguousStreamException(streams)
+	else:
+		stream = streams[0]
 
 	subs = get_all_subs(bot)
 
@@ -196,7 +213,7 @@ def sub_stream(bot, user, stream):
 	with open(subs_path, 'w') as f:
 		f.write(json.dumps(subs))
 
-	return True
+	return stream
 
 
 def list_user_subs(bot, user):
