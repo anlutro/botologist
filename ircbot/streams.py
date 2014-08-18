@@ -107,6 +107,14 @@ def _fetch_streams(streams):
 
 
 def add_stream(url, bot):
+	if 'twitch.tv' not in url and 'hitbox.tv' not in url:
+		return False
+
+	segments = url.split('/')
+
+	if len(segments) != 2:
+		return False
+
 	streams_path = os.path.join(bot.storage_path, 'streams.txt')
 
 	with open(streams_path, 'r') as f:
