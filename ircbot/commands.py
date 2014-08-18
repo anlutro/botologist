@@ -1,6 +1,6 @@
 from ircbot.streams import get_online_streams, add_stream, sub_stream, list_user_subs, \
                            StreamNotFoundException, AlreadySubscribedException, \
-                           AmbiguousStreamException
+                           AmbiguousStreamException, InvalidStreamException
 from ircbot.web import get_google_result
 
 
@@ -19,10 +19,13 @@ def addstream(bot, args, user):
 	if len(args) < 1:
 		return
 
-	if add_stream(args[0].lower(), bot):
-		return 'Stream added!'
-	else:
-		return 'Stream could not be added.'
+	try:
+		if add_stream(args[0].lower(), bot):
+			return 'Stream added!'
+		else:
+			return 'Stream could not be added.'
+	except InvalidStreamException as e:
+		return 'Invalid stream URL - ' + e.msg
 
 
 def sub(bot, args, user):
@@ -36,6 +39,8 @@ def sub(bot, args, user):
 			return 'That stream has not been added.'
 		except AlreadySubscribedException as e:
 			return 'Already subscribed to ' + e.stream
+		except InvalidStreamException as e:
+			return 'Invalid stream URL - ' + e.msg
 	else:
 		streams = list_user_subs(bot, user)
 		if streams:

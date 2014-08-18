@@ -2,6 +2,7 @@ import json
 import urllib.request
 import urllib.error
 import os.path
+import re
 from datetime import datetime
 
 _last_fetch = None
@@ -18,6 +19,10 @@ class AmbiguousStreamException(Exception):
 class AlreadySubscribedException(Exception):
 	def __init__(self, stream):
 		self.stream = stream
+
+class InvalidStreamException(Exception):
+	def __init__(self, msg):
+		self.msg = msg
 
 
 class Stream:
@@ -107,13 +112,7 @@ def _fetch_streams(streams):
 
 
 def add_stream(url, bot):
-	if 'twitch.tv' not in url and 'hitbox.tv' not in url:
-		return False
-
-	segments = url.split('/')
-
-	if len(segments) != 2:
-		return False
+	url = _normalize_url(url)
 
 	streams_path = os.path.join(bot.storage_path, 'streams.txt')
 
@@ -127,6 +126,28 @@ def add_stream(url, bot):
 		return True
 
 	return False
+
+
+def _normalize_url(url):
+	url = url.replace('http://', '') \
+		.replace('https://', '') \
+		.replace('www.', '')
+
+	if 'twitch.tv' not in url and 'hitbox.tv' not in url:
+		raise InvalidStreamException('Only twitch and hitbox URLs allowed')
+
+	segments = url.split('/')
+
+	if len(segments) < 2:
+		raise InvalidStreamException('Missing parts of URL')
+
+	if re.match('^[\w\_]+$', segments[1]) is None:
+		raise InvalidStreamException('Invalid characters in channel name')
+
+	url = '/'.join(segments[:2])
+
+	return url
+
 
 def _get_twitch_streams(urls):
 	channels = [_extract_twitch_channel(url) for url in urls if url is not None]
@@ -190,9 +211,8 @@ def _extract_channel(url, service):
 
 
 def sub_stream(bot, user, stream):
-	stream = stream.replace('http://', '') \
-		.replace('https://', '') \
-		.replace('www.', '')
+	if 'twitch.tv' in stream or 'hitbox.tv' in stream:
+		stream = _normalize_url(stream)
 
 	streams = [s for s in _get_streams_from_file(bot) if stream in s]
 
