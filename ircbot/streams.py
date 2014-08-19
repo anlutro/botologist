@@ -36,7 +36,7 @@ class Stream:
 
 	@classmethod
 	def from_twitch_data(cls, data):
-		channel = data.get('channel', {}).get('display_name', '').lower()
+		channel = data.get('channel', {}).get('name', '').lower()
 		title = data.get('channel', {}).get('status')
 		return cls(channel, 'http://twitch.tv/' + channel, title)
 
