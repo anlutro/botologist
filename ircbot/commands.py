@@ -48,6 +48,11 @@ def sub(bot, args, user):
 		else:
 			return 'You ('+user+') are not subscribed to any streams.'
 
+
+def repo(bot, args, user):
+	return 'https://github.com/anlutro/ircbot'
+
+
 def g(bot, args, user):
 	result = get_google_result(args)
 
