@@ -29,6 +29,7 @@ class Stream:
 	def __init__(self, user, url, title=None):
 		self.user = user
 		self.url = url
+		self.full_url = 'http://'+url
 		self.title = title
 
 	def __eq__(self, other):
@@ -38,13 +39,13 @@ class Stream:
 	def from_twitch_data(cls, data):
 		channel = data.get('channel', {}).get('name', '').lower()
 		title = data.get('channel', {}).get('status')
-		return cls(channel, 'http://twitch.tv/' + channel, title)
+		return cls(channel, 'twitch.tv/' + channel, title)
 
 	@classmethod
 	def from_hitbox_data(cls, data):
 		channel = data.get('media_user_name', '').lower()
 		title = data.get('media_status')
-		return cls(channel, 'http://hitbox.tv/' + channel, title)
+		return cls(channel, 'hitbox.tv/' + channel, title)
 
 
 def get_online_streams(bot):

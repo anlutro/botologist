@@ -13,10 +13,10 @@ def check_online_streams(bot):
 	for stream in streams:
 		highlights = []
 		for key, stream_subs in subs:
-			if key in stream.url or stream.url in key:
+			if key == stream.url:
 				for user in stream_subs:
 					highlights.append(user)
-		stream_str = 'New stream online: ' + stream.url
+		stream_str = 'New stream online: ' + stream.full_url
 		if stream.title:
 			stream_str += ' - ' + stream.title
 		if highlights:

@@ -10,7 +10,7 @@ def streams(bot, args, user):
 	if streams is None:
 		return None
 	elif streams:
-		return 'Online streams: ' + ' -- '.join([stream.url for stream in streams])
+		return 'Online streams: ' + ' -- '.join([stream.full_url for stream in streams])
 	else:
 		return 'No streams online!'
 
