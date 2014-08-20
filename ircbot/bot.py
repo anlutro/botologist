@@ -38,7 +38,7 @@ class Bot(SingleServerIRCBot):
 		connection.join(self.channel)
 		self._start_tick_timer()
 
-	def on_disconnect(self):
+	def on_disconnect(self, connection, event):
 		print('Disconnected!')
 		if self.timer is not None:
 			self.timer.cancel()
