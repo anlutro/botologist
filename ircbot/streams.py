@@ -114,12 +114,10 @@ def _fetch_streams(streams):
 def add_stream(url, bot):
 	url = _normalize_url(url)
 
-	streams_path = os.path.join(bot.storage_path, 'streams.txt')
+	if url in _get_streams_from_file(bot):
+		return False
 
-	with open(streams_path, 'r') as f:
-		text = f.read()
-		if url in text:
-			return False
+	streams_path = os.path.join(bot.storage_path, 'streams.txt')
 
 	with open(streams_path, 'a') as f:
 		f.write(url + '\n')
