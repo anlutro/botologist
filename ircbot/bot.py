@@ -129,3 +129,5 @@ def run_bot(**kwargs):
 		print('Quitting!')
 		bot.disconnect()
 		return
+	except:
+		pass
