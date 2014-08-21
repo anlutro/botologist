@@ -24,7 +24,7 @@ class Bot(SingleServerIRCBot):
 
 	def __init__(self, server, channel, nick, port, storage_path=None):
 		print('Connecting to {server}:{port}...'.format(server=server, port=port))
-		super().__init__([(server, int(port))], nick, nick)
+		super().__init__([(server, int(port))], nick, 'ircbot.py', username='ircbotpy')
 		self.channel = channel
 		self.nick = nick
 		self.storage_path = storage_path
