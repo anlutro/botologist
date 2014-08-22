@@ -98,6 +98,11 @@ def get_new_streams(bot):
 def _get_streams_from_file(bot):
 	streams_path = os.path.join(bot.storage_path, 'streams.txt')
 
+	# create file if it doesn't exist
+	if not os.path.exists(streams_path):
+		open(streams_path, 'w+')
+		return []
+
 	with open(streams_path, 'r') as f:
 		text = f.read()
 		streams = text.strip().split('\n')
@@ -248,6 +253,11 @@ def sub_stream(bot, user, stream):
 def list_user_subs(bot, user):
 	subs_path = os.path.join(bot.storage_path, 'subscriptions.json')
 
+	if not os.path.exists(subs_path):
+		with open(subs_path, 'w+') as f:
+			f.write('{}')
+		return []
+
 	with open(subs_path, 'r') as f:
 		all_subs = json.loads(f.read())
 
@@ -268,6 +278,11 @@ def list_stream_subs(bot, stream_url):
 
 def get_all_subs(bot):
 	subs_path = os.path.join(bot.storage_path, 'subscriptions.json')
+
+	if not os.path.exists(subs_path):
+		with open(subs_path, 'w+') as f:
+			f.write('{}')
+		return {}
 
 	with open(subs_path, 'r') as f:
 		subs = json.loads(f.read())

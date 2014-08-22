@@ -1,3 +1,6 @@
+storage/ircbot.conf
+storage/streams.txt
+storage/subscriptions.json
 env/
 *.pyc
 ircbot.conf
