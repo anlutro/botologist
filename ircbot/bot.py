@@ -30,6 +30,7 @@ class Bot(SingleServerIRCBot):
 		self.channel = channel
 		self.nick = nick
 		self.storage_path = storage_path
+		self.connection.set_keepalive(4 * 60)
 
 	def on_nicknameinuse(self, connection, event):
 		self.nick = connection.get_nickname() + '_'
