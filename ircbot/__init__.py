@@ -1,11 +1,21 @@
-import sys
-import os.path
-import configparser
 import argparse
+import configparser
+import logging
+import os.path
+import sys
 
 from ircbot.bot import run_bot
 
 def main():
+	root = logging.getLogger()
+	root.setLevel(logging.DEBUG)
+
+	ch = logging.StreamHandler(sys.stdout)
+	ch.setLevel(logging.DEBUG)
+	formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+	ch.setFormatter(formatter)
+	root.addHandler(ch)
+
 	root_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 	storage_path = os.path.join(root_dir, 'storage')
 	options = ('server', 'nick', 'port', 'channel',)
