@@ -1,10 +1,12 @@
 from irc.bot import SingleServerIRCBot
 from threading import Timer
-from datetime import datetime
+import logging
+log = logging.getLogger(__name__)
 
 import ircbot.commands
 import ircbot.tickers
 import ircbot.replies
+
 
 
 class Bot(SingleServerIRCBot):
@@ -23,7 +25,7 @@ class Bot(SingleServerIRCBot):
 	tick_interval = 120
 
 	def __init__(self, server, channel, nick, port, storage_path=None):
-		print('Connecting to {server}:{port}...'.format(server=server, port=port))
+		log.info('Connecting to {server}:{port}...'.format(server=server, port=port))
 		super().__init__([(server, int(port))], nick, 'ircbot.py', username='ircbotpy')
 		self.channel = channel
 		self.nick = nick
@@ -34,22 +36,21 @@ class Bot(SingleServerIRCBot):
 		connection.nick(self.nick)
 
 	def on_welcome(self, connection, event):
-		print('Connected, joining {channel}'.format(channel=self.channel))
+		log.info('Connected, joining {channel}'.format(channel=self.channel))
 		connection.join(self.channel)
 		self._start_tick_timer()
 
 	def on_disconnect(self, connection, event):
-		print('Disconnected!')
+		log.info('Disconnected!')
 		if self.timer is not None:
 			self.timer.cancel()
 
 	def disconnect(self, msg="Leaving"):
-		print('Disconnecting...')
+		log.info('Disconnecting...')
 		self.connection.disconnect(msg)
 
 	def on_pubmsg(self, connection, event):
 		message = event.arguments[0]
-		print(event.source, '->', event.target, ':', message)
 		user = event.source.split('!')[0]
 		words = message.strip().split()
 
@@ -103,14 +104,13 @@ class Bot(SingleServerIRCBot):
 
 		for message in messages:
 			self.connection.privmsg(self.channel, message)
-			print(self.channel, '<-', message)
 
 	def _start_tick_timer(self):
 		self.timer = Timer(self.tick_interval, self._tick)
 		self.timer.start()
 
 	def _tick(self):
-		print(str(datetime.now()) + ' - Tick!')
+		log.info('Tick!')
 		try:
 			for func in self.tickers:
 				result = getattr(ircbot.tickers, func)(self)
@@ -126,7 +126,7 @@ def run_bot(**kwargs):
 	try:
 		bot.start()
 	except KeyboardInterrupt:
-		print('Quitting!')
+		log.info('Quitting!')
 		bot.disconnect()
 		return
 	except:

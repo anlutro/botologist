@@ -1,9 +1,11 @@
 import json
-import urllib.request
-import urllib.error
 import os.path
 import re
+import urllib.error
+import urllib.request
 from datetime import datetime
+
+from ircbot.bot import log
 
 _last_fetch = None
 _cached_streams = None
@@ -154,7 +156,7 @@ def _get_twitch_streams(urls):
 		return []
 
 	url = 'https://api.twitch.tv/kraken/streams' + '?channel=' + ','.join(channels)
-	print(str(datetime.now()) + ' - ' + url)
+	log.info('Fetching ' + str(datetime.now()) + ' - ' + url)
 
 	result = urllib.request.urlopen(url)
 	response = result.read().decode()
@@ -173,7 +175,7 @@ def _get_hitbox_streams(urls):
 		return []
 
 	url = 'http://api.hitbox.tv/media/live/' + ','.join(channels)
-	print(str(datetime.now()) + ' - ' + url)
+	log.info('Fetching ' + str(datetime.now()) + ' - ' + url)
 
 	result = urllib.request.urlopen(url)
 	response = result.read().decode()

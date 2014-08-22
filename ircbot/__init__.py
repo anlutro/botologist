@@ -7,21 +7,14 @@ import sys
 from ircbot.bot import run_bot
 
 def main():
-	root = logging.getLogger()
-	root.setLevel(logging.DEBUG)
-
-	ch = logging.StreamHandler(sys.stdout)
-	ch.setLevel(logging.DEBUG)
-	formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-	ch.setFormatter(formatter)
-	root.addHandler(ch)
-
 	root_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 	storage_path = os.path.join(root_dir, 'storage')
-	options = ('server', 'nick', 'port', 'channel',)
+	options = ('server', 'nick', 'port', 'channel')
 
 	deets = dict.fromkeys(options)
-	deets.update({'storage_path': storage_path})
+	deets.update({
+		'storage_path': storage_path,
+	})
 
 	parser = argparse.ArgumentParser(description='IRC Bot')
 	parser.add_argument('-c', '--config',
@@ -47,15 +40,27 @@ def main():
 	config = configparser.ConfigParser()
 	config.read_file(args.config)
 
-
 	if 'server' in config:
 		for option in options:
 			if option in config['server']:
 				deets[option] = config['server'][option]
 
+	if 'bot' in config and 'log_level' in config['bot']:
+		log_level = getattr(logging, config['bot']['log_level'].upper())
+	else:
+		log_level = logging.INFO
+
 	# Overwrite if cmd line specified
 	for option in options:
 		if getattr(args, option):
 			deets[option] = getattr(args, option)
+
+	root = logging.getLogger()
+	root.setLevel(log_level)
+	ch = logging.StreamHandler(sys.stdout)
+	ch.setLevel(log_level)
+	formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+	ch.setFormatter(formatter)
+	root.addHandler(ch)
 
 	run_bot(**deets)
