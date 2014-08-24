@@ -11,9 +11,13 @@ from ircbot.client import Client
 class Bot(Client):
 	storage_path = None
 	timer = None
+	last_cmd = None
+	admins = []
+	bans = []
 
 	# Commands have to be whitelisted here
-	commands = ('streams', 'addstream', 'sub', 'repo')
+	admin_commands = ('addstream',)
+	user_commands = ('streams', 'sub', 'repo')
 
 	# The same goes for functions that are called on every "tick"
 	tickers = ('check_online_streams',)
@@ -21,11 +25,15 @@ class Bot(Client):
 	# Tick interval in seconds
 	tick_interval = 120
 
-	def __init__(self, server, channel, nick, port, storage_path=None):
+	def __init__(self, server, channel, nick, port, storage_path=None, admins=None, bans=None):
 		server += ':' + str(port)
 		super().__init__(server, nick, 'ircbotpy')
 		self.channels.append(channel)
 		self.storage_path = storage_path
+		if admins:
+			self.admins = admins
+		if bans:
+			self.bans = bans
 		self.conn.on_welcome.append(self._on_welcome)
 		self.conn.on_privmsg.append(self._on_privmsg)
 
@@ -39,7 +47,9 @@ class Bot(Client):
 		pass
 
 	def _on_privmsg(self, message):
-		if len(message.message) > 1 and message.message[0] == '!':
+		if message.source_host in self.bans:
+			pass
+		elif len(message.message) > 1 and message.message[0] == '!':
 			self._handle_cmd(message)
 		elif len(message.words) > 1 and message.words[0][-1:] == ':' and message.words[1][0] == '!':
 			self._handle_targetted_cmd(message)
@@ -50,7 +60,7 @@ class Bot(Client):
 		cmd = message.words[0][1:].strip()
 		args = message.words[1:]
 
-		response = self._call_cmd_reply(cmd, args, message.source_nick)
+		response = self._call_cmd_reply(cmd, args, message)
 		if response:
 			self._msg_chan(response, message)
 
@@ -59,14 +69,21 @@ class Bot(Client):
 		cmd = message.words[1][1:].strip()
 		args = message.words[2:]
 
-		response = self._call_cmd_reply(cmd, args, message.source_nick)
+		response = self._call_cmd_reply(cmd, args, message)
 		if response:
 			self._msg_chan(target + ': ' + response, message)
 
-	def _call_cmd_reply(self, cmd, args, user):
-		if cmd in self.commands:
-			return getattr(ircbot.commands, cmd)(self, args, user)
-		return None
+	def _call_cmd_reply(self, cmd, args, message):
+		response = None
+
+		if [cmd, args] == self.last_cmd:
+			return None
+
+		if cmd in self.user_commands or (cmd in self.admin_commands and message.source_host in self.admins):
+			response = getattr(ircbot.commands, cmd)(self, args, message.source_nick)
+
+		self.last_cmd = [cmd, args]
+		return response
 
 	def _handle_regular_msg(self, message):
 		target = message.words[0] \

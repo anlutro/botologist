@@ -45,15 +45,20 @@ def main():
 			if option in config['server']:
 				deets[option] = config['server'][option]
 
-	if 'bot' in config and 'log_level' in config['bot']:
-		log_level = getattr(logging, config['bot']['log_level'].upper())
-	else:
-		log_level = logging.INFO
+	if 'bot' in config:
+		if 'log_level' in config['bot']:
+			log_level = getattr(logging, config['bot']['log_level'].upper())
+		else:
+			log_level = logging.INFO
+
+		deets['admins'] = config['bot'].get('admins', '').split(',')
+		deets['bans'] = config['bot'].get('bans', '').split(',')
 
 	# Overwrite if cmd line specified
 	for option in options:
 		if getattr(args, option):
 			deets[option] = getattr(args, option)
+
 
 	root = logging.getLogger()
 	root.setLevel(log_level)

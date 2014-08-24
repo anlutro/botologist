@@ -76,6 +76,9 @@ class Connection:
 
 		if words[0] == 'PING':
 			self.send('PONG ' + words[1])
+		elif words[0] == 'ERROR':
+			self.s.close()
+			sys.exit(1)
 		elif len(words) > 1:
 			if words[1] == '001':
 				# welcome message, lets us know that we're connected
