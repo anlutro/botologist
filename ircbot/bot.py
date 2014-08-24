@@ -43,8 +43,7 @@ class Bot(Client):
 		super().stop()
 
 	def _on_welcome(self):
-		# self._start_tick_timer()
-		pass
+		self._start_tick_timer()
 
 	def _on_privmsg(self, message):
 		if message.source_host in self.bans:
