@@ -14,13 +14,12 @@ class Bot(Client):
 	admins = []
 	bans = []
 
-	# Commands have to be whitelisted here
 	admin_commands = ('addstream',)
 	user_commands = ('streams', 'sub', 'repo')
 
-	# The same goes for functions that are called on every "tick"
-	tickers = ('check_online_streams',)
+	replies = ('tableflip',)
 
+	tickers = ('check_online_streams',)
 	# Tick interval in seconds
 	tick_interval = 120
 
@@ -59,16 +58,8 @@ class Bot(Client):
 			self._msg_chan(response, message)
 
 	def _handle_regular_msg(self, message):
-		target = message.words[0] \
-			.replace(':', '') \
-			.replace(',', '')
-
-		if target == self.conn.nick:
-			self._handle_reply(' '.join(message.words[1:]), message.source_nick)
-
-	def _handle_reply(self, message, nick):
-		for replier in ircbot.replies.repliers:
-			response = replier.get_reply(message, nick)
+		for reply in self.replies:
+			response = getattr(ircbot.replies, reply)(self, message.message, message.source_nick)
 			if response:
 				self._msg_chan(response, message)
 
