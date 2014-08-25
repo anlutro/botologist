@@ -2,16 +2,15 @@ from threading import Timer
 import logging
 log = logging.getLogger(__name__)
 
-import ircbot.commands
 import ircbot.tickers
 import ircbot.replies
+from ircbot.commands import Command
 from ircbot.client import Client
 
 
 class Bot(Client):
 	storage_path = None
 	timer = None
-	last_cmd = None
 	admins = []
 	bans = []
 
@@ -39,7 +38,7 @@ class Bot(Client):
 
 	def stop(self):
 		if self.timer is not None:
-			self.timer.stop()
+			self.timer.cancel()
 		super().stop()
 
 	def _on_welcome(self):
@@ -48,41 +47,16 @@ class Bot(Client):
 	def _on_privmsg(self, message):
 		if message.source_host in self.bans:
 			pass
-		elif len(message.message) > 1 and message.message[0] == '!':
+		elif len(message.message) > 1 and message.message[0] == '!' or (len(message.words) > 1 and message.words[0][-1:] == ':' and message.words[1][0] == '!'):
 			self._handle_cmd(message)
-		elif len(message.words) > 1 and message.words[0][-1:] == ':' and message.words[1][0] == '!':
-			self._handle_targetted_cmd(message)
 		else:
 			self._handle_regular_msg(message)
 
 	def _handle_cmd(self, message):
-		cmd = message.words[0][1:].strip()
-		args = message.words[1:]
-
-		response = self._call_cmd_reply(cmd, args, message)
+		cmd = Command(self, message)
+		response = cmd.get_response()
 		if response:
 			self._msg_chan(response, message)
-
-	def _handle_targetted_cmd(self, message):
-		target = message.words[0][:-1].strip()
-		cmd = message.words[1][1:].strip()
-		args = message.words[2:]
-
-		response = self._call_cmd_reply(cmd, args, message)
-		if response:
-			self._msg_chan(target + ': ' + response, message)
-
-	def _call_cmd_reply(self, cmd, args, message):
-		response = None
-
-		if [cmd, args] == self.last_cmd:
-			return None
-
-		if cmd in self.user_commands or (cmd in self.admin_commands and message.source_host in self.admins):
-			response = getattr(ircbot.commands, cmd)(self, args, message.source_nick)
-
-		self.last_cmd = [cmd, args]
-		return response
 
 	def _handle_regular_msg(self, message):
 		target = message.words[0] \

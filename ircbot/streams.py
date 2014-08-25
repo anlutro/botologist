@@ -262,7 +262,7 @@ def list_user_subs(bot, user):
 		all_subs = json.loads(f.read())
 
 	user_subs = []
-	
+
 	for stream, subs in all_subs.get('streams', {}).items():
 		if user in subs:
 			user_subs.append(stream)

@@ -45,11 +45,11 @@ def main():
 			if option in config['server']:
 				deets[option] = config['server'][option]
 
+	log_level = logging.INFO
+
 	if 'bot' in config:
 		if 'log_level' in config['bot']:
 			log_level = getattr(logging, config['bot']['log_level'].upper())
-		else:
-			log_level = logging.INFO
 
 		deets['admins'] = config['bot'].get('admins', '').split(',')
 		deets['bans'] = config['bot'].get('bans', '').split(',')
