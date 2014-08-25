@@ -1,6 +1,16 @@
 import socket
 import sys
 
+
+def decode(bytes):
+	try:
+		return bytes.decode().strip()
+	except UnicodeDecodeError:
+		try:
+			return bytes.decode('iso-8859-1').strip()
+		except:
+			print('<- UNDECODABLE BYTES')
+
 class Message:
 	def __init__(self, source, target, message=None):
 		self.source = source
@@ -64,7 +74,7 @@ class Connection:
 			# 13 = \r -- 10 = \n
 			while data[-1] != 10 and data[-2] != 13:
 				data += self.s.recv(4096)
-			text = data.decode().strip()
+			text = decode(data)
 
 			for msg in text.split('\r\n'):
 				if msg:
