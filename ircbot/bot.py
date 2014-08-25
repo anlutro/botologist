@@ -1,4 +1,3 @@
-from irc.bot import SingleServerIRCBot
 from threading import Timer
 import logging
 log = logging.getLogger(__name__)
@@ -6,17 +5,19 @@ log = logging.getLogger(__name__)
 import ircbot.commands
 import ircbot.tickers
 import ircbot.replies
+from ircbot.client import Client
 
 
-
-class Bot(SingleServerIRCBot):
-	channel = None
-	nick = None
+class Bot(Client):
 	storage_path = None
 	timer = None
+	last_cmd = None
+	admins = []
+	bans = []
 
 	# Commands have to be whitelisted here
-	commands = ('streams', 'addstream', 'sub', 'repo')
+	admin_commands = ('addstream',)
+	user_commands = ('streams', 'sub', 'repo')
 
 	# The same goes for functions that are called on every "tick"
 	tickers = ('check_online_streams',)
@@ -24,87 +25,93 @@ class Bot(SingleServerIRCBot):
 	# Tick interval in seconds
 	tick_interval = 120
 
-	def __init__(self, server, channel, nick, port, storage_path=None):
-		log.info('Connecting to {server}:{port}...'.format(server=server, port=port))
-		super().__init__([(server, int(port))], nick, 'ircbot.py', username='ircbotpy')
-		self.channel = channel
-		self.nick = nick
+	def __init__(self, server, channel, nick, port, storage_path=None, admins=None, bans=None):
+		server += ':' + str(port)
+		super().__init__(server, nick, 'ircbotpy')
+		self.channels.append(channel)
 		self.storage_path = storage_path
-		self.connection.set_keepalive(4 * 60)
+		if admins:
+			self.admins = admins
+		if bans:
+			self.bans = bans
+		self.conn.on_welcome.append(self._on_welcome)
+		self.conn.on_privmsg.append(self._on_privmsg)
 
-	def on_nicknameinuse(self, connection, event):
-		self.nick = connection.get_nickname() + '_'
-		connection.nick(self.nick)
+	def stop(self):
+		if self.timer is not None:
+			self.timer.stop()
+		super().stop()
 
-	def on_welcome(self, connection, event):
-		log.info('Connected, joining {channel}'.format(channel=self.channel))
-		connection.join(self.channel)
+	def _on_welcome(self):
 		self._start_tick_timer()
 
-	def on_disconnect(self, connection, event):
-		log.info('Disconnected!')
-		if self.timer is not None:
-			self.timer.cancel()
-
-	def disconnect(self, msg="Leaving"):
-		log.info('Disconnecting...')
-		self.connection.disconnect(msg)
-
-	def on_pubmsg(self, connection, event):
-		message = event.arguments[0]
-		user = event.source.split('!')[0]
-		words = message.strip().split()
-
-		if len(message) > 1 and message[0] == '!':
-			self._handle_cmd(words, user)
-		elif len(words) > 1 and words[0][-1:] == ':' and words[1][0] == '!':
-			self._handle_targetted_cmd(words, user)
+	def _on_privmsg(self, message):
+		if message.source_host in self.bans:
+			pass
+		elif len(message.message) > 1 and message.message[0] == '!':
+			self._handle_cmd(message)
+		elif len(message.words) > 1 and message.words[0][-1:] == ':' and message.words[1][0] == '!':
+			self._handle_targetted_cmd(message)
 		else:
-			self._handle_regular_msg(words, user)
+			self._handle_regular_msg(message)
 
-	def _handle_cmd(self, words, source):
-		cmd = words[0][1:].strip()
-		args = words[1:]
+	def _handle_cmd(self, message):
+		cmd = message.words[0][1:].strip()
+		args = message.words[1:]
 
-		response = self._call_cmd_reply(cmd, args, source)
+		response = self._call_cmd_reply(cmd, args, message)
 		if response:
-			self._msg_chan(response)
+			self._msg_chan(response, message)
 
-	def _handle_targetted_cmd(self, words, source):
-		target = words[0][:-1].strip()
-		cmd = words[1][1:].strip()
-		args = words[2:]
+	def _handle_targetted_cmd(self, message):
+		target = message.words[0][:-1].strip()
+		cmd = message.words[1][1:].strip()
+		args = message.words[2:]
 
-		response = self._call_cmd_reply(cmd, args, source)
+		response = self._call_cmd_reply(cmd, args, message)
 		if response:
-			self._msg_chan(target + ': ' + response)
+			self._msg_chan(target + ': ' + response, message)
 
-	def _call_cmd_reply(self, cmd, args, source):
-		if cmd in self.commands:
-			return getattr(ircbot.commands, cmd)(self, args, source)
-		return None
+	def _call_cmd_reply(self, cmd, args, message):
+		response = None
 
-	def _handle_regular_msg(self, words, nick):
-		target = words[0].replace(':', '').replace(',', '')
+		if [cmd, args] == self.last_cmd:
+			return None
 
-		if target == self.nick:
-			self._handle_reply(' '.join(words[1:]), nick)
+		if cmd in self.user_commands or (cmd in self.admin_commands and message.source_host in self.admins):
+			response = getattr(ircbot.commands, cmd)(self, args, message.source_nick)
+
+		self.last_cmd = [cmd, args]
+		return response
+
+	def _handle_regular_msg(self, message):
+		target = message.words[0] \
+			.replace(':', '') \
+			.replace(',', '')
+
+		if target == self.conn.nick:
+			self._handle_reply(' '.join(message.words[1:]), message.source_nick)
 
 	def _handle_reply(self, message, nick):
 		for replier in ircbot.replies.repliers:
 			response = replier.get_reply(message, nick)
 			if response:
-				self._msg_chan(response)
+				self._msg_chan(response, message)
 
-	def _msg_chan(self, messages):
+	def _msg_chan(self, messages, original):
 		if not messages:
 			return
 
 		if type(messages) is str:
 			messages = [messages]
 
+		if original.target[0] == '#':
+			target = original.target
+		else:
+			target = original.source_nick
+
 		for message in messages:
-			self.connection.privmsg(self.channel, message)
+			self.conn.send_msg(target, message)
 
 	def _start_tick_timer(self):
 		self.timer = Timer(self.tick_interval, self._tick)
@@ -128,7 +135,5 @@ def run_bot(**kwargs):
 		bot.start()
 	except KeyboardInterrupt:
 		log.info('Quitting!')
-		bot.disconnect()
+		bot.stop()
 		return
-	except:
-		pass
