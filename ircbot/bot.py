@@ -55,28 +55,33 @@ class Bot(Client):
 		cmd = Command(self, message)
 		response = cmd.get_response()
 		if response:
-			self._msg_chan(response, message)
+			self._send_msg(response, self._get_target(message))
 
 	def _handle_regular_msg(self, message):
 		for reply in self.replies:
 			response = getattr(ircbot.replies, reply)(self, message.message, message.source_nick)
 			if response:
-				self._msg_chan(response, message)
+				self._send_msg(response, self._get_target(message))
 
-	def _msg_chan(self, messages, original):
+	def _get_target(self, message):
+		if original.target[0] == '#':
+			return original.target
+		else:
+			return original.source_nick
+
+	def _send_msg(self, messages, target):
 		if not messages:
 			return
 
 		if type(messages) is str:
 			messages = [messages]
 
-		if original.target[0] == '#':
-			target = original.target
-		else:
-			target = original.source_nick
-
 		for message in messages:
 			self.conn.send_msg(target, message)
+
+	def _msg_chans(self, messages):
+		for chan in self.channels:
+			self._send_msg(messages, chan)
 
 	def _start_tick_timer(self):
 		self.timer = Timer(self.tick_interval, self._tick)
@@ -88,7 +93,7 @@ class Bot(Client):
 			for func in self.tickers:
 				result = getattr(ircbot.tickers, func)(self)
 				if result is not None:
-					self._msg_chan(result)
+					self._msg_chans(result)
 		finally:
 			self._start_tick_timer()
 
