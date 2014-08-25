@@ -64,10 +64,10 @@ class Bot(Client):
 				self._send_msg(response, self._get_target(message))
 
 	def _get_target(self, message):
-		if original.target[0] == '#':
-			return original.target
+		if message.target[0] == '#':
+			return message.target
 		else:
-			return original.source_nick
+			return message.source_nick
 
 	def _send_msg(self, messages, target):
 		if not messages:
