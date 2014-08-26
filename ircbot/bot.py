@@ -53,9 +53,17 @@ class Bot(Client):
 
 	def _handle_cmd(self, message):
 		cmd = Command(self, message)
-		response = cmd.get_response()
-		if response:
-			self._send_msg(response, self._get_target(message))
+		if self._cmd_allowed(cmd, message):
+			response = cmd.get_response()
+			if response:
+				self._send_msg(response, self._get_target(message))
+
+	def _cmd_allowed(self, cmd, message):
+		if cmd.cmd in self.user_commands:
+			return True
+		if cmd.cmd in self.admin_commands and message.source_host in self.admins:
+			return True
+		return False
 
 	def _handle_regular_msg(self, message):
 		for reply in self.replies:
@@ -107,3 +115,6 @@ def run_bot(**kwargs):
 		log.info('Quitting!')
 		bot.stop()
 		return
+	except:
+		bot.stop('Error :(')
+		raise

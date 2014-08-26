@@ -55,7 +55,10 @@ class Command():
 		if self.callback:
 			return self.callback
 		else:
-			return getattr(ircbot.commands, self.cmd)
+			try:
+				return getattr(ircbot.commands, self.cmd)
+			except AttributeError:
+				return None
 
 
 def streams(bot, args, user):
