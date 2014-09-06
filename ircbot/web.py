@@ -1,4 +1,6 @@
 import json
+import random
+import re
 import urllib.request
 import urllib.error
 
@@ -21,3 +23,15 @@ def get_google_result(query):
 	else:
 		return 'No results!'
 
+
+def get_random_yp_comment():
+	url = "http://www.youporn.com/random/video/"
+
+	result = urllib.request.urlopen(url)
+	response = socket.read().decode()
+	result.close()
+
+	result = re.findall('<p class="message">((?:.|\\n)*?)</p>', response)
+
+	if result:
+		return random.choice(result)

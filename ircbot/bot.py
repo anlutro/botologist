@@ -14,7 +14,7 @@ class Bot(Client):
 	admins = []
 	bans = []
 
-	admin_commands = ('addstream',)
+	admin_commands = ('addstream', 'random')
 	user_commands = ('streams', 'sub', 'repo')
 
 	replies = ('tableflip',)

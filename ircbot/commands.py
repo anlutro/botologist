@@ -111,7 +111,8 @@ def repo(bot, args, user):
 
 
 def g(bot, args, user):
-	result = get_google_result(args)
+	return get_google_result(args)
 
-	if result:
-		return result
+
+def random(bot, args, user):
+	return get_random_yp_comment()
