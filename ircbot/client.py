@@ -18,5 +18,7 @@ class Client:
 	def start(self):
 		self.conn.connect(self.server_host, self.server_port)
 
-	def stop(self):
-		self.conn.quit()
+	def stop(self, msg=None):
+		if msg is None:
+			msg = 'Leaving'
+		self.conn.quit(msg)

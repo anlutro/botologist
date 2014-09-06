@@ -28,7 +28,7 @@ def get_random_yp_comment():
 	url = "http://www.youporn.com/random/video/"
 
 	result = urllib.request.urlopen(url)
-	response = socket.read().decode()
+	response = result.read().decode()
 	result.close()
 
 	result = re.findall('<p class="message">((?:.|\\n)*?)</p>', response)

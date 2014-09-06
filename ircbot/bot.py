@@ -35,10 +35,10 @@ class Bot(Client):
 		self.conn.on_welcome.append(self._on_welcome)
 		self.conn.on_privmsg.append(self._on_privmsg)
 
-	def stop(self):
+	def stop(self, msg=None):
 		if self.timer is not None:
 			self.timer.cancel()
-		super().stop()
+		super().stop(msg)
 
 	def _on_welcome(self):
 		self._start_tick_timer()
