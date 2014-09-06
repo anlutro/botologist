@@ -1,4 +1,4 @@
-from ircbot.web import get_google_result
+from ircbot.web import get_google_result, get_random_yp_comment
 import ircbot.streams
 from datetime import datetime
 
