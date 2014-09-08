@@ -21,7 +21,7 @@ def get_google_result(query):
 			result = data['responseData']['results'][0]
 			result = result['title'] + ' - ' + result['unescapedUrl']
 			return 'First result: ' + result + ' -- ' + search_url
-	except urllib.error.URLError:
+	except (urllib.error.URLError, UnicodeDecodeError):
 		pass
 
 	return 'No results!'
@@ -39,7 +39,7 @@ def get_random_yp_comment():
 
 		if result:
 			return random.choice(result).strip()
-	except urllib.error.URLError:
+	except (urllib.error.URLError, UnicodeDecodeError):
 		pass
 
 	return 'Try again!'
