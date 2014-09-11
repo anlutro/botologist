@@ -41,7 +41,9 @@ class Stream:
 	def from_twitch_data(cls, data):
 		channel = data.get('channel', {}).get('name', '').lower()
 		title = data.get('channel', {}).get('status')
-		return cls(channel, 'twitch.tv/' + channel, title)
+		obj = cls(channel, 'twitch.tv/' + channel, title)
+		obj.full_url = obj.full_url + '/popout'
+		return obj
 
 	@classmethod
 	def from_hitbox_data(cls, data):
