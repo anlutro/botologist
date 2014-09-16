@@ -35,6 +35,9 @@ class Connection:
 	username = None
 	realname = None
 
+	current_server_host = None
+	current_server_port = None
+
 	def __init__(self, nick, username = None, realname = None):
 		self.nick = nick
 		if not username:
@@ -64,13 +67,22 @@ class Connection:
 			print('could not open socket')
 			sys.exit(1)
 
+		self.current_server_host = host
+		self.current_server_port = port
+
 		self.send('NICK ' + self.nick)
 		self.send('USER ' + self.username + ' 0 * :' + self.realname)
 		self.loop()
 
+	def reconnect(self):
+		self.s.close()
+		self.connect(self.current_server_host, self.current_server_port)
+
 	def loop(self):
 		while True:
 			data = self.s.recv(4096)
+			if data == b'':
+				self.reconnect()
 			# 13 = \r -- 10 = \n
 			while data[-1] != 10 and data[-2] != 13:
 				data += self.s.recv(4096)
