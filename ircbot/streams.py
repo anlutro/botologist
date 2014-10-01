@@ -32,7 +32,7 @@ class Stream:
 		self.user = user
 		self.url = url
 		self.full_url = 'http://'+url
-		self.title = title
+		self.title = re.sub(r'\n+', ' ', title)
 
 	def __eq__(self, other):
 		return self.url == other.url
