@@ -1,4 +1,5 @@
 from ircbot.web import get_google_result, get_random_yp_comment
+from ircbot.plugin.qdb_search import search_quotes
 import ircbot.streams
 from datetime import datetime
 
@@ -116,3 +117,11 @@ def g(bot, args, user):
 
 def random(bot, args, user):
 	return get_random_yp_comment()
+
+
+def qdb(bot, args, user):
+	quotes = search_quotes(' '.join(args))
+	if quotes:
+		return ', '.join([str(_) for _ in quotes])
+	else:
+		return "Nothing found matching those deets."
