@@ -2,6 +2,14 @@ from ircbot.streams import get_online_streams, add_stream, sub_stream, list_user
                            StreamNotFoundException, AlreadySubscribedException, \
                            AmbiguousStreamException, InvalidStreamException
 from ircbot.web import get_google_result
+from ircbot.plugin.qdb_search import search_quotes
+
+def qdb(bot, args, user):
+    quotes = search_quotes(' '.join(args))
+    if quotes:
+        return ', '.join([str(_) for _ in quotes])
+    else:
+        return "Nothing found matching those deets."
 
 
 def streams(bot, args, user):
