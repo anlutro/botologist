@@ -136,17 +136,30 @@ def add_stream(url, bot):
 	return False
 
 
-def del_stream(url, bot):
-	url = _normalize_url(url)
+def del_stream(stream, bot):
+	if 'twitch.tv' in stream or 'hitbox.tv' in stream:
+		stream = _normalize_url(stream)
+
+	streams = [s for s in _get_streams_from_file(bot) if stream in s]
+
+	if not streams:
+		raise StreamNotFoundException()
+	elif len(streams) > 1:
+		# don't raise if there is an exact match
+		if stream not in streams:
+			raise AmbiguousStreamException(streams)
+	else:
+		stream = streams[0]
+
 	streams = _get_streams_from_file(bot)
 
-	if not url in streams:
+	if not stream in streams:
 		return False
 
 	streams_path = os.path.join(bot.storage_path, 'streams.txt')
 
 	with open(streams_path, 'w') as f:
-		streams.remove(url)
+		streams.remove(stream)
 		f.write('\n'.join(streams) + '\n')
 		return True
 
