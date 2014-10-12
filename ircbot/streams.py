@@ -136,6 +136,22 @@ def add_stream(url, bot):
 	return False
 
 
+def del_stream(url, bot):
+	url = _normalize_url(url)
+	streams = _get_streams_from_file(bot)
+
+	if not url in streams:
+		return False
+
+	streams_path = os.path.join(bot.storage_path, 'streams.txt')
+
+	with open(streams_path, 'w') as f:
+		streams.remove(url)
+		f.write('\n'.join(streams) + '\n')
+		return True
+
+	return False
+
 def _normalize_url(url):
 	url = url.replace('http://', '') \
 		.replace('https://', '') \

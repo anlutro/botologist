@@ -86,6 +86,13 @@ def addstream(bot, args, user):
         return 'Invalid stream URL - ' + e.msg
 
 
+def delstream(bot, args, user):
+    if len(args) < 1:
+        return
+
+    if ircbot.streams.del_stream(args[0].lower(), bot):
+        return 'Stream deleted!'
+
 def sub(bot, args, user):
     if len(args) > 0:
         try:
