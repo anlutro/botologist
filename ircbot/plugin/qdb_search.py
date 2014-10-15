@@ -63,5 +63,3 @@ class Quotes:
 	def ordered_quotes(self, quotes):
 		"""Reverse ordered quotes by score."""
 		return sorted(quotes, key=operator.attrgetter('score'), reverse=True)
-
-# vim: ts=4

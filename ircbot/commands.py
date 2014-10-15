@@ -1,8 +1,10 @@
-from ircbot.web import get_google_result, get_random_yp_comment
-from ircbot.plugin.qdb_search import Quotes
-import ircbot.streams
 from datetime import datetime
-from random import randint, choice
+import sys
+
+from ircbot.plugin.web import get_google_result, get_random_yp_comment
+from ircbot.plugin.qdb_search import Quotes
+from ircbot.plugin.bitcoin import get_bitcoin_worth
+import ircbot.plugin.streams as stream_plugin
 
 _command_log = {}
 
@@ -57,13 +59,13 @@ class Command():
 			return self.callback
 		else:
 			try:
-				return getattr(ircbot.commands, self.cmd)
+				return getattr(sys.modules[__name__], self.cmd)
 			except AttributeError:
 				return None
 
 
 def streams(bot, args, user):
-	streams = ircbot.streams.get_online_streams(bot)
+	streams = stream_plugin.get_online_streams(bot)
 
 	if streams is None:
 		return None
@@ -78,11 +80,11 @@ def addstream(bot, args, user):
 		return
 
 	try:
-		if ircbot.streams.add_stream(args[0].lower(), bot):
+		if stream_plugin.add_stream(args[0].lower(), bot):
 			return 'Stream added!'
 		else:
 			return 'Stream could not be added.'
-	except ircbot.streams.InvalidStreamException as e:
+	except stream_plugin.InvalidStreamException as e:
 		return 'Invalid stream URL - ' + e.msg
 
 
@@ -90,28 +92,28 @@ def delstream(bot, args, user):
 	if len(args) < 1:
 		return
 
-	if ircbot.streams.del_stream(args[0].lower(), bot):
+	if stream_plugin.del_stream(args[0].lower(), bot):
 		return 'Stream deleted!'
 
 def sub(bot, args, user):
 	if len(args) > 0:
 		try:
-			stream = ircbot.streams.sub_stream(bot, user, args[0].lower())
+			stream = stream_plugin.sub_stream(bot, user, args[0].lower())
 			return 'You ('+user+') are now subscribed to ' + stream + '!'
-		except ircbot.streams.AmbiguousStreamException as e:
+		except stream_plugin.AmbiguousStreamException as e:
 			return 'Ambiguous stream choice - options: ' + ', '.join(e.streams)
-		except ircbot.streams.StreamNotFoundException:
+		except stream_plugin.StreamNotFoundException:
 			return 'That stream has not been added.'
-		except ircbot.streams.AlreadySubscribedException as e:
+		except stream_plugin.AlreadySubscribedException as e:
 			return 'Already subscribed to ' + e.stream
-		except ircbot.streams.InvalidStreamException as e:
+		except stream_plugin.InvalidStreamException as e:
 			return 'Invalid stream URL - ' + e.msg
 	else:
-		streams = ircbot.streams.list_user_subs(bot, user)
+		streams = stream_plugin.list_user_subs(bot, user)
 		if streams:
 			return 'You ('+user+') are subscribed to: ' + ', '.join(streams)
 		else:
-			return 'You ('+user+') are not subscribed to any streams.'
+			return 'You ('+user+') are not subscribed to any stream_plugin.'
 
 
 def repo(bot, args, user):
@@ -136,16 +138,4 @@ def qdb(bot, args, user):
 		return "Nothing found matching those deets."
 
 def btc(bot, args, user):
-	num = randint(100,100000) / 100
-	currencies = (
-		'USD', 'EUR', 'hamburgers', 'farts', 'Razielcoins', 'BTC', 'salmons',
-		'marble eggs in a shitty condom', 'typematrix keyboards', 'clean teeth',
-		'dead Palestinian children', 'cmd.exe resizes', 'warp-in staplers',
-		'mutalisks on creep', 'mutalisks off creep', 'floating cars',
-		'burned rice', 'wordpress conference tickets', 'ice creams',
-		'base64 encoded o\'reilly books', 'rolls of vitamin E toilet paper',
-		'WISPY BEARDED POT SMOKING FAT FAGCUNT BITCOIN WORSHIPPERS WHO OBSESS OVER ME AND MAKE A SPORT OUT OF DRIVING ME INSANE AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'
-	)
-	currency = choice(currencies)
-
-	return '1 BTC is currently worth %.2f %s' % (num, currency)
+	return '1 BTC is currently worth %s' % get_bitcoin_worth()
