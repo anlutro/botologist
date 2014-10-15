@@ -2,7 +2,7 @@ from ircbot.web import get_google_result, get_random_yp_comment
 from ircbot.plugin.qdb_search import Quotes
 import ircbot.streams
 from datetime import datetime
-
+from random import randint, choice
 
 _command_log = {}
 
@@ -134,3 +134,18 @@ def qdb(bot, args, user):
 		return ', '.join([str(_) for _ in quotes])
 	else:
 		return "Nothing found matching those deets."
+
+def btc(bot, args, user):
+	num = randint(100,100000) / 100
+	currencies = (
+		'USD', 'EUR', 'hamburgers', 'farts', 'Razielcoins', 'BTC', 'salmons',
+		'marble eggs in a shitty condom', 'typematrix keyboards', 'clean teeth',
+		'dead Palestinian children', 'cmd.exe resizes', 'warp-in staplers',
+		'mutalisks on creep', 'mutalisks off creep', 'floating cars',
+		'burned rice', 'wordpress conference tickets', 'ice creams',
+		'base64 encoded o\'reilly books', 'rolls of vitamin E toilet paper',
+		'WISPY BEARDED POT SMOKING FAT FAGCUNT BITCOIN WORSHIPPERS WHO OBSESS OVER ME AND MAKE A SPORT OUT OF DRIVING ME INSANE AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'
+	)
+	currency = choice(currencies)
+
+	return '1 BTC is currently worth %.2f %s' % (num, currency)
