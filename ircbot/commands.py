@@ -92,8 +92,15 @@ def delstream(bot, args, user):
 	if len(args) < 1:
 		return
 
-	if stream_plugin.del_stream(args[0].lower(), bot):
-		return 'Stream deleted!'
+	try:
+		if stream_plugin.del_stream(args[0].lower(), bot):
+			return 'Stream deleted!'
+	except stream_plugin.AmbiguousStreamException as e:
+		return 'Ambiguous stream choice - options: ' + ', '.join(e.streams)
+	except stream_plugin.StreamNotFoundException:
+		return 'That stream has not been added.'
+	except stream_plugin.InvalidStreamException as e:
+		return 'Invalid stream URL - ' + e.msg
 
 def sub(bot, args, user):
 	if len(args) > 0:
