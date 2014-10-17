@@ -17,7 +17,7 @@ class Bot(Client):
 	admin_commands = ('addstream', 'delstream', 'random')
 	user_commands = ('streams', 'sub', 'repo', 'qdb', 'btc')
 
-	replies = ('tableflip',)
+	replies = ('tableflip', 'nay_here')
 
 	tickers = ('check_online_streams',)
 	# Tick interval in seconds
