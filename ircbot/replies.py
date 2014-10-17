@@ -3,5 +3,5 @@ def tableflip(bot, message, nick):
 		return '┬─┬ ノ( ゜-゜ノ)'
 
 def nay_here(bot, message, nick):
-	if 'sup' in message and 'nay' in nick.lower():
+	if 'nay' in nick.lower() and 'sup' in message.split():
 		return 'gay here'
