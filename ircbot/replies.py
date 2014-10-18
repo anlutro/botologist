@@ -4,4 +4,4 @@ def tableflip(bot, message, nick):
 
 def nay_here(bot, message, nick):
 	if 'nay' in nick.lower() and 'sup' in message.split():
-		return 'nay here'
+		return 'gay here'
