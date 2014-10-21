@@ -1,5 +1,6 @@
 import json
 import urllib.request
+from urllib.error import URLError
 import operator
 from datetime import datetime, timedelta
 
@@ -39,20 +40,23 @@ class Quotes:
 
 	def update_quotes(self):
 		"""Fetches and sorts our quoties."""
-		response = urllib.request.urlopen(_JSON_URL)
+		try:
+			response = urllib.request.urlopen(_JSON_URL)
+		except URLError:
+			return
 		json_quotes = json.loads(response.read().decode('utf-8'))
 		quotes = []
 		for j in json_quotes:
 			quote = Quote(j)
 			quotes.append(quote)
 		self._last_update = datetime.now()
-		return self.ordered_quotes(quotes)
+		self._quotes = self.ordered_quotes(quotes)
 
 
 	def search_quotes(self, string):
 		"""List of quotes matching search string."""
 		if not self._quotes or datetime.now() - self._last_update > timedelta(minutes=30):
-			self._quotes = self.update_quotes()
+			self.update_quotes()
 		matches = []
 		for quote in self._quotes:
 			if string in quote.text and len(matches) < self._max_results:
