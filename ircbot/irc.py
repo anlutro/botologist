@@ -15,19 +15,23 @@ def decode(bytes):
 
 
 class User:
-	def __init__(self, source):
-		self.source = source
-		parts = source.split('!')
-		self.nick = parts[0]
-		self.host = parts[1]
-		log.debug('{source} parsed into nick: {nick}, host: {host}'.format(
-			source=source, nick=self.nick, host=self.host
-		))
+	def __init__(self, nick, host = None):
+		self.nick = nick
+		self.host = host
+
+	@classmethod
+	def from_ircformat(cls, string):
+		parts = string.split('!')
+		nick = parts[0]
+		host = parts[1]
+		log.debug('{string} parsed into nick: {nick}, host: {host}'.format(
+			string=string, nick=nick, host=host))
+		return cls(nick, host)
 
 
 class Message:
 	def __init__(self, source, target, message=None):
-		self.user = User(source)
+		self.user = User.from_ircformat(source)
 		self.target = target
 		self.message = message
 		self.words = message.strip().split()
@@ -37,7 +41,7 @@ class Message:
 		words = msg.split()
 		return cls(words[0][1:], words[2], ' '.join(words[3:])[1:])
 
-	def is_privmsg(self):
+	def is_private(self):
 		return self.target[0] != '#'
 
 
@@ -46,11 +50,11 @@ class Server:
 		parts = address.split(':')
 		self.host = parts[0]
 		self.port = parts[1]
-		self.channels = []
+		self.channels = {}
 
 	def add_channel(self, channel):
 		assert isinstance(channel, Channel)
-		self.channels.append(channel)
+		self.channels[channel.channel] = channel
 
 
 class Channel:
@@ -79,12 +83,14 @@ class Channel:
 	def remove_user(self, nick=None, host=None):
 		if not nick and not host:
 			raise ValueError('Must provide nick or host')
-		if nick is not None:
+		if nick is not None and nick in self.nick_map:
 			host = self.nick_map[nick]
-		if host is not None:
+		if host is not None and host in self.host_map:
 			nick = self.host_map[host]
-		del self.nick_map[nick]
-		del self.host_map[host]
+		if nick is not None and nick in self.nick_map:
+			del self.nick_map[nick]
+		if host is not None and host in self.host_map:
+			del self.host_map[host]
 
 	def update_nick(self, old_nick, new_nick):
 		host = self.nick_map[old_nick]
@@ -167,6 +173,11 @@ class Connection:
 					print('<- ' + msg)
 					self.handle_msg(msg)
 
+	def join_channel(self, channel):
+		assert isinstance(channel, Channel)
+		self.channels[channel.channel] = channel
+		self.send('JOIN ' + channel.channel)
+
 	def handle_msg(self, msg):
 		words = msg.split()
 
@@ -180,35 +191,49 @@ class Connection:
 				# welcome message, lets us know that we're connected
 				for callback in self.on_welcome:
 					callback()
+
 			elif words[1] == 'JOIN':
-				user = User(words[0][1:])
+				user = User.from_ircformat(words[0][1:])
 				channel = words[2]
 				log.debug('User {user} ({host}) joined channel {channel}'.format(
-					user=user.nick, host=user.host, channel=channel
-				))
+					user=user.nick, host=user.host, channel=channel))
 				self.channels[words[2]].add_user(user)
+
 			elif words[1] == 'NICK':
-				user = User(words[0][1:])
+				user = User.from_ircformat(words[0][1:])
 				new_nick = words[2][1:]
 				log.debug('User {user} changing nick: {nick}'.format(
-					user=user.host, nick=new_nick
-				))
+					user=user.host, nick=new_nick))
 				for channel in self.channels.values():
 					if channel.find_nick_from_host(user.host):
 						log.debug('Updating nick for user in Channel {channel}'.format(
-							channel=channel.channel
-						))
+							channel=channel.channel))
 						channel.update_nick(user.nick, new_nick)
-					print(channel.host_map)
+
+			elif words[1] == 'PART':
+				user = User.from_ircformat(words[0][1:])
+				channel = words[2]
+				self.channels[channel].remove_user(host=user.host)
+				log.debug('User {user} parted from channel {channel}'.format(
+					user=user.host, channel=channel))
+
+			elif words[1] == 'QUIT':
+				user = User.from_ircformat(words[0][1:])
+				log.debug('User {user} quit'.format(user=user.host))
+				for channel in self.channels.values():
+					if channel.find_nick_from_host(user.host):
+						channel.remove_user(host=user.host)
+						log.debug('Removing user from channel {channel}'.format(
+							channel=channel.channel))
+
 			elif words[1] == 'PRIVMSG':
 				message = Message.from_privmsg(msg)
+				if not message.is_private() and message.user.host not in self.channels[message.target].host_map:
+					log.debug('Unknown user {user} ({host}) added to channel {channel}'.format(
+						user=message.user.nick, host=message.user.host, channel=message.target))
+					self.channels[message.target].add_user(User.from_ircformat(words[0]))
 				for callback in self.on_privmsg:
 					callback(message)
-
-	def join_channel(self, channel):
-		assert isinstance(channel, Channel)
-		self.channels[channel.channel] = channel
-		self.send('JOIN ' + channel.channel)
 
 	def send_msg(self, target, message):
 		self.send('PRIVMSG ' + target + ' :' + message)
@@ -227,14 +252,14 @@ class Client:
 	def __init__(self, server, nick = '__bot__', username = None, realname = None):
 		self.conn = Connection(nick, username, realname)
 		self.server = Server(server)
-		self.channels = []
 		self.conn.on_welcome.append(self._join_channels)
 
 	def add_channel(self, channel):
-		self.server.channels.append(Channel(channel))
+		channel = Channel(channel)
+		self.server.add_channel(channel)
 
 	def _join_channels(self):
-		for channel in self.server.channels:
+		for channel in self.server.channels.values():
 			self.conn.join_channel(channel)
 
 	def run_forever(self):

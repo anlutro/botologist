@@ -2,9 +2,11 @@ import logging
 log = logging.getLogger(__name__)
 
 import sys
+import importlib
 import yaml
 import ircbot.irc
-# import ircbot.bot
+import ircbot.bot
+import ircbot.plugin
 
 def run_bot(storage_dir, yml_config):
 	with open(yml_config, 'r') as f:
@@ -15,20 +17,20 @@ def run_bot(storage_dir, yml_config):
 		log_level = getattr(logging, cfg.get('log_level').upper())
 	_configure_logging(log_level)
 
-	client = ircbot.irc.Client(
-		server = cfg.get('bot').get('server'),
-		nick = 'pyircbot'
-	)
-	client.add_channel('#rzbot')
-	client.run_forever()
-	return
+	# client = ircbot.irc.Client(
+	# 	server = cfg.get('bot').get('server'),
+	# 	nick = 'pyircbot'
+	# )
+	# client.add_channel('#rzbot')
+	# client.run_forever()
+	# return
 
 	bot = ircbot.bot.Bot(
-		server = cfg.get('server'),
 		storage_dir = storage_dir,
 		**cfg.get('bot', {})
 	)
 
+	_configure_plugins(bot, cfg.get('plugins', {}))
 	_configure_channels(bot, cfg.get('channels', {}))
 
 	bot.run_forever()
@@ -44,9 +46,14 @@ def _configure_logging(log_level):
 	root.addHandler(ch)
 
 
+def _configure_plugins(bot, plugins_dict):
+	for name, plugin_class in plugins_dict.items():
+		parts = plugin_class.split('.')
+		module = importlib.import_module('.'.join(parts[:-1]))
+		plugin_class = getattr(module, parts[-1])
+		bot.register_plugin(name, plugin_class())
+
+
 def _configure_channels(bot, channel_dict):
 	for channel, cfg in channel_dict.items():
-		channel = ircbot.irc.Channel(channel)
-		bot.add_channel(channel)
-		for plugin in cfg.get('plugin', []):
-			bot.register_plugin(plugin, channel)
+		bot.add_channel(channel, cfg.get('plugins', []))
