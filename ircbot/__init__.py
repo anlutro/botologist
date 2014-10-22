@@ -1,65 +1,40 @@
-import argparse
-import configparser
 import logging
-import os.path
+log = logging.getLogger(__name__)
+
 import sys
+import yaml
+import ircbot.irc
+# import ircbot.bot
 
-from ircbot.bot import run_bot
-
-def main():
-	root_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-	storage_path = os.path.join(root_dir, 'storage')
-	options = ('server', 'nick', 'port', 'channel')
-
-	deets = dict.fromkeys(options)
-	deets.update({
-		'storage_path': storage_path,
-	})
-
-	parser = argparse.ArgumentParser(description='IRC Bot')
-	parser.add_argument('-c', '--config',
-		help='Specify config file',
-		type=argparse.FileType('r'),
-		default='{path}/ircbot.conf'.format(path=storage_path),
-	)
-	parser.add_argument('-s', '--server',
-		help='IRC server',
-	)
-	parser.add_argument('-n', '--nick',
-		help='Bot nickname',
-	)
-	parser.add_argument('-p', '--port',
-		help='IRC port',
-		type=int,
-	)
-	parser.add_argument('-x', '--channel',
-		help='IRC channel',
-	)
-	args = parser.parse_args()
-
-	config = configparser.ConfigParser()
-	config.read_file(args.config)
-
-	if 'server' in config:
-		for option in options:
-			if option in config['server']:
-				deets[option] = config['server'][option]
+def run_bot(storage_dir, yml_config):
+	with open(yml_config, 'r') as f:
+		cfg = yaml.load(f.read())
 
 	log_level = logging.INFO
+	if 'log_level' in cfg:
+		log_level = getattr(logging, cfg.get('log_level').upper())
+	_configure_logging(log_level)
 
-	if 'bot' in config:
-		if 'log_level' in config['bot']:
-			log_level = getattr(logging, config['bot']['log_level'].upper())
+	client = ircbot.irc.Client(
+		server = cfg.get('bot').get('server'),
+		nick = 'pyircbot'
+	)
+	client.add_channel('#rzbot')
+	client.run_forever()
+	return
 
-		deets['admins'] = config['bot'].get('admins', '').split(',')
-		deets['bans'] = config['bot'].get('bans', '').split(',')
+	bot = ircbot.bot.Bot(
+		server = cfg.get('server'),
+		storage_dir = storage_dir,
+		**cfg.get('bot', {})
+	)
 
-	# Overwrite if cmd line specified
-	for option in options:
-		if getattr(args, option):
-			deets[option] = getattr(args, option)
+	_configure_channels(bot, cfg.get('channels', {}))
+
+	bot.run_forever()
 
 
+def _configure_logging(log_level):
 	root = logging.getLogger()
 	root.setLevel(log_level)
 	ch = logging.StreamHandler(sys.stdout)
@@ -68,4 +43,10 @@ def main():
 	ch.setFormatter(formatter)
 	root.addHandler(ch)
 
-	run_bot(**deets)
+
+def _configure_channels(bot, channel_dict):
+	for channel, cfg in channel_dict.items():
+		channel = ircbot.irc.Channel(channel)
+		bot.add_channel(channel)
+		for plugin in cfg.get('plugin', []):
+			bot.register_plugin(plugin, channel)

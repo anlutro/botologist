@@ -1,0 +1,16 @@
+log_level: debug
+
+bot:
+  admins:
+    - andreas@Raziel2p.users.quakenet.org
+    - sid38082@ealing.irccloud.com
+  bans:
+    - Naypam@nay.verymad.net
+  server: irc.quakenet.org:6667
+  nick: __bot__
+
+channels:
+  redditeu:
+    - plugins: ['redditeu', 'streams']
+  qlreddit:
+    - plugins: ['qlranks', 'streams']
