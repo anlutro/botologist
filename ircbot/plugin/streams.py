@@ -276,7 +276,7 @@ def sub_stream(bot, user, stream):
 
 	subs_path = os.path.join(bot.storage_path, 'subscriptions.json')
 	with open(subs_path, 'w') as f:
-		f.write(json.dumps(subs))
+		f.write(json.dumps(subs, indent=4))
 
 	return stream
 
