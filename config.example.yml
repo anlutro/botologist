@@ -1,0 +1,36 @@
+# debug, info, warn, error
+log_level: debug
+
+bot:
+  # the server to connect to
+  server: irc.quakenet.org:6667
+  # the nick to use
+  nick: rzbot
+  # the username (ident)
+  username: pyircbot
+  # the real name - shows up in /whois
+  realname: pyircbot
+  # hostmarks for admins
+  admins:
+    - user@some.host.com
+  # hostmarks for banned users
+  bans:
+    - user@some.host.com
+
+# plugin map in the format of "name: classname"
+# the class will be lazily imported and instantiated.
+plugins:
+  default: ircbot.plugin.default.DefaultPlugin
+  streams: ircbot.plugin.streams.StreamsPlugin
+
+# plugins that are enabled in every channel
+global_plugins:
+  - default
+
+# channels the bot joins on connect. obviously omit the # character from the
+# channel name, as this is used to denote a comment in YML.
+channels:
+  mychannel:
+    plugins: []
+  myotherchannel:
+    plugins: ['streams']

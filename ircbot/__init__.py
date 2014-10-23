@@ -17,16 +17,9 @@ def run_bot(storage_dir, yml_config):
 		log_level = getattr(logging, cfg.get('log_level').upper())
 	_configure_logging(log_level)
 
-	# client = ircbot.irc.Client(
-	# 	server = cfg.get('bot').get('server'),
-	# 	nick = 'pyircbot'
-	# )
-	# client.add_channel('#rzbot')
-	# client.run_forever()
-	# return
-
 	bot = ircbot.bot.Bot(
 		storage_dir = storage_dir,
+		global_plugins = cfg.get('global_plugins'),
 		**cfg.get('bot', {})
 	)
 

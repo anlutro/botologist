@@ -1,3 +1,4 @@
+from ircbot import log
 import ircbot.irc
 import ircbot.plugin
 
@@ -26,16 +27,19 @@ class Channel(ircbot.irc.Channel):
 
 
 class Bot(ircbot.irc.Client):
-	def __init__(self, server, admins=None, bans=None, storage_dir=None, **kwargs):
+	def __init__(self, server, admins=None, bans=None, storage_dir=None,
+	             global_plugins=None, **kwargs):
 		super().__init__(server, **kwargs)
 		self.conn.on_privmsg.append(self._handle_privmsg)
 		self.storage_dir = storage_dir
 		self.plugins = {}
 		self.admins = admins or []
 		self.bans = bans or []
+		self.global_plugins = global_plugins or []
 
 	def register_plugin(self, name, plugin):
 		assert isinstance(plugin, ircbot.plugin.Plugin)
+		log.debug('Plugin {name} registered'.format(name=name))
 		self.plugins[name] = plugin
 
 	def add_channel(self, channel, plugins=None):
@@ -44,7 +48,14 @@ class Bot(ircbot.irc.Client):
 			assert isinstance(plugins, list)
 			for plugin in plugins:
 				assert isinstance(plugin, str)
+				log.debug('Adding plugin {plugin} to channel {channel}'.format(
+					plugin=plugin, channel=channel.channel))
 				channel.register_plugin(self.plugins[plugin])
+		for plugin in self.global_plugins:
+			assert isinstance(plugin, str)
+			log.debug('Adding plugin {plugin} to channel {channel}'.format(
+				plugin=plugin, channel=channel.channel))
+			channel.register_plugin(self.plugins[plugin])
 		self.server.channels[channel.channel] = channel
 
 	def _handle_privmsg(self, message):
@@ -70,13 +81,13 @@ class Bot(ircbot.irc.Client):
 		if retval:
 			if isinstance(retval, list):
 				for item in retval:
-					self.conn.send_msg(message.taget, item)
+					self.conn.send_msg(message.target, item)
 			else:
-				self.conn.send_msg(message.taget, retval)
+				self.conn.send_msg(message.target, retval)
 
 	def _call_command(self, callback, message):
 		command = CommandMessage(message)
-		return callback(self, message)
+		return callback(self, command)
 
 	def _call_replier(self, callback, message):
 		return callback(self, message)
