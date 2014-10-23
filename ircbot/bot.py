@@ -2,6 +2,7 @@ from ircbot import log
 import ircbot.irc
 import ircbot.plugin
 import threading
+import datetime
 
 
 class CommandMessage:
@@ -36,6 +37,9 @@ class Bot(ircbot.irc.Client):
 	# interval in seconds
 	tick_interval = 120
 
+	# spam throttling in seconds
+	throttle = 3
+
 	def __init__(self, server, admins=None, bans=None, storage_dir=None,
 	             global_plugins=None, **kwargs):
 		super().__init__(server, **kwargs)
@@ -46,6 +50,8 @@ class Bot(ircbot.irc.Client):
 		self.admins = admins or []
 		self.bans = bans or []
 		self.global_plugins = global_plugins or []
+		self._command_log = {}
+		self._reply_log = {}
 
 	def stop(self, msg=None):
 		self._stop_tick_timer()
@@ -105,10 +111,29 @@ class Bot(ircbot.irc.Client):
 
 	def _call_command(self, callback, message):
 		command = CommandMessage(message)
+		if self._command_throttled(command.command):
+			return None
 		return callback(command)
 
+	def _command_throttled(self, command):
+		now = datetime.datetime.now()
+		if command in self._command_log:
+			diff = now - self._command_log[command]
+			if diff.seconds < self.throttle:
+				log.debug('Command {cmd} throttled'.format(cmd=command))
+				return True
+		self._command_log[command] = now
+		return False
+
 	def _call_replier(self, callback, message):
-		return callback(message)
+		reply = callback(message)
+		now = datetime.datetime.now()
+		if reply in self._reply_log:
+			diff = now - self._command_log[command]
+			if diff.seconds < self.throttle:
+				log.debug('Reply throttled: "{reply}"'.format(reply=reply))
+				return None
+		return reply
 
 	def _start_tick_timer(self):
 		log.info('Ticker started')
@@ -123,6 +148,8 @@ class Bot(ircbot.irc.Client):
 
 	def _tick(self):
 		log.info('Tick!')
+		self._command_log = {}
+		self._reply_log = {}
 		try:
 			for channel in self.server.channels.values():
 				for ticker in channel.tickers:
