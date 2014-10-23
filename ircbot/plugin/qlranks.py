@@ -14,7 +14,7 @@ def _get_qlr_elo(nick, modes = None):
 		modes = ('duel',)
 
 	try:
-		response = urllib.request.urlopen('http://www.qlranks.com/api.aspx?nick='+nick)
+		response = urllib.request.urlopen('http://www.qlranks.com/api.aspx?nick='+nick, timeout=2)
 		content = response.read().decode()
 	except urllib.error.URLError:
 		return 'HTTP error, try again!'

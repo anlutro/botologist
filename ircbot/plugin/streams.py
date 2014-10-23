@@ -103,7 +103,7 @@ def _fetch_twitch(urls):
 	url = 'https://api.twitch.tv/kraken/streams?channel=' + ','.join(channels)
 	log.info('Fetching ' + url)
 
-	result = urllib.request.urlopen(url)
+	result = urllib.request.urlopen(url, timeout=2)
 	response = result.read().decode()
 	result.close()
 	data = json.loads(response)
@@ -123,7 +123,7 @@ def _fetch_hitbox(urls):
 	url = 'http://api.hitbox.tv/media/live/' + ','.join(channels)
 	log.info('Fetching ' + url)
 
-	result = urllib.request.urlopen(url)
+	result = urllib.request.urlopen(url, timeout=2)
 	response = result.read().decode()
 	result.close()
 
