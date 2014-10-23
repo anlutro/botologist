@@ -44,7 +44,7 @@ def _configure_plugins(bot, plugins_dict):
 		parts = plugin_class.split('.')
 		module = importlib.import_module('.'.join(parts[:-1]))
 		plugin_class = getattr(module, parts[-1])
-		bot.register_plugin(name, plugin_class())
+		bot.register_plugin(name, plugin_class)
 
 
 def _configure_channels(bot, channel_dict):

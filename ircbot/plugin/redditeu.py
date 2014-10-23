@@ -1,4 +1,7 @@
 import random
+import urllib.request
+import urllib.error
+import re
 import ircbot.plugin
 
 
@@ -25,3 +28,32 @@ class RedditeuPlugin(ircbot.plugin.Plugin):
 	@ircbot.plugin.command('!btc')
 	def get_btc_worth(self, msg):
 		return '1 bitcoin is currently worth ' + Bitcoin.get_worth()
+
+	@ircbot.plugin.command('!random')
+	def get_yp_comment(self, msg):
+		url = "http://www.youporn.com/random/video/"
+
+		try:
+			result = urllib.request.urlopen(url, timeout=2)
+			response = result.read().decode()
+			result.close()
+
+			result = re.findall('<p class="message">((?:.|\\n)*?)</p>', response)
+
+			if result:
+				return random.choice(result).strip()
+		except (timeout, urllib.error.URLError, UnicodeDecodeError):
+			pass
+
+		return 'Try again!'
+
+	@ircbot.plugin.reply
+	def nay_here(self, msg):
+		if 'nay' not in msg.user.nick.lower():
+			return
+
+		msg_str = msg.message
+		filter(lambda c: c in 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz ', msg_str)
+
+		if 'sup' in msg_str.split() or 'yo' == msg_str:
+			return 'gay here'

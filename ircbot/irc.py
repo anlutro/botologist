@@ -17,10 +17,14 @@ def decode(bytes):
 class User:
 	def __init__(self, nick, host = None):
 		self.nick = nick
+		if host[0] == '~':
+			host = host[1:]
 		self.host = host
 
 	@classmethod
 	def from_ircformat(cls, string):
+		if string[0] == ':':
+			string = string[1:]
 		parts = string.split('!')
 		nick = parts[0]
 		host = parts[1]
@@ -41,6 +45,7 @@ class Message:
 		words = msg.split()
 		return cls(words[0][1:], words[2], ' '.join(words[3:])[1:])
 
+	@property
 	def is_private(self):
 		return self.target[0] != '#'
 
@@ -185,7 +190,7 @@ class Connection:
 			self.send('PONG ' + words[1])
 		elif words[0] == 'ERROR':
 			self.sock.close()
-			raise RuntimeError('IRC server returned an error:' + ' '.join(words[1:]))
+			raise RuntimeError('IRC server returned an error: ' + ' '.join(words[1:])[1:])
 		elif len(words) > 1:
 			if words[1] == '001':
 				# welcome message, lets us know that we're connected
@@ -193,14 +198,14 @@ class Connection:
 					callback()
 
 			elif words[1] == 'JOIN':
-				user = User.from_ircformat(words[0][1:])
+				user = User.from_ircformat(words[0])
 				channel = words[2]
 				log.debug('User {user} ({host}) joined channel {channel}'.format(
 					user=user.nick, host=user.host, channel=channel))
 				self.channels[words[2]].add_user(user)
 
 			elif words[1] == 'NICK':
-				user = User.from_ircformat(words[0][1:])
+				user = User.from_ircformat(words[0])
 				new_nick = words[2][1:]
 				log.debug('User {user} changing nick: {nick}'.format(
 					user=user.host, nick=new_nick))
@@ -211,16 +216,17 @@ class Connection:
 						channel.update_nick(user.nick, new_nick)
 
 			elif words[1] == 'PART':
-				user = User.from_ircformat(words[0][1:])
+				user = User.from_ircformat(words[0])
 				channel = words[2]
 				self.channels[channel].remove_user(host=user.host)
 				log.debug('User {user} parted from channel {channel}'.format(
 					user=user.host, channel=channel))
 
 			elif words[1] == 'QUIT':
-				user = User.from_ircformat(words[0][1:])
+				user = User.from_ircformat(words[0])
 				log.debug('User {user} quit'.format(user=user.host))
 				for channel in self.channels.values():
+					log.debug('Checking if user was in ' + channel.channel)
 					if channel.find_nick_from_host(user.host):
 						channel.remove_user(host=user.host)
 						log.debug('Removing user from channel {channel}'.format(
@@ -228,7 +234,7 @@ class Connection:
 
 			elif words[1] == 'PRIVMSG':
 				message = Message.from_privmsg(msg)
-				if not message.is_private() and message.user.host not in self.channels[message.target].host_map:
+				if not message.is_private and message.user.host not in self.channels[message.target].host_map:
 					log.debug('Unknown user {user} ({host}) added to channel {channel}'.format(
 						user=message.user.nick, host=message.user.host, channel=message.target))
 					self.channels[message.target].add_user(User.from_ircformat(words[0]))
@@ -266,7 +272,10 @@ class Client:
 		try:
 			self.conn.connect(self.server)
 		except KeyboardInterrupt:
-			self.stop()
+			self.stop('Goodbye!')
+		except:
+			self.stop('An error occured!')
+			raise
 
 	def stop(self, msg=None):
 		if msg is None:

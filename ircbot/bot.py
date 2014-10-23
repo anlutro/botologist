@@ -1,6 +1,8 @@
 from ircbot import log
 import ircbot.irc
 import ircbot.plugin
+import threading
+
 
 class CommandMessage:
 	def __init__(self, message):
@@ -9,6 +11,9 @@ class CommandMessage:
 		self.command = message.words[0]
 		self.args = message.words[1:]
 
+	@property
+	def user(self):
+		return self.message.user
 
 class Channel(ircbot.irc.Channel):
 	def __init__(self, channel, **kwargs):
@@ -18,6 +23,7 @@ class Channel(ircbot.irc.Channel):
 		self.tickers = []
 
 	def register_plugin(self, plugin):
+		assert isinstance(plugin, ircbot.plugin.Plugin)
 		for cmd, callback in plugin.commands.items():
 			self.commands[cmd] = callback
 		for reply_callback in plugin.replies:
@@ -27,9 +33,13 @@ class Channel(ircbot.irc.Channel):
 
 
 class Bot(ircbot.irc.Client):
+	# interval in seconds
+	tick_interval = 120
+
 	def __init__(self, server, admins=None, bans=None, storage_dir=None,
 	             global_plugins=None, **kwargs):
 		super().__init__(server, **kwargs)
+		self.conn.on_welcome.append(self._start_tick_timer)
 		self.conn.on_privmsg.append(self._handle_privmsg)
 		self.storage_dir = storage_dir
 		self.plugins = {}
@@ -37,8 +47,12 @@ class Bot(ircbot.irc.Client):
 		self.bans = bans or []
 		self.global_plugins = global_plugins or []
 
+	def stop(self, msg=None):
+		self._stop_tick_timer()
+		super().stop(msg)
+
 	def register_plugin(self, name, plugin):
-		assert isinstance(plugin, ircbot.plugin.Plugin)
+		assert issubclass(plugin, ircbot.plugin.Plugin)
 		log.debug('Plugin {name} registered'.format(name=name))
 		self.plugins[name] = plugin
 
@@ -50,20 +64,21 @@ class Bot(ircbot.irc.Client):
 				assert isinstance(plugin, str)
 				log.debug('Adding plugin {plugin} to channel {channel}'.format(
 					plugin=plugin, channel=channel.channel))
-				channel.register_plugin(self.plugins[plugin])
+				channel.register_plugin(self.plugins[plugin](self, channel))
 		for plugin in self.global_plugins:
 			assert isinstance(plugin, str)
 			log.debug('Adding plugin {plugin} to channel {channel}'.format(
 				plugin=plugin, channel=channel.channel))
-			channel.register_plugin(self.plugins[plugin])
+			channel.register_plugin(self.plugins[plugin](self, channel))
 		self.server.channels[channel.channel] = channel
 
 	def _handle_privmsg(self, message):
 		assert isinstance(message, ircbot.irc.Message)
+		message.user.is_admin = message.user.host in self.admins
 
 		retval = None
 
-		if message.is_private():
+		if message.is_private:
 			pass
 		else:
 			channel = self.conn.channels[message.target]
@@ -79,18 +94,43 @@ class Bot(ircbot.irc.Client):
 						break
 
 		if retval:
-			if isinstance(retval, list):
-				for item in retval:
-					self.conn.send_msg(message.target, item)
-			else:
-				self.conn.send_msg(message.target, retval)
+			self._send_msg(retval, message.target)
+
+	def _send_msg(self, msg, target):
+		if isinstance(msg, list):
+			for item in msg:
+				self.conn.send_msg(target, item)
+		else:
+			self.conn.send_msg(target, msg)
 
 	def _call_command(self, callback, message):
 		command = CommandMessage(message)
-		return callback(self, command)
+		return callback(command)
 
 	def _call_replier(self, callback, message):
-		return callback(self, message)
+		return callback(message)
+
+	def _start_tick_timer(self):
+		log.info('Ticker started')
+		self.timer = threading.Timer(self.tick_interval, self._tick)
+		self.timer.start()
+
+	def _stop_tick_timer(self):
+		if self.timer is not None:
+			self.timer.cancel()
+			self.timer = None
+			log.info('Ticker stopped')
+
+	def _tick(self):
+		log.info('Tick!')
+		try:
+			for channel in self.server.channels.values():
+				for ticker in channel.tickers:
+					result = self._call_ticker(ticker)
+					if result:
+						self._send_msg(result, channel.channel)
+		finally:
+			self._start_tick_timer()
 
 	def _call_ticker(self, callback):
-		return callback(self)
+		return callback()
