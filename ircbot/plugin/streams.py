@@ -320,7 +320,7 @@ class StreamsPlugin(ircbot.plugin.Plugin):
 	def list_streams_cmd(self, msg):
 		streams = self.streams.get_online_streams()
 		if streams:
-			return ' - '.join(streams)
+			return ' - '.join([s.full_url for s in streams])
 		else:
 			return 'No streams online!'
 
