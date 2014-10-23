@@ -176,7 +176,7 @@ class StreamManager:
 
 	def _write(self):
 		data = {'streams': self.streams, 'subscriptions': self.subs}
-		content = json.dumps(data, indent=4)
+		content = json.dumps(data, indent=2)
 		with open(self.stor_path, 'w') as f:
 			f.write(content)
 
