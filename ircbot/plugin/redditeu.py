@@ -52,8 +52,8 @@ class RedditeuPlugin(ircbot.plugin.Plugin):
 		if 'nay' not in msg.user.nick.lower():
 			return
 
-		msg_str = msg.message
-		filter(lambda c: c in 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz ', msg_str)
+		# strip all non-standard characters
+		msg_str = ''.join([c for c in msg.message if 32 <= ord(c) <= 122])
 
 		if 'sup' in msg_str.split() or 'yo' == msg_str:
 			return 'gay here'
