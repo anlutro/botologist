@@ -205,7 +205,7 @@ class StreamManager:
 			raise StreamNotFoundException('Error: Stream not found: ' + url)
 		elif len(streams) > 1:
 			# don't raise if there is an exact match
-			if stream not in streams:
+			if url not in streams:
 				raise AmbiguousStreamException(streams)
 		else:
 			return streams[0]
