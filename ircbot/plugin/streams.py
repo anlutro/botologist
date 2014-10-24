@@ -281,6 +281,8 @@ class StreamsPlugin(ircbot.plugin.Plugin):
 	@ircbot.plugin.command('!addstream')
 	@error_prone
 	def add_stream_cmd(self, msg):
+		if len(msg.args) < 1:
+			return None
 		if not msg.user.is_admin:
 			return None
 		if self.streams.add_stream(msg.args[0]):
@@ -291,6 +293,8 @@ class StreamsPlugin(ircbot.plugin.Plugin):
 	@ircbot.plugin.command('!delstream')
 	@error_prone
 	def del_stream_cmd(self, msg):
+		if len(msg.args) < 1:
+			return None
 		if not msg.user.is_admin:
 			return None
 		if self.streams.del_stream(msg.args[0]):
@@ -301,6 +305,8 @@ class StreamsPlugin(ircbot.plugin.Plugin):
 	@ircbot.plugin.command('!sub')
 	@error_prone
 	def subscribe_stream_cmd(self, msg):
+		if len(msg.args) < 1:
+			return None
 		result = self.streams.add_subscriber(msg.user.host, msg.args[0])
 		if result:
 			return 'You are now subscribed to ' + result + '!'
@@ -310,6 +316,8 @@ class StreamsPlugin(ircbot.plugin.Plugin):
 	@ircbot.plugin.command('!unsub')
 	@error_prone
 	def unsubscribe_stream_cmd(self, msg):
+		if len(msg.args) < 1:
+			return None
 		result = self.streams.del_subscriber(msg.user.host, msg.args[0])
 		if result:
 			return 'You are no longer subscribed to ' + result + '.'
