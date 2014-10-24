@@ -312,7 +312,7 @@ class StreamsPlugin(ircbot.plugin.Plugin):
 	def subscribe_stream_cmd(self, msg):
 		if len(msg.args) < 1:
 			streams = self.streams.get_subscriptions(msg.user.host)
-			if subscriptions:
+			if streams:
 				return ', '.join(streams)
 			else:
 				return 'You are not subscribed to any streams'
