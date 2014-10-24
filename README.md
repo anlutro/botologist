@@ -4,12 +4,14 @@ Plugin-based single-server IRC bot written in Python 3.
 
 Instructions for *nix systems only. If you use Windows, you're on your own.
 
-Make sure you have python 3 and pip installed. If either of the following commands return nothing, you don't have that thing installed and should google how install it.
+Make sure you have python 3, pip and virtualenv installed. If either of the following commands return nothing, you don't have that thing installed and should google how install it.
 
 	$ which python3
 	/usr/bin/python3
 	$ which pip
 	/usr/local/bin/pip
+	$ which virtualenv
+	/usr/local/bin/virtualenv
 
 Create a virtualenv (you only have to do this once):
 
