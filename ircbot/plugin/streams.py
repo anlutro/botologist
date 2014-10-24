@@ -71,7 +71,14 @@ class Stream:
 		self.title = re.sub(r'\n', ' ', title)
 
 	def __eq__(self, other):
-		return self.url == other.url
+		if isinstance(other, self.__class__):
+			return self.url == other.url
+		elif isinstance(other, str):
+			# assume it is a valid url
+			return self.url == other
+		else:
+			raise ValueError('Cannot compare Stream with {type}'.format(
+				type=type(other).__name__))
 
 	@classmethod
 	def from_twitch_data(cls, data):
@@ -107,6 +114,7 @@ def _fetch_twitch(urls):
 	response = result.read().decode()
 	result.close()
 	data = json.loads(response)
+	log.debug('{streams} online twitch.tv streams'.format(streams=len(data['streams'])))
 
 	return [
 		Stream.from_twitch_data(stream)
@@ -132,11 +140,15 @@ def _fetch_hitbox(urls):
 
 	data = json.loads(response)
 
-	return [
+	streams = [
 		Stream.from_hitbox_data(stream)
 		for stream in data['livestream']
 		if stream['media_is_live'] == '1'
 	]
+
+	log.debug('{streams} online hitbox.tv streams'.format(streams=len(streams)))
+
+	return streams
 
 
 def _extract_twitch_channel(url):
@@ -247,13 +259,16 @@ class StreamManager:
 		if self._last_fetch is not None:
 			diff = now - self._last_fetch
 			if diff.seconds < 30:
+				log.debug('Stream data less than 30 seconds old, returning cached')
 				return self._cached_streams
-		self._last_fetch = now
 
 		try:
 			self._cached_streams = _fetch_streams(self.streams)
 		except (urllib.error.HTTPError, TimeoutError):
+			log.warning('Could not fetch online streams!')
 			pass
+
+		self._last_fetch = now
 
 		return self._cached_streams
 
@@ -264,12 +279,15 @@ class StreamManager:
 		try:
 			streams = _fetch_streams(self.streams)
 		except (urllib.error.HTTPError, TimeoutError):
+			log.warning('Could not fetch new online streams!')
 			return None
 
 		diff = []
 		if self._cached_streams is not None:
 			cached_stream_urls = [stream.url for stream in self._cached_streams]
 			diff = [stream for stream in streams if stream.url not in cached_stream_urls]
+			log.debug('Cached streams: {cached} - Online streams: {online} - Diff: {diff}'.format(
+				cached=len(self._cached_streams), online=len(streams), diff=len(diff)))
 		self._cached_streams = streams
 		self._last_fetch = datetime.datetime.now()
 
@@ -346,15 +364,18 @@ class StreamsPlugin(ircbot.plugin.Plugin):
 	def check_new_streams_tick(self):
 		streams = self.streams.get_new_online_streams()
 		if not streams:
+			log.debug('No new online streams')
 			return None
 
 		retval = []
 
 		for stream in streams:
 			highlights = []
-			for user, subs in self.subs.items():
-				if stream in subs:
-					highlights.append(self.channel.find_nick_from_host(user))
+			for user, subs in self.streams.subs.items():
+				if stream.url in subs:
+					nick = self.channel.find_nick_from_host(user)
+					if nick:
+						highlights.append(nick)
 			stream_str = 'New stream online: ' + stream.full_url
 			if stream.title:
 				stream_str += ' - ' + stream.title

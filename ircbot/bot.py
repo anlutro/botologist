@@ -136,9 +136,9 @@ class Bot(ircbot.irc.Client):
 		return reply
 
 	def _start_tick_timer(self):
-		log.info('Ticker started')
 		self.timer = threading.Timer(self.tick_interval, self._tick)
 		self.timer.start()
+		log.debug('Ticker started')
 
 	def _stop_tick_timer(self):
 		if self.timer is not None:
