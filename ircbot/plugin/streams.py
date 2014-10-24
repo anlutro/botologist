@@ -236,6 +236,9 @@ class StreamManager:
 		self._write()
 		return url
 
+	def get_subscriptions(self, host):
+		return self.subs.get(host, None)
+
 	def get_online_streams(self):
 		if not self.streams:
 			return None
@@ -308,12 +311,17 @@ class StreamsPlugin(ircbot.plugin.Plugin):
 	@error_prone
 	def subscribe_stream_cmd(self, msg):
 		if len(msg.args) < 1:
-			return None
-		result = self.streams.add_subscriber(msg.user.host, msg.args[0])
-		if result:
-			return 'You are now subscribed to ' + result + '!'
+			streams = self.streams.get_subscriptions(msg.user.host)
+			if subscriptions:
+				return ', '.join(streams)
+			else:
+				return 'You are not subscribed to any streams'
 		else:
-			return 'You are already subscribed to that stream.'
+			result = self.streams.add_subscriber(msg.user.host, msg.args[0])
+			if result:
+				return 'You are now subscribed to ' + result + '!'
+			else:
+				return 'You are already subscribed to that stream.'
 
 	@ircbot.plugin.command('!unsub')
 	@error_prone
