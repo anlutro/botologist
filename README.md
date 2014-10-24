@@ -6,26 +6,26 @@ Instructions for *nix systems only. If you use Windows, you're on your own.
 
 Make sure you have python 3 and pip installed. If either of the following commands return nothing, you don't have that thing installed and should google how install it.
 
-  $ which python3
-  /usr/bin/python3
-  $ which pip
-  /usr/local/bin/pip
+	$ which python3
+	/usr/bin/python3
+	$ which pip
+	/usr/local/bin/pip
 
 Create a virtualenv (you only have to do this once):
 
-  $ virtualenv -p python3 virtualenv
+	$ virtualenv -p python3 virtualenv
 
 Activate the virtualenv:
 
-  $ source ./venv/bin/activate
+	$ source ./venv/bin/activate
 
 Install requirements (you only have to do this once):
 
-  $ pip install -r ./requirements.txt
+	$ pip install -r ./requirements.txt
 
-Run the bot:
+Copy `config.example.yml` to `config.yml` and edit it to your likings, then run the bot:
 
-  $ ./run.py
+	$ ./run.py
 
 ### Streams plugin
 
@@ -39,5 +39,5 @@ Users have access to `!sub <stream>` and `!unsub <stream>`, which toggles notifi
 
 `!elo <nick> [modes]` can be used to fetch a player's ELO from QLranks.com. `[modes]` can be omitted, or be a comma-separated list of game modes to fetch ELO for. For example:
 
-  !elo raziel2p
-  !elo raziel2p tdm,ca
+	!elo raziel2p
+	!elo raziel2p tdm,ca
