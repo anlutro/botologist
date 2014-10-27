@@ -93,11 +93,7 @@ class Bot(ircbot.irc.Client):
 					callback = channel.commands[message.words[0]]
 					retval = self._call_command(callback, message)
 			else:
-				for reply in channel.replies:
-					reply_return = self._call_replier(reply, message)
-					if reply_return:
-						retval = reply_return
-						break
+				retval = self._call_repliers(channel.replies, message)
 
 		if retval:
 			self._send_msg(retval, message.target)
@@ -111,29 +107,29 @@ class Bot(ircbot.irc.Client):
 
 	def _call_command(self, callback, message):
 		command = CommandMessage(message)
-		if self._command_throttled(command.command):
-			return None
-		return callback(command)
-
-	def _command_throttled(self, command):
 		now = datetime.datetime.now()
 		if command in self._command_log:
-			diff = now - self._command_log[command]
+			diff = now - self._command_log[command.command]
 			if diff.seconds < self.throttle:
-				log.debug('Command {cmd} throttled'.format(cmd=command))
-				return True
-		self._command_log[command] = now
-		return False
-
-	def _call_replier(self, callback, message):
-		reply = callback(message)
-		now = datetime.datetime.now()
-		if reply in self._reply_log:
-			diff = now - self._command_log[command]
-			if diff.seconds < self.throttle:
-				log.debug('Reply throttled: "{reply}"'.format(reply=reply))
+				log.debug('Command {cmd} throttled'.format(cmd=command.command))
 				return None
-		return reply
+		self._command_log[command.command] = now
+		return callback(command)
+
+	def _call_repliers(self, callback, message):
+		now = datetime.datetime.now()
+		for callback in replies:
+			reply = callback(message)
+			if not reply:
+				continue
+			if reply in self._reply_log:
+				diff = now - self._reply_log[reply]
+				if diff.seconds < self.throttle:
+					log.debug('Reply throttled: "{reply}"'.format(reply=reply))
+					continue
+			self._reply_log[reply] = now
+			return reply
+		return None
 
 	def _start_tick_timer(self):
 		self.timer = threading.Timer(self.tick_interval, self._tick)
