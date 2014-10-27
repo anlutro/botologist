@@ -54,7 +54,7 @@ class Server:
 	def __init__(self, address):
 		parts = address.split(':')
 		self.host = parts[0]
-		self.port = parts[1]
+		self.port = int(parts[1])
 		self.channels = {}
 
 	def add_channel(self, channel):
@@ -86,8 +86,8 @@ class Channel:
 		return False
 
 	def remove_user(self, nick=None, host=None):
-		if not nick and not host:
-			raise ValueError('Must provide nick or host')
+		assert nick or host
+
 		if nick is not None and nick in self.nick_map:
 			host = self.nick_map[nick]
 		if host is not None and host in self.host_map:
