@@ -301,7 +301,7 @@ class StreamsPlugin(ircbot.plugin.Plugin):
 		stor_path = os.path.join(bot.storage_dir, filename)
 		self.streams = StreamManager(stor_path)
 
-	@ircbot.plugin.command('!addstream')
+	@ircbot.plugin.command('addstream')
 	@error_prone
 	def add_stream_cmd(self, msg):
 		if len(msg.args) < 1:
@@ -313,7 +313,7 @@ class StreamsPlugin(ircbot.plugin.Plugin):
 		else:
 			return 'Stream already added.'
 
-	@ircbot.plugin.command('!delstream')
+	@ircbot.plugin.command('delstream')
 	@error_prone
 	def del_stream_cmd(self, msg):
 		if len(msg.args) < 1:
@@ -325,7 +325,7 @@ class StreamsPlugin(ircbot.plugin.Plugin):
 		else:
 			return '???'
 
-	@ircbot.plugin.command('!sub')
+	@ircbot.plugin.command('sub')
 	@error_prone
 	def subscribe_stream_cmd(self, msg):
 		if len(msg.args) < 1:
@@ -341,7 +341,7 @@ class StreamsPlugin(ircbot.plugin.Plugin):
 			else:
 				return 'You are already subscribed to that stream.'
 
-	@ircbot.plugin.command('!unsub')
+	@ircbot.plugin.command('unsub')
 	@error_prone
 	def unsubscribe_stream_cmd(self, msg):
 		if len(msg.args) < 1:
@@ -352,7 +352,7 @@ class StreamsPlugin(ircbot.plugin.Plugin):
 		else:
 			return 'You are not subscribed to that stream.'
 
-	@ircbot.plugin.command('!streams')
+	@ircbot.plugin.command('streams')
 	def list_streams_cmd(self, msg):
 		streams = self.streams.get_online_streams()
 		if streams:

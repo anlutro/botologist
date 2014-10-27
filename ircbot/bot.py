@@ -34,6 +34,9 @@ class Channel(ircbot.irc.Channel):
 
 
 class Bot(ircbot.irc.Client):
+	# the character commands start with
+	cmd_prefix = '!'
+
 	# interval in seconds
 	tick_interval = 120
 
@@ -82,18 +85,20 @@ class Bot(ircbot.irc.Client):
 		assert isinstance(message, ircbot.irc.Message)
 		message.user.is_admin = message.user.host in self.admins
 
+		if message.is_private:
+			return None
+
+		channel = self.conn.channels[message.target]
+		assert isinstance(channel, Channel)
+
 		retval = None
 
-		if message.is_private:
-			pass
+		if message.message.startswith(self.cmd_prefix):
+			if message.words[0][1:] in channel.commands:
+				callback = channel.commands[message.words[0][1:]]
+				retval = self._call_command(callback, message)
 		else:
-			channel = self.conn.channels[message.target]
-			if message.message.startswith('!'):
-				if message.words[0] in channel.commands:
-					callback = channel.commands[message.words[0]]
-					retval = self._call_command(callback, message)
-			else:
-				retval = self._call_repliers(channel.replies, message)
+			retval = self._call_repliers(channel.replies, message)
 
 		if retval:
 			self._send_msg(retval, message.target)
@@ -116,7 +121,7 @@ class Bot(ircbot.irc.Client):
 		self._command_log[command.command] = now
 		return callback(command)
 
-	def _call_repliers(self, callback, message):
+	def _call_repliers(self, replies, message):
 		now = datetime.datetime.now()
 		for callback in replies:
 			reply = callback(message)

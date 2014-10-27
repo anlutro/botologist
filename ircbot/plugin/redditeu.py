@@ -25,11 +25,11 @@ class Bitcoin:
 
 class RedditeuPlugin(ircbot.plugin.Plugin):
 	"""#redditeu plugin."""
-	@ircbot.plugin.command('!btc')
+	@ircbot.plugin.command('btc')
 	def get_btc_worth(self, msg):
 		return '1 bitcoin is currently worth ' + Bitcoin.get_worth()
 
-	@ircbot.plugin.command('!random')
+	@ircbot.plugin.command('random')
 	def get_yp_comment(self, msg):
 		url = "http://www.youporn.com/random/video/"
 

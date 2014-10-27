@@ -34,7 +34,7 @@ def _get_qlr_elo(nick, modes = None):
 
 class QlranksPlugin(ircbot.plugin.Plugin):
 	"""QLRanks plugin."""
-	@ircbot.plugin.command('!elo')
+	@ircbot.plugin.command('elo')
 	def get_elo(self, msg):
 		if len(msg.args) < 1:
 			return

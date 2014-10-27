@@ -1,7 +1,7 @@
 import ircbot.plugin
 
 class DefaultPlugin(ircbot.plugin.Plugin):
-	@ircbot.plugin.command('!repo')
+	@ircbot.plugin.command('repo')
 	def repo(self, msg):
 		return 'https://github.com/anlutro/ircbot'
 

@@ -75,7 +75,7 @@ class RedditeuQdbPlugin(ircbot.plugin.Plugin):
 		super().__init__(bot, channel)
 		self.quotes = Quotes()
 
-	@ircbot.plugin.command('!qdb')
+	@ircbot.plugin.command('qdb')
 	def qdb_search_cmd(self, msg):
 		if len(msg.args) < 1:
 			return None
