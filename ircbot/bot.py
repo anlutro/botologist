@@ -88,7 +88,7 @@ class Bot(ircbot.irc.Client):
 			pass
 		else:
 			channel = self.conn.channels[message.target]
-			if message.message[0] == '!':
+			if message.message.startswith('!'):
 				if message.words[0] in channel.commands:
 					callback = channel.commands[message.words[0]]
 					retval = self._call_command(callback, message)
