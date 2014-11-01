@@ -55,6 +55,7 @@ class Bot(ircbot.irc.Client):
 		self.bans = bans or []
 		self.global_plugins = global_plugins or []
 		self._command_log = {}
+		self._last_command = None
 		self._reply_log = {}
 
 	def stop(self, msg=None):
@@ -114,11 +115,16 @@ class Bot(ircbot.irc.Client):
 	def _call_command(self, callback, message):
 		command = CommandMessage(message)
 		now = datetime.datetime.now()
-		if command in self._command_log:
+		if command.command in self._command_log:
 			diff = now - self._command_log[command.command]
-			if diff.seconds < self.throttle:
+			if self._last_command == (command.user.host, command.command, command.args):
+				threshold = self.throttle * 3
+			else:
+				threshold = self.throttle
+			if diff.seconds < threshold:
 				log.debug('Command {cmd} throttled'.format(cmd=command.command))
 				return None
+		self._last_command = (command.user.host, command.command, command.args)
 		self._command_log[command.command] = now
 		return callback(command)
 
