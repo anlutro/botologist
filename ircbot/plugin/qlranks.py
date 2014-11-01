@@ -2,6 +2,7 @@ import ircbot.plugin
 import json
 import urllib.request
 import urllib.error
+import socket
 
 
 def _get_qlr_elo(nick, modes = None):
@@ -16,7 +17,7 @@ def _get_qlr_elo(nick, modes = None):
 	try:
 		response = urllib.request.urlopen('http://www.qlranks.com/api.aspx?nick='+nick, timeout=2)
 		content = response.read().decode()
-	except urllib.error.URLError:
+	except (urllib.error.URLError, socket.timeout):
 		return 'HTTP error, try again!'
 
 	data = json.loads(content)['players'][0]
