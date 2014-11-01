@@ -8,6 +8,7 @@ import ircbot.irc
 import ircbot.bot
 import ircbot.plugin
 
+
 def run_bot(storage_dir, yml_config):
 	with open(yml_config, 'r') as f:
 		cfg = yaml.load(f.read())

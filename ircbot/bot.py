@@ -16,6 +16,7 @@ class CommandMessage:
 	def user(self):
 		return self.message.user
 
+
 class Channel(ircbot.irc.Channel):
 	def __init__(self, channel, **kwargs):
 		super().__init__(channel)

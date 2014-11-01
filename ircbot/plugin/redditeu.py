@@ -54,7 +54,7 @@ class RedditeuPlugin(ircbot.plugin.Plugin):
 
 		# strip all non-standard characters
 		msg_str = ''.join([c for c in msg.message if 32 <= ord(c) <= 122])
-		msg_str = msg_str.strip()
+		msg_str = msg_str.lower().strip()
 
 		if 'sup' == msg_str or 'yo' == msg_str:
 			return 'gay here'

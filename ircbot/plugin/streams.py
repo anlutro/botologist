@@ -103,7 +103,7 @@ def _fetch_streams(streams):
 	return twitch_streams + hitbox_streams
 
 def _fetch_twitch(urls):
-	channels = [_extract_twitch_channel(url) for url in urls if url is not None]
+	channels = [_extract_channel(url, 'twitch.tv') for url in urls if url is not None]
 	if not channels:
 		return []
 
@@ -124,7 +124,7 @@ def _fetch_twitch(urls):
 
 def _fetch_hitbox(urls):
 	"""From a collection of urls, get the ones that are live on hitbox.tv."""
-	channels = [_extract_hitbox_channel(url) for url in urls if url is not None]
+	channels = [_extract_channel(url, 'hitbox.tv') for url in urls if url is not None]
 	if not channels:
 		return []
 
@@ -149,14 +149,6 @@ def _fetch_hitbox(urls):
 	log.debug('{streams} online hitbox.tv streams'.format(streams=len(streams)))
 
 	return streams
-
-
-def _extract_twitch_channel(url):
-	return _extract_channel(url, 'twitch.tv')
-
-
-def _extract_hitbox_channel(url):
-	return _extract_channel(url, 'hitbox.tv')
 
 
 def _extract_channel(url, service):
