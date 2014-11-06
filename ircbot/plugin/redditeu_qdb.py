@@ -45,7 +45,7 @@ class Quotes:
 		"""Fetches and sorts our quoties."""
 		log.info('Fetching quotes from {url}'.format(url=_JSON_URL))
 		try:
-			response = urllib.request.urlopen(_JSON_URL)
+			response = urllib.request.urlopen(_JSON_URL, timeout=2)
 		except URLError:
 			return
 		json_quotes = json.loads(response.read().decode('utf-8'))
