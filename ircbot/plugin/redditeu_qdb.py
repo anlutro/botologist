@@ -38,6 +38,7 @@ class Quotes:
 	_quotes = None
 
 	def __init__(self):
+		self._quotes = []
 		self.update()
 
 
