@@ -176,6 +176,7 @@ class Connection:
 			for msg in text.split('\r\n'):
 				if msg:
 					print('<- ' + msg)
+					log.debug(repr(msg))
 					self.handle_msg(msg)
 
 	def join_channel(self, channel):
