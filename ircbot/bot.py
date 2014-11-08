@@ -88,6 +88,7 @@ class Bot(ircbot.irc.Client):
 		message.user.is_admin = message.user.host in self.admins
 
 		if message.is_private:
+			log.debug('Message is private, not replying')
 			return None
 
 		channel = self.conn.channels[message.target]
@@ -96,7 +97,10 @@ class Bot(ircbot.irc.Client):
 		retval = None
 
 		if message.message.startswith(self.cmd_prefix):
+			log.debug('Message starts with command prefix')
 			if message.words[0][1:] in channel.commands:
+				log.debug('Message is a channel registered command: {cmd}',
+					cmd=message.words[0][1:])
 				callback = channel.commands[message.words[0][1:]]
 				retval = self._call_command(callback, message)
 		else:
