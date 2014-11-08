@@ -99,8 +99,8 @@ class Bot(ircbot.irc.Client):
 		if message.message.startswith(self.cmd_prefix):
 			log.debug('Message starts with command prefix')
 			if message.words[0][1:] in channel.commands:
-				log.debug('Message is a channel registered command: {cmd}',
-					cmd=message.words[0][1:])
+				log.debug('Message is a channel registered command: {cmd}'.format(
+					cmd=message.words[0][1:]))
 				callback = channel.commands[message.words[0][1:]]
 				retval = self._call_command(callback, message)
 		else:
