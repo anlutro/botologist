@@ -246,7 +246,12 @@ class Connection:
 		self.send('PRIVMSG ' + target + ' :' + message)
 
 	def send(self, msg):
-		print('-> ' + msg)
+		if len(msg) > 510:
+			msg = msg[:507] + '...'
+			print('-> ' + msg + ' (TRUNCATED)')
+		else:
+			print('-> ' + msg)
+
 		self.sock.send(str.encode(msg + '\r\n'))
 
 	def quit(self, reason='Leaving'):
