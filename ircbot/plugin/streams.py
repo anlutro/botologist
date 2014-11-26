@@ -1,11 +1,13 @@
 from ircbot import log
 import ircbot.plugin
-import os.path
-import json
-import urllib.request
-import urllib.error
-import re
+
 import datetime
+import json
+import os.path
+import re
+import socket
+import urllib.error
+import urllib.request
 
 
 class StreamException(RuntimeError):
@@ -256,7 +258,7 @@ class StreamManager:
 
 		try:
 			self._cached_streams = _fetch_streams(self.streams)
-		except (urllib.error.HTTPError, TimeoutError):
+		except (urllib.error.HTTPError, socket.timeout):
 			log.warning('Could not fetch online streams!')
 			pass
 
@@ -270,7 +272,7 @@ class StreamManager:
 
 		try:
 			streams = _fetch_streams(self.streams)
-		except (urllib.error.HTTPError, TimeoutError):
+		except (urllib.error.HTTPError, socket.timeout):
 			log.warning('Could not fetch new online streams!')
 			return None
 
