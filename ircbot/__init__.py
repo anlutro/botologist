@@ -8,8 +8,12 @@ import ircbot.irc
 import ircbot.bot
 import ircbot.plugin
 
+# makes it possible to `import ircbot.cfg` for global access to the config dict
+cfg = {}
 
 def run_bot(storage_dir, yml_config):
+	global cfg
+
 	with open(yml_config, 'r') as f:
 		cfg = yaml.load(f.read())
 

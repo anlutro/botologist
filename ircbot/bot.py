@@ -57,6 +57,7 @@ class Bot(ircbot.irc.Client):
 		self._command_log = {}
 		self._last_command = None
 		self._reply_log = {}
+		self.timer = None
 
 	def stop(self, msg=None):
 		self._stop_tick_timer()
