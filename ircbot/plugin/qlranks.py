@@ -24,10 +24,11 @@ def _get_qlr_elo(nick, modes = None):
 
 	retval = data['nick']
 
-	for mode in modes:
+	# convert to set to prevent duplicates
+	for mode in set(modes):
 		if mode not in data:
 			return 'Unknown mode: ' + mode
-		retval += ' - {mode}: {elo} (rank {rank})'.format(
+		retval += ' - {mode}: {elo} (rank {rank:,})'.format(
 			mode=mode, elo=data[mode]['elo'], rank=data[mode]['rank'])
 
 	return retval
