@@ -47,26 +47,11 @@ class Bitcoin:
 		return '%.2f %s' % (num, currency)	
 
 
-class Joke:
-	reactions = (
-		';ppppppppppppppp;', 'Lololooooolillololo', 'rofl haha xD',
-		'pr;f', 'rofo',
-	)
-
-	@classmethod
-	def get_reaction(cls):
-		return random.choice(cls.reactions)
-
-
 class RedditeuPlugin(ircbot.plugin.Plugin):
 	"""#redditeu plugin."""
 	@ircbot.plugin.command('btc')
 	def get_btc_worth(self, msg):
 		return '1 bitcoin is currently worth ' + Bitcoin.get_worth()
-
-	@ircbot.plugin.command('joke')
-	def get_joke_reaction(self, msg):
-		return Joke.get_reaction()
 
 	@ircbot.plugin.command('random')
 	def get_yp_comment(self, msg):
