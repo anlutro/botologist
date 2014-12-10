@@ -7,7 +7,7 @@ import urllib.request
 import ircbot.plugin
 
 
-def get_random():
+def get_random(include_url=False):
 	try:
 		result = urllib.request.urlopen('http://www.youporn.com/random/video/',
 			timeout=2)
@@ -23,6 +23,9 @@ def get_random():
 
 		if ' ' not in result and '+' in result:
 			result = result.replace('+', ' ')
+
+		if include_url:
+			result = result + ' (' + result.url + ')'
 
 		return result
 	except (socket.timeout, urllib.error.URLError, UnicodeDecodeError):
@@ -52,12 +55,13 @@ class Bitcoin:
 class RedditeuPlugin(ircbot.plugin.Plugin):
 	"""#redditeu plugin."""
 	@ircbot.plugin.command('btc')
-	def get_btc_worth(self, msg):
+	def get_btc_worth(self, cmd):
 		return '1 bitcoin is currently worth ' + Bitcoin.get_worth()
 
 	@ircbot.plugin.command('random')
-	def get_yp_comment(self, msg):
-		result = get_random()
+	def get_yp_comment(self, cmd):
+		include_url = '+url' in cmd.args
+		result = get_random(include_url)
 		if result:
 			return result
 		return 'Error, try again!'
