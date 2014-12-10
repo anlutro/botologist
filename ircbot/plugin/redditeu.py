@@ -1,6 +1,6 @@
 import random
 import re
-import socket.timeout
+import socket
 import urllib.error
 import urllib.request
 
