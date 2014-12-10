@@ -65,7 +65,7 @@ class RedditeuPlugin(ircbot.plugin.Plugin):
 		return '1 bitcoin is currently worth ' + Bitcoin.get_worth()
 
 	@ircbot.plugin.command('joke')
-	def get_btc_worth(self, msg):
+	def get_joke_reaction(self, msg):
 		return Joke.get_reaction()
 
 	@ircbot.plugin.command('random')
