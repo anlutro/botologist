@@ -9,23 +9,26 @@ import ircbot.plugin
 
 def get_random(include_url=False):
 	try:
-		result = urllib.request.urlopen('http://www.youporn.com/random/video/',
+		response = urllib.request.urlopen('http://www.youporn.com/random/video/',
 			timeout=2)
-		response = result.read().decode()
-		result.close()
+		result = response.read().decode()
+		response.close()
 
-		result = re.findall('<p class="message">((?:.|\\n)*?)</p>', response)
+		result = re.findall('<p class="message">((?:.|\\n)*?)</p>', result)
 
 		if not result:
 			return None
 
-		result = random.choice(result).strip()
+		result = random.choice(result).strip().replace('\r', '').replace('\n', ' ')
 
 		if ' ' not in result and '+' in result:
 			result = result.replace('+', ' ')
 
 		if include_url:
-			result = result + ' (' + result.url + ')'
+			# remove the long slug at the end of the URL
+			url = '/'.join(response.url.split('/')[:-2])
+
+			result = result + ' (' + url + ')'
 
 		return result
 	except (socket.timeout, urllib.error.URLError, UnicodeDecodeError):
