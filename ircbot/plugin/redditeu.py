@@ -1,7 +1,9 @@
 import random
-import urllib.request
-import urllib.error
 import re
+import socket.timeout
+import urllib.error
+import urllib.request
+
 import ircbot.plugin
 
 
@@ -23,7 +25,7 @@ def get_random():
 			result = result.replace('+', ' ')
 
 		return result
-	except (timeout, urllib.error.URLError, UnicodeDecodeError):
+	except (socket.timeout, urllib.error.URLError, UnicodeDecodeError):
 		pass
 
 	return None
