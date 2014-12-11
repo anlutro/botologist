@@ -105,6 +105,8 @@ class Channel:
 
 
 class Connection:
+	MAX_MSG_CHARS = 500
+
 	def __init__(self, nick, username = None, realname = None):
 		self.nick = nick
 		self.username = username or nick
@@ -257,8 +259,8 @@ class Connection:
 		self.send('PRIVMSG ' + target + ' :' + message)
 
 	def send(self, msg):
-		if len(msg) > 510:
-			msg = msg[:507] + '...'
+		if len(msg) > self.MAX_MSG_CHARS:
+			msg = msg[:(self.MAX_MSG_CHARS - 3)] + '...'
 			print('-> ' + msg + ' (TRUNCATED)')
 		else:
 			print('-> ' + msg)

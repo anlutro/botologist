@@ -23,7 +23,12 @@ class InvalidStreamException(StreamException):
 
 class AmbiguousStreamException(StreamException):
 	def __init__(self, streams):
-		super().__init__('Ambiguous stream choice - options: ' + ', '.join(streams))
+		msg = 'Ambiguous stream choice - '
+		if len(streams) > 5:
+			msg += len(streams) + ' options'
+		else
+			msg += 'options: ' + ', '.join(streams)
+		super().__init__(msg)
 		self.streams = streams
 
 class AlreadySubscribedException(StreamException):
