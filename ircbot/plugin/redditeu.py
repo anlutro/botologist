@@ -1,40 +1,61 @@
+import datetime
 import random
 import re
 import socket
 import urllib.error
 import urllib.request
 
+from ircbot import log
 import ircbot.plugin
 
 
-def get_random(include_url=False):
-	try:
-		response = urllib.request.urlopen('http://www.youporn.com/random/video/',
-			timeout=2)
-		result = response.read().decode()
-		response.close()
+class YouPornComment():
+	_last_fetch = None
 
-		result = re.findall('<p class="message">((?:.|\\n)*?)</p>', result)
+	@classmethod
+	def get_random(cls, include_url=False):
+		now = datetime.datetime.now()
+		if cls._last_fetch is not None:
+			diff = now - cls._last_fetch
+			if diff.seconds < (60 * 30):
+				log.debug('YouPorn comment less than 30 minutes old, blocking')
+				return None
+		cls._last_fetch = now
 
-		if not result:
-			return None
+		result = cls._get_random(include_url)
+		if result:
+			return result
 
-		result = random.choice(result).strip().replace('\r', '').replace('\n', ' ')
+	@staticmethod
+	def _get_random(include_url=False):
+		try:
+			response = urllib.request.urlopen('http://www.youporn.com/random/video/',
+				timeout=2)
+			result = response.read().decode()
+			response.close()
 
-		if ' ' not in result and '+' in result:
-			result = result.replace('+', ' ')
+			result = re.findall('<p class="message">((?:.|\\n)*?)</p>', result)
 
-		if include_url:
-			# remove the long slug at the end of the URL
-			url = '/'.join(response.url.split('/')[:-2])
+			if not result:
+				return None
 
-			result = result + ' (' + url + ')'
+			result = random.choice(result).strip().replace('\r', '').replace('\n', ' ')
 
-		return result
-	except (socket.timeout, urllib.error.URLError, UnicodeDecodeError):
-		pass
+			if ' ' not in result and '+' in result:
+				result = result.replace('+', ' ')
 
-	return None
+			if include_url:
+				# remove the long slug at the end of the URL
+				url = '/'.join(response.url.split('/')[:-2])
+
+				result = result + ' (' + url + ')'
+
+			return result
+		except (socket.timeout, urllib.error.URLError, UnicodeDecodeError):
+			pass
+
+		return None
+
 
 
 class Bitcoin:
@@ -64,10 +85,11 @@ class RedditeuPlugin(ircbot.plugin.Plugin):
 	@ircbot.plugin.command('random')
 	def get_yp_comment(self, cmd):
 		include_url = '+url' in cmd.args
-		result = get_random(include_url)
+		result = YouPornComment.get_random(include_url)
 		if result:
 			return result
-		return 'Error, try again!'
+		elif result is False:
+			return 'Error, try again!'
 
 	@ircbot.plugin.reply
 	def nay_here(self, msg):
