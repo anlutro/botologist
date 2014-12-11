@@ -201,8 +201,8 @@ class Connection:
 		if words[0] == 'PING':
 			self.send('PONG ' + words[1])
 		elif words[0] == 'ERROR':
-			self.sock.close()
-			raise RuntimeError('IRC server returned an error: ' + ' '.join(words[1:])[1:])
+			log.error('Reconnecting: ' + msg)
+			self.reconnect()
 		elif len(words) > 1:
 			if words[1] == '001':
 				# welcome message, lets us know that we're connected
