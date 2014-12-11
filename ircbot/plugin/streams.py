@@ -25,7 +25,7 @@ class AmbiguousStreamException(StreamException):
 	def __init__(self, streams):
 		msg = 'Ambiguous stream choice - '
 		if len(streams) > 5:
-			msg += len(streams) + ' options'
+			msg += str(len(streams)) + ' options'
 		else:
 			msg += 'options: ' + ', '.join(streams)
 		super().__init__(msg)
