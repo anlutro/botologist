@@ -4,14 +4,14 @@ import socket
 import sys
 
 
-def decode(bytes):
+def _decode(bytes):
 	try:
-		return bytes.decode().strip()
+		return bytes.decode('utf-8').strip()
 	except UnicodeDecodeError:
 		try:
 			return bytes.decode('iso-8859-1').strip()
 		except:
-			print('<- UNDECODABLE BYTES')
+			log.error('Could not decode message')
 
 
 class User:
@@ -141,13 +141,13 @@ class Connection:
 
 			try:
 				self.sock = socket.socket(af, socktype, proto)
-			except OSError as msg:
+			except OSError:
 				self.sock = None
 				continue
 
 			try:
 				self.sock.connect(sa)
-			except OSError as msg:
+			except OSError:
 				self.sock.close()
 				self.sock = None
 				continue
@@ -165,13 +165,24 @@ class Connection:
 
 	def loop(self):
 		while True:
-			data = self.sock.recv(4096)
+			try:
+				data = self.sock.recv(4096)
+			except OSError:
+				self.reconnect()
+				continue
+
 			if data == b'':
 				self.reconnect()
+
 			# 13 = \r -- 10 = \n
 			while data[-1] != 10 and data[-2] != 13:
-				data += self.sock.recv(4096)
-			text = decode(data)
+				try:
+					data += self.sock.recv(4096)
+				except OSError:
+					self.reconnect()
+					continue
+
+			text = _decode(data)
 
 			for msg in text.split('\r\n'):
 				if msg:
