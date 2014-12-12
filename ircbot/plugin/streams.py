@@ -48,33 +48,11 @@ def error_prone(func):
 	return wrapper
 
 
-def _normalize_url(url):
-	"""Normalize a stream URL."""
-	if 'twitch.tv' not in url and 'hitbox.tv' not in url:
-		raise InvalidStreamException('Only twitch and hitbox URLs allowed')
-
-	url = url.replace('http://', '') \
-		.replace('https://', '') \
-		.replace('www.', '')
-
-	segments = url.split('/')
-
-	if len(segments) < 2:
-		raise InvalidStreamException('Missing parts of URL')
-
-	if re.match('^[\w\_]+$', segments[1]) is None:
-		raise InvalidStreamException('Invalid characters in channel name')
-
-	url = '/'.join(segments[:2])
-
-	return url
-
-
 class Stream:
 	def __init__(self, user, url, title=None):
 		self.user = user
 		self.url = url
-		self.full_url = 'http://'+url
+		self.full_url = 'http://' + url
 		self.title = re.sub(r'\n', ' ', title)
 
 	def __eq__(self, other):
@@ -101,6 +79,28 @@ class Stream:
 		title = data.get('media_status')
 		return cls(channel, 'hitbox.tv/' + channel, title)
 
+	@staticmethod
+	def normalize_url(url, validate=True):
+		"""Normalize a stream URL."""
+		if 'twitch.tv' in url:
+			url = url[url.index('twitch.tv'):]
+		elif 'hitbox.tv' in url:
+			url = url[url.index('hitbox.tv'):]
+		else:
+			raise InvalidStreamException('Only twitch and hitbox URLs allowed')
+
+		segments = url.split('/')
+
+		if validate and len(segments) < 2:
+			raise InvalidStreamException('Missing parts of URL')
+
+		if validate and re.match('^[\w\_]+$', segments[1]) is None:
+			raise InvalidStreamException('Invalid characters in channel name')
+
+		url = '/'.join(segments[:2])
+
+		return url
+
 
 def _fetch_streams(streams):
 	"""Return an array of Stream objects for the streams in the array of urls
@@ -110,7 +110,12 @@ def _fetch_streams(streams):
 	return twitch_streams + hitbox_streams
 
 def _fetch_twitch(urls):
-	channels = [_extract_channel(url, 'twitch.tv') for url in urls if url is not None]
+	"""From a collection of URLs, get the ones that are live on twitch.tv."""
+	channels = [
+		_extract_channel(url, 'twitch.tv')
+		for url in urls if url is not None
+	]
+
 	if not channels:
 		return []
 
@@ -121,7 +126,8 @@ def _fetch_twitch(urls):
 	response = result.read().decode()
 	result.close()
 	data = json.loads(response)
-	log.debug('{streams} online twitch.tv streams'.format(streams=len(data['streams'])))
+	log.debug('{streams} online twitch.tv streams'.format(
+		streams=len(data['streams'])))
 
 	return [
 		Stream.from_twitch_data(stream)
@@ -130,8 +136,12 @@ def _fetch_twitch(urls):
 
 
 def _fetch_hitbox(urls):
-	"""From a collection of urls, get the ones that are live on hitbox.tv."""
-	channels = [_extract_channel(url, 'hitbox.tv') for url in urls if url is not None]
+	"""From a collection of URLs, get the ones that are live on hitbox.tv."""
+	channels = [
+		_extract_channel(url, 'hitbox.tv')
+		for url in urls if url is not None
+	]
+
 	if not channels:
 		return []
 
@@ -197,7 +207,7 @@ class StreamManager:
 		Returns true on success, false if the stream has already been added, and
 		throws some sort of exception if anything else goes wrong.
 		"""
-		url = _normalize_url(url)
+		url = Stream.normalize_url(url)
 
 		if url in self.streams:
 			return False
@@ -208,7 +218,7 @@ class StreamManager:
 
 	def find_stream(self, url):
 		if 'twitch.tv' in url or 'hitbox.tv' in url:
-			url = _normalize_url(url)
+			url = Stream.normalize_url(url)
 
 		streams = [s for s in self.streams if url in s]
 
