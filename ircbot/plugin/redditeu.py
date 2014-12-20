@@ -112,7 +112,7 @@ class RedditeuPlugin(ircbot.plugin.Plugin):
 
 	@ircbot.plugin.reply
 	def correct_garner_raziel(self, msg):
-		if user.nick.lower() == 'garner' and 'raziel' in msg.message.lower():
+		if msg.user.nick.lower() == 'garner' and 'raziel' in msg.message.lower():
 			return Raziel.get_random_nick() + '*'
 
 	@ircbot.plugin.join
