@@ -80,7 +80,7 @@ class Raziel:
 
 	@classmethod
 	def get_random_nick(cls):
-		return random.choice(self.nicks)
+		return random.choice(cls.nicks)
 
 
 class RedditeuPlugin(ircbot.plugin.Plugin):
