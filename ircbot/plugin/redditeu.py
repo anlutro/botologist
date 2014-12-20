@@ -105,5 +105,5 @@ class RedditeuPlugin(ircbot.plugin.Plugin):
 
 	@ircbot.plugin.join
 	def happynaught(self, user, channel):
-		if 'happy0' in user.nick:
+		if 'happy0' in user.nick.lower():
 			return 'ypyotootp hippy 0'
