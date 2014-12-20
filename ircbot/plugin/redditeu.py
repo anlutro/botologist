@@ -110,11 +110,6 @@ class RedditeuPlugin(ircbot.plugin.Plugin):
 		if 'sup' == msg_str or 'yo' == msg_str:
 			return 'gay here'
 
-	@ircbot.plugin.reply
-	def correct_garner_raziel(self, msg):
-		if msg.user.nick.lower() == 'garner' and 'raziel' in msg.message.lower():
-			return Raziel.get_random_nick() + '*'
-
 	@ircbot.plugin.join
 	def welcome(self, user, channel):
 		if 'happy0' in user.nick.lower():
