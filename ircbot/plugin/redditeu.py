@@ -57,7 +57,6 @@ class YouPornComment():
 		return None
 
 
-
 class Bitcoin:
 	currencies = (
 		'USD', 'EUR', 'hamburgers', 'farts', 'Razielcoins', 'BTC', 'salmons',
@@ -74,6 +73,14 @@ class Bitcoin:
 		num = random.randint(100,100000) / 100
 		currency = random.choice(cls.currencies)
 		return '%.2f %s' % (num, currency)	
+
+
+class Raziel:
+	nicks = ('radio', 'brazier', 'easel')
+
+	@classmethod
+	def get_random_nick(cls):
+		return random.choice(self.nicks)
 
 
 class RedditeuPlugin(ircbot.plugin.Plugin):
@@ -104,6 +111,8 @@ class RedditeuPlugin(ircbot.plugin.Plugin):
 			return 'gay here'
 
 	@ircbot.plugin.join
-	def happynaught(self, user, channel):
+	def welcome(self, user, channel):
 		if 'happy0' in user.nick.lower():
 			return 'ypyotootp hippy 0'
+		if user.nick.lower().startswith('raziel'):
+			return 'hello ' + Raziel.get_random_nick()
