@@ -11,13 +11,14 @@ import ircbot.plugin
 
 class YouPornComment():
 	_last_fetch = None
+	THROTTLE_MINS = 5
 
 	@classmethod
 	def get_random(cls, include_url=False):
 		now = datetime.datetime.now()
 		if cls._last_fetch is not None:
 			diff = now - cls._last_fetch
-			if diff.seconds < (60 * 30):
+			if diff.seconds < (60 * cls.THROTTLE_MINS):
 				log.debug('YouPorn comment less than 30 minutes old, blocking')
 				return None
 		cls._last_fetch = now
