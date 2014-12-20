@@ -21,6 +21,7 @@ class Channel(ircbot.irc.Channel):
 	def __init__(self, channel, **kwargs):
 		super().__init__(channel)
 		self.commands = {}
+		self.joins = []
 		self.replies = []
 		self.tickers = []
 
@@ -28,6 +29,8 @@ class Channel(ircbot.irc.Channel):
 		assert isinstance(plugin, ircbot.plugin.Plugin)
 		for cmd, callback in plugin.commands.items():
 			self.commands[cmd] = callback
+		for join_callback in plugin.joins:
+			self.joins.append(join_callback)
 		for reply_callback in plugin.replies:
 			self.replies.append(reply_callback)
 		for tick_callback in plugin.tickers:
@@ -48,6 +51,7 @@ class Bot(ircbot.irc.Client):
 	             global_plugins=None, **kwargs):
 		super().__init__(server, **kwargs)
 		self.conn.on_welcome.append(self._start_tick_timer)
+		self.conn.on_join.append(self._handle_join)
 		self.conn.on_privmsg.append(self._handle_privmsg)
 		self.storage_dir = storage_dir
 		self.plugins = {}
@@ -83,6 +87,18 @@ class Bot(ircbot.irc.Client):
 				plugin=plugin, channel=channel.channel))
 			channel.register_plugin(self.plugins[plugin](self, channel))
 		self.server.channels[channel.channel] = channel
+
+	def _handle_join(self, channel, user):
+		assert isinstance(channel, Channel)
+		assert isinstance(user, ircbot.irc.User)
+
+		retval = None
+
+		for callback in channel.joins:
+			retval = callback(user, channel)
+			if retval:
+				self._send_msg(retval, channel.channel)
+				return
 
 	def _handle_privmsg(self, message):
 		assert isinstance(message, ircbot.irc.Message)

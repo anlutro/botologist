@@ -11,6 +11,12 @@ def command(command):
 	return wrapper
 
 
+def join(func):
+	"""Plugin join reply decorator."""
+	func._is_join = True
+	return func
+
+
 def reply(func):
 	"""Plugin reply decorator."""
 	func._is_reply = True
@@ -34,6 +40,7 @@ class PluginMetaclass(type):
 		"""
 
 		self._commands = {}
+		self._joins = []
 		self._replies = []
 		self._tickers = []
 
@@ -42,10 +49,17 @@ class PluginMetaclass(type):
 				log.debug('{name}.{fname} is a command'.format(
 					name=name, fname=fname))
 				self._commands[f._command] = fname
+
+			if hasattr(f, '_is_join'):
+				log.debug('{name}.{fname} is a join reply'.format(
+					name=name, fname=fname))
+				self._joins.append(fname)
+
 			if hasattr(f, '_is_reply'):
 				log.debug('{name}.{fname} is a reply'.format(
 					name=name, fname=fname))
 				self._replies.append(fname)
+
 			if hasattr(f, '_is_ticker'):
 				log.debug('{name}.{fname} is a ticker'.format(
 					name=name, fname=fname))
@@ -63,9 +77,15 @@ class Plugin(metaclass=PluginMetaclass):
 		self.commands = {}
 		for command, callback in self._commands.items():
 			self.commands[command] = getattr(self, callback)
+
+		self.joins = []
+		for join in self._joins:
+			self.joins.append(getattr(self, join))
+
 		self.replies = []
 		for reply in self._replies:
 			self.replies.append(getattr(self, reply))
+
 		self.tickers = []
 		for ticker in self._tickers:
 			self.tickers.append(getattr(self, ticker))

@@ -115,6 +115,7 @@ class Connection:
 		self.server = None
 		self.channels = {}
 		self.on_welcome = []
+		self.on_join = []
 		self.on_privmsg = []
 
 	def connect(self, server):
@@ -217,6 +218,8 @@ class Connection:
 				log.debug('User {user} ({host}) joined channel {channel}'.format(
 					user=user.nick, host=user.host, channel=channel))
 				self.channels[words[2]].add_user(user)
+				for callback in self.on_join:
+					callback(self.channels[words[2]], user)
 
 			elif words[1] == 'NICK':
 				user = User.from_ircformat(words[0])

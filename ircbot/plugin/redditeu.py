@@ -102,3 +102,8 @@ class RedditeuPlugin(ircbot.plugin.Plugin):
 
 		if 'sup' == msg_str or 'yo' == msg_str:
 			return 'gay here'
+
+	@ircbot.plugin.join
+	def happynaught(self, user, channel):
+		if 'happy0' in user.nick:
+			return 'ypyotootp hippy 0'
