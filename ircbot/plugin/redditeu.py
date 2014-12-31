@@ -99,6 +99,16 @@ class RedditeuPlugin(ircbot.plugin.Plugin):
 		elif result is False:
 			return 'Error, try again!'
 
+	@ircbot.plugin.command('michael')
+	def who_is_michael(self, cmd):
+		channel = self.bot.conn.channels.get(cmd.message.target)
+		if not channel:
+			return
+		for (host,nick) in channel.host_map.items():
+			if 'nevzetz' in host or 'ip51cc146b.speed.planet.nl' in host:
+				return 'Michael is ' + nick
+		return 'Michael not found!'
+
 	@ircbot.plugin.reply
 	def nay_here(self, msg):
 		if 'nay' not in msg.user.nick.lower():
