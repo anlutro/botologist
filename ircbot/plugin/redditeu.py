@@ -19,7 +19,8 @@ class YouPornComment():
 		if cls._last_fetch is not None:
 			diff = now - cls._last_fetch
 			if diff.seconds < (60 * cls.THROTTLE_MINS):
-				log.debug('YouPorn comment less than 30 minutes old, blocking')
+				log.debug('YouPorn comment less than {mins} minutes old, blocking'.format(
+					mins=cls.THROTTLE_MINS))
 				return None
 		cls._last_fetch = now
 
