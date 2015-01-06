@@ -130,7 +130,7 @@ class Bot(ircbot.irc.Client):
 	def _handle_privmsg(self, message):
 		assert isinstance(message, ircbot.irc.Message)
 
-		if message.user.host in self.bans
+		if message.user.host in self.bans:
 			return
 
 		# check if the user is an admin - add it to the message.user object for
