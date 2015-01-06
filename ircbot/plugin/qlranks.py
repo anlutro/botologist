@@ -22,6 +22,12 @@ def _get_qlr_elo(nick, modes = None):
 
 	data = json.loads(content)['players'][0]
 
+	# qlranks returns a player with Elo 1200 for all modes if the player either
+	# has no games played or does not exist
+	elos = [mode['elo'] == 1200 for mode in data]
+	if all(elos):
+		return 'Player not found or no games played: ' + data['nick']
+
 	retval = data['nick']
 
 	# convert to set to prevent duplicates
