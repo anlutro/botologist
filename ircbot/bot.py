@@ -150,11 +150,12 @@ class Bot(ircbot.irc.Client):
 		if message.message.startswith(self.CMD_PREFIX):
 			# if the message starts with the command prefix, check for mathing
 			# command and fire its callback
+			cmd_string = message.words[0][1:].lower()
 			log.debug('Message starts with command prefix')
-			if message.words[0][1:] in channel.commands:
+			if cmd_string in channel.commands:
 				log.debug('Message is a channel registered command: {cmd}'.format(
-					cmd=message.words[0][1:]))
-				callback = channel.commands[message.words[0][1:]]
+					cmd=cmd_string))
+				callback = channel.commands[cmd_string]
 				response = self._call_command(callback, message)
 		else:
 			# otherwise, call the channel's repliers
