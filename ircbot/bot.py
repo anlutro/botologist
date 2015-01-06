@@ -1,11 +1,18 @@
+import datetime
+import threading
+
 from ircbot import log
 import ircbot.irc
 import ircbot.plugin
-import threading
-import datetime
 
 
 class CommandMessage:
+	"""Representation of an IRC message that is a command.
+
+	When a user sends a message to the bot that is a bot command, an instance
+	of this class should be constructed and will be passed to the command
+	handler to figure out a response.
+	"""
 	def __init__(self, message):
 		assert isinstance(message, ircbot.irc.Message)
 		self.message = message
@@ -18,6 +25,11 @@ class CommandMessage:
 
 
 class Channel(ircbot.irc.Channel):
+	"""Extended channel class.
+
+	Added functionality for adding various handlers from plugins, as plugins are
+	registered on a per-channel basis.
+	"""
 	def __init__(self, channel, **kwargs):
 		super().__init__(channel)
 		self.commands = {}
@@ -38,14 +50,16 @@ class Channel(ircbot.irc.Channel):
 
 
 class Bot(ircbot.irc.Client):
-	# the character commands start with
-	cmd_prefix = '!'
+	"""IRC bot."""
 
-	# interval in seconds
-	tick_interval = 120
+	# the character commands start with
+	CMD_PREFIX = '!'
+
+	# ticker interval in seconds
+	TICK_INTERVAL = 120
 
 	# spam throttling in seconds
-	throttle = 3
+	SPAM_THROTTLE = 3
 
 	def __init__(self, server, admins=None, bans=None, storage_dir=None,
 	             global_plugins=None, **kwargs):
@@ -74,6 +88,8 @@ class Bot(ircbot.irc.Client):
 
 	def add_channel(self, channel, plugins=None):
 		channel = Channel(channel)
+
+		# channel-specific plugins
 		if plugins is not None:
 			assert isinstance(plugins, list)
 			for plugin in plugins:
@@ -81,50 +97,15 @@ class Bot(ircbot.irc.Client):
 				log.debug('Adding plugin {plugin} to channel {channel}'.format(
 					plugin=plugin, channel=channel.channel))
 				channel.register_plugin(self.plugins[plugin](self, channel))
+
+		# global plugins
 		for plugin in self.global_plugins:
 			assert isinstance(plugin, str)
 			log.debug('Adding plugin {plugin} to channel {channel}'.format(
 				plugin=plugin, channel=channel.channel))
 			channel.register_plugin(self.plugins[plugin](self, channel))
+
 		self.server.channels[channel.channel] = channel
-
-	def _handle_join(self, channel, user):
-		assert isinstance(channel, Channel)
-		assert isinstance(user, ircbot.irc.User)
-
-		retval = None
-
-		for callback in channel.joins:
-			retval = callback(user, channel)
-			if retval:
-				self._send_msg(retval, channel.channel)
-				return
-
-	def _handle_privmsg(self, message):
-		assert isinstance(message, ircbot.irc.Message)
-		message.user.is_admin = message.user.host in self.admins
-
-		if message.is_private:
-			log.debug('Message is private, not replying')
-			return None
-
-		channel = self.conn.channels[message.target]
-		assert isinstance(channel, Channel)
-
-		retval = None
-
-		if message.message.startswith(self.cmd_prefix):
-			log.debug('Message starts with command prefix')
-			if message.words[0][1:] in channel.commands:
-				log.debug('Message is a channel registered command: {cmd}'.format(
-					cmd=message.words[0][1:]))
-				callback = channel.commands[message.words[0][1:]]
-				retval = self._call_command(callback, message)
-		else:
-			retval = self._call_repliers(channel.replies, message)
-
-		if retval:
-			self._send_msg(retval, message.target)
 
 	def _send_msg(self, msg, target):
 		if isinstance(msg, list):
@@ -133,39 +114,102 @@ class Bot(ircbot.irc.Client):
 		else:
 			self.conn.send_msg(target, msg)
 
+	def _handle_join(self, channel, user):
+		assert isinstance(channel, Channel)
+		assert isinstance(user, ircbot.irc.User)
+
+		# iterate through join callbacks. the first, if any, to return a
+		# non-empty value, will be sent back to the channel as a response.
+		response = None
+		for callback in channel.joins:
+			response = callback(user, channel)
+			if response:
+				self._send_msg(response, channel.channel)
+				return
+
+	def _handle_privmsg(self, message):
+		assert isinstance(message, ircbot.irc.Message)
+
+		if message.user.host in self.bans
+			return
+
+		# check if the user is an admin - add it to the message.user object for
+		# later re-use
+		message.user.is_admin = message.user.host in self.admins
+
+		# self-explanatory...
+		if message.is_private:
+			log.debug('Message is private, not replying')
+			return None
+
+		channel = self.conn.channels[message.target]
+		assert isinstance(channel, Channel)
+
+		response = None
+
+		if message.message.startswith(self.CMD_PREFIX):
+			# if the message starts with the command prefix, check for mathing
+			# command and fire its callback
+			log.debug('Message starts with command prefix')
+			if message.words[0][1:] in channel.commands:
+				log.debug('Message is a channel registered command: {cmd}'.format(
+					cmd=message.words[0][1:]))
+				callback = channel.commands[message.words[0][1:]]
+				response = self._call_command(callback, message)
+		else:
+			# otherwise, call the channel's repliers
+			response = self._call_repliers(channel.replies, message)
+
+		if response:
+			self._send_msg(response, message.target)
+
 	def _call_command(self, callback, message):
+		# turn the Message into a CommandMessage
 		command = CommandMessage(message)
+
+		# check for spam
 		now = datetime.datetime.now()
 		if command.command in self._command_log:
 			diff = now - self._command_log[command.command]
 			if self._last_command == (command.user.host, command.command, command.args):
-				threshold = self.throttle * 3
+				threshold = self.SPAM_THROTTLE * 3
 			else:
-				threshold = self.throttle
+				threshold = self.SPAM_THROTTLE
 			if diff.seconds < threshold:
 				log.debug('Command {cmd} throttled'.format(cmd=command.command))
 				return None
+
+		# log the command call for spam throttling
 		self._last_command = (command.user.host, command.command, command.args)
 		self._command_log[command.command] = now
+
 		return callback(command)
 
 	def _call_repliers(self, replies, message):
 		now = datetime.datetime.now()
+
+		# iterate through reply callbacks
 		for callback in replies:
 			reply = callback(message)
 			if not reply:
 				continue
+
+			# throttle spam - prevents the same reply from being sent more than
+			# once in a row within the throttle threshold
 			if reply in self._reply_log:
 				diff = now - self._reply_log[reply]
-				if diff.seconds < self.throttle:
+				if diff.seconds < self.SPAM_THROTTLE:
 					log.debug('Reply throttled: "{reply}"'.format(reply=reply))
 					continue
+
+			# log the reply for spam throttling
 			self._reply_log[reply] = now
 			return reply
+
 		return None
 
 	def _start_tick_timer(self):
-		self.timer = threading.Timer(self.tick_interval, self._tick)
+		self.timer = threading.Timer(self.TICK_INTERVAL, self._tick)
 		self.timer.start()
 		log.debug('Ticker started')
 
@@ -177,16 +221,16 @@ class Bot(ircbot.irc.Client):
 
 	def _tick(self):
 		log.info('Tick!')
+		# reset the spam throttle to prevent the log dictionaries from becoming
+		# too large
 		self._command_log = {}
 		self._reply_log = {}
+
 		try:
 			for channel in self.server.channels.values():
 				for ticker in channel.tickers:
-					result = self._call_ticker(ticker)
+					result = ticker()
 					if result:
 						self._send_msg(result, channel.channel)
 		finally:
 			self._start_tick_timer()
-
-	def _call_ticker(self, callback):
-		return callback()

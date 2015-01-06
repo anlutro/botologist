@@ -43,3 +43,15 @@ Users have access to `!sub <stream>` and `!unsub <stream>`, which toggles notifi
 
 	!elo raziel2p
 	!elo raziel2p tdm,ca
+
+## Development
+
+Brief explanation of the program architecture.
+
+The `ircbot/irc.py` module contains IRC abstractions with classes such as Server, Connection, Client and so on.
+
+The `ircbot/bot.py` module contains 1 main class: `ircbot.bot.Bot` - which extends `ircbot.irc.Client` and adds bot-like features such as keeping track of what users are present in channels, as well as the ability to add commands, replies and timed repeating tasks via plugins.
+
+The core plugin classes and functionality is defined in `ircbot/plugin/__init__.py`. Various plugins extend the `ircbot.plugin.Plugin` class to provide a plugin. Plugins can be associated with channels via the `config.yml` file.
+
+Plugins define functionality such as commands, replies, join handlers and tickers via method decorators. The best way to see how to do this is to look at an existing plugin.

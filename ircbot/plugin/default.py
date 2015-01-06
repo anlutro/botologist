@@ -2,10 +2,6 @@ import ircbot.plugin
 from ircbot import cfg
 
 class DefaultPlugin(ircbot.plugin.Plugin):
-	@ircbot.plugin.command('repo')
-	def repo(self, msg):
-		return 'https://github.com/anlutro/ircbot'
-
 	@ircbot.plugin.command('mumble')
 	def mumble(self, msg):
 		mumble_cfg = cfg.get('mumble')

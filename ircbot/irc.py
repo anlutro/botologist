@@ -5,6 +5,12 @@ import sys
 
 
 def _decode(bytes):
+	"""Attempt to decode a byte string into a UTF-8 string.
+
+	Because IRC doesn't enforce any particular encoding, we have to either guess
+	what encoding is being used, or keep trying until it works. UTF-8 and
+	ISO-8859-1 (Windows) are the most common, so we just try those two.
+	"""
 	try:
 		return bytes.decode('utf-8').strip()
 	except UnicodeDecodeError:
