@@ -70,7 +70,6 @@ class Stream:
 		channel = data.get('channel', {}).get('name', '').lower()
 		title = data.get('channel', {}).get('status')
 		obj = cls(channel, 'twitch.tv/' + channel, title)
-		obj.full_url = obj.full_url + '/popout'
 		return obj
 
 	@classmethod
