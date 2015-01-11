@@ -35,7 +35,7 @@ def _get_qlr_elo(nick, modes = None):
 		if mode not in data:
 			return 'Unknown mode: ' + mode
 
-		if mode['rank'] == 0:
+		if data[mode]['rank'] == 0:
 			retval += ' - {mode}: unranked'
 		else:
 			retval += ' - {mode}: {elo} (rank {rank:,})'.format(
