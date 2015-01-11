@@ -22,10 +22,10 @@ def _get_qlr_elo(nick, modes = None):
 
 	data = json.loads(content)['players'][0]
 
-	# qlranks returns a player with Elo 1200 for all modes if the player either
-	# has no games played or does not exist
-	elos = [mode['elo'] == 1200 for mode in data.values() if isinstance(mode, dict)]
-	if all(elos):
+	# qlranks returns rank 0 indicating a player has no rating - if all modes
+	# have rank 0, it is safe to assume the player does not exist
+	unranked = [mode['rank'] == 0 for mode in data.values() if isinstance(mode, dict)]
+	if all(unranked):
 		return 'Player not found or no games played: ' + data['nick']
 
 	retval = data['nick']
@@ -34,8 +34,12 @@ def _get_qlr_elo(nick, modes = None):
 	for mode in set(modes):
 		if mode not in data:
 			return 'Unknown mode: ' + mode
-		retval += ' - {mode}: {elo} (rank {rank:,})'.format(
-			mode=mode, elo=data[mode]['elo'], rank=data[mode]['rank'])
+
+		if mode['rank'] == 0:
+			retval += ' - {mode}: unranked'.format(
+		else:
+			retval += ' - {mode}: {elo} (rank {rank:,})'.format(
+				mode=mode, elo=data[mode]['elo'], rank=data[mode]['rank'])
 
 	return retval
 
