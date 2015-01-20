@@ -16,3 +16,10 @@ class DefaultPlugin(ircbot.plugin.Plugin):
 	def tableflip(self, msg):
 		if '(╯°□°)╯︵ ┻━┻' in msg.message:
 			return '┬─┬ ノ( ゜-゜ノ)'
+
+	@ircbot.plugin.reply
+	def unacceptable(self, msg):
+		msg_str = ''.join([c for c in msg.message if 32 <= ord(c) <= 122])
+		msg_str = msg_str.lower().strip()
+		if msg == 'unacceptable':
+			return 'https://www.youtube.com/watch?v=07So_lJQyqw'
