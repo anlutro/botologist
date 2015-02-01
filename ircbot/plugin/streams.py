@@ -49,7 +49,7 @@ def error_prone(func):
 
 
 class Stream:
-	def __init__(self, user, url, title=None):
+	def __init__(self, user, url, title=''):
 		self.user = user
 		self.url = url
 		self.full_url = 'http://' + url
@@ -64,6 +64,15 @@ class Stream:
 		else:
 			raise ValueError('Cannot compare Stream with {type}'.format(
 				type=type(other).__name__))
+
+	def __ne__(self, other):
+		return not self.__eq__(other)
+
+	def __hash__(self):
+		return hash(self.url)
+
+	def __repr__(self):
+		return '<ircbot.plugin.streams.Stream object \'{url}\'>'.format(url=self.url)
 
 	@classmethod
 	def from_twitch_data(cls, data):
@@ -177,12 +186,34 @@ def _extract_channel(url, service):
 	return None
 
 
+class StreamCache:
+	def __init__(self):
+		self.initiated = False
+		self._c1 = []
+		self._c2 = []
+
+	def push(self, streams):
+		assert(isinstance, streams, list)
+		self._c2 = self._c1
+		self._c1 = streams
+		if not self.initiated:
+			self.initiated = True
+
+	def get_all(self):
+		return set(self._c1 + self._c2)
+
+	def __contains__(self, stream):
+		return stream in self._c1 or stream in self._c2
+
+
 class StreamManager:
+	THROTTLE = 30 # seconds
+
 	def __init__(self, stor_path):
 		self.streams = []
 		self.subs = {}
 		self._last_fetch = None
-		self._cached_streams = None
+		self._cached_streams = StreamCache()
 		self.stor_path = stor_path
 		self._read()
 
@@ -266,19 +297,20 @@ class StreamManager:
 		now = datetime.datetime.now()
 		if self._last_fetch is not None:
 			diff = now - self._last_fetch
-			if diff.seconds < 30:
-				log.debug('Stream data less than 30 seconds old, returning cached')
-				return self._cached_streams
+			if diff.seconds < self.THROTTLE:
+				log.debug('Throttled, returning cached streams')
+				return self._cached_streams.get_all()
 
 		try:
-			self._cached_streams = _fetch_streams(self.streams)
-		except (urllib.error.HTTPError, socket.timeout):
+			streams = _fetch_streams(self.streams)
+			self._cached_streams.push(streams)
+		except (urllib.error.URLError, socket.timeout):
 			log.warning('Could not fetch online streams!')
 			pass
 
 		self._last_fetch = now
 
-		return self._cached_streams
+		return self._cached_streams.get_all()
 
 	def get_new_online_streams(self):
 		if not self.streams:
@@ -286,17 +318,17 @@ class StreamManager:
 
 		try:
 			streams = _fetch_streams(self.streams)
-		except (urllib.error.HTTPError, socket.timeout):
+		except (urllib.error.URLError, socket.timeout):
 			log.warning('Could not fetch new online streams!')
-			return None
+			return 'Could not fetch online streams, try again in {} seconds'.format(self.THROTTLE)
 
 		diff = []
-		if self._cached_streams is not None:
-			cached_stream_urls = [stream.url for stream in self._cached_streams]
+		if self._cached_streams.initiated:
+			cached_stream_urls = [stream.url for stream in self._cached_streams.get_all()]
 			diff = [stream for stream in streams if stream.url not in cached_stream_urls]
 			log.debug('Cached streams: {cached} - Online streams: {online} - Diff: {diff}'.format(
-				cached=len(self._cached_streams), online=len(streams), diff=len(diff)))
-		self._cached_streams = streams
+				cached=len(cached_stream_urls), online=len(streams), diff=len(diff)))
+		self._cached_streams.push(streams)
 		self._last_fetch = datetime.datetime.now()
 
 		return diff

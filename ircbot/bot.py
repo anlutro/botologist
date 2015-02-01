@@ -177,7 +177,7 @@ class Bot(ircbot.irc.Client):
 			else:
 				threshold = self.SPAM_THROTTLE
 			if diff.seconds < threshold:
-				log.debug('Command {cmd} throttled'.format(cmd=command.command))
+				log.info('Command {cmd} throttled'.format(cmd=command.command))
 				return None
 
 		# log the command call for spam throttling
