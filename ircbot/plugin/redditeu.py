@@ -119,6 +119,9 @@ class RedditeuPlugin(ircbot.plugin.Plugin):
 		msg_str = ''.join([c for c in msg.message if 32 <= ord(c) <= 122])
 		msg_str = msg_str.lower().strip()
 
+		if 'sup' in msg_str and 'nay here' in msg_str:
+			return 'sup gay here'
+
 		if 'sup' == msg_str or 'yo' == msg_str:
 			return 'gay here'
 
