@@ -39,6 +39,7 @@ class YouPornComment():
 			result = re.findall('<p class="message">((?:.|\\n)*?)</p>', result)
 
 			if not result:
+				log.debug('No comments found in '+response.url)
 				return None
 
 			result = random.choice(result).strip().replace('\r', '').replace('\n', ' ')
@@ -54,6 +55,7 @@ class YouPornComment():
 
 			return result
 		except (socket.timeout, urllib.error.URLError, UnicodeDecodeError):
+			log.debug('HTTP request failed')
 			pass
 
 		return None
