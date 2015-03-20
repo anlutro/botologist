@@ -24,7 +24,7 @@ class TwitterPlugin(ircbot.plugin.Plugin):
 				break
 
 		parts = word.split('/')
-		if parts[4] != 'status':
+		if len(parts) < 5 or parts[4] != 'status':
 			return
 
 		if not self.api:
