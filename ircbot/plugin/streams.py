@@ -53,7 +53,7 @@ class Stream:
 		self.user = user
 		self.url = url
 		self.full_url = 'http://' + url
-		self.title = re.sub(r'\n', ' ', title)
+		self.title = re.sub(r'\n', ' ', str(title))
 
 	def __eq__(self, other):
 		if isinstance(other, self.__class__):
