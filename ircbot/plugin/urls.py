@@ -27,7 +27,7 @@ def unshorten_url(url):
 	try:
 		request = urllib.request.Request(url=url, method='HEAD')
 		response = urllib.request.urlopen(request, timeout=2)
-		return response.url
+		url = response.url
 	except (urllib.error.URLError, socket.timeout):
 		log.debug('HTTP error, aborting')
 		return None
