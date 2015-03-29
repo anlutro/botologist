@@ -32,6 +32,9 @@ def unshorten_url(url):
 		log.debug('HTTP error, aborting')
 		return None
 
+	if len(url) > 300:
+		return None
+
 	return url
 
 
