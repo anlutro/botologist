@@ -95,12 +95,13 @@ class RedditeuPlugin(ircbot.plugin.Plugin):
 
 	@ircbot.plugin.command('random')
 	def get_yp_comment(self, cmd):
-		include_url = '+url' in cmd.args
-		result = YouPornComment.get_random(include_url)
+		result = YouPornComment.get_random(True)
 		if result:
 			return result
 		elif result is False:
 			return 'Error, try again!'
+		else:
+			return 'No comment found, try again later!'
 
 	@ircbot.plugin.command('michael')
 	def who_is_michael(self, cmd):
