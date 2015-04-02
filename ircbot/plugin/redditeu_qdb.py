@@ -1,89 +1,56 @@
-import json
-import urllib.request
-from urllib.error import URLError
-import operator
-from datetime import datetime, timedelta
 import ircbot.plugin
-from ircbot import log
+import json
+import socket
+import urllib.error
+import urllib.parse
+import urllib.request
 
-_BASE_URL = "http://bash.vaunt.eu/"
-_JSON_URL = "{base_url}?json".format(base_url=_BASE_URL)
-
-
-class Quote:
-	"""Base Quote class."""
-	id = None
-	text = None
-	score = None
-
-	def __init__(self, _hash):
-		self.id = _hash['id']
-		self.text = _hash['quote'].lower()
-		self.score = int(_hash['popularity'])
-
-	def __str__(self):
-		return """#{id}: {url} ({score})""".format(
-			id=self.id,
-			score=self.score,
-			url="{base_url}?{id}".format(
-				base_url=_BASE_URL,
-				id=self.id,
-				)
-			)
+BASE_URL = 'http://qdb2.lutro.me'
 
 
-class Quotes:
-	_max_results = 5  # Max returned quotes.
-	_last_update = None
-	_quotes = None
+def _search_for_quote(quote):
+	if isinstance(quote, int):
+		url = BASE_URL+'/'+str(quote)
+		single = True
+	else:
+		url = BASE_URL+'?'+urllib.parse.urlencode({'s': str(quote)})
+		single = False
 
-	def __init__(self):
-		self._quotes = []
-		self.update()
+	try:
+		request = urllib.request.Request(url)
+		request.add_header('Accept', 'application/json')
+		response = urllib.request.urlopen(request, timeout=2)
+		content = response.read().decode()
+	except (urllib.error.URLError, socket.timeout):
+		return 'HTTP error, try again!'
 
+	data = json.loads(content)
 
-	def update(self):
-		"""Fetches and sorts our quoties."""
-		log.info('Fetching quotes from {url}'.format(url=_JSON_URL))
-		try:
-			response = urllib.request.urlopen(_JSON_URL, timeout=2)
-		except URLError:
-			return
-		json_quotes = json.loads(response.read().decode('utf-8'))
-		quotes = [Quote(data) for data in json_quotes]
-		self._last_update = datetime.now()
-		self._quotes = self.order(quotes)
+	if single:
+		quote = data['quote']
+	else:
+		quotes = data['quotes']['items']
+		if len(quotes) < 1:
+			return 'No quotes found!'
+		quote = quotes[0]
 
+	url = BASE_URL+'/'+str(quote['id'])
+	body = quote['body'].replace('\n', ' ').replace('\t', ' ')
+	if (len(body) > 100):
+		body = body[:97] + '...'
 
-	def search(self, string):
-		"""List of quotes matching search string."""
-		if not self._quotes or datetime.now() - self._last_update > timedelta(minutes=30):
-			self.update()
-		matches = []
-		for quote in self._quotes:
-			if string in quote.text and len(matches) < self._max_results:
-				matches.append(quote)
-		return matches
-
-
-	def order(self, quotes):
-		"""Reverse ordered quotes by score."""
-		return sorted(quotes, key=operator.attrgetter('score'), reverse=True)
+	return url + ' - ' + body
 
 
 class RedditeuQdbPlugin(ircbot.plugin.Plugin):
-	def __init__(self, bot, channel):
-		super().__init__(bot, channel)
-		self.quotes = Quotes()
-
 	@ircbot.plugin.command('qdb')
-	def qdb_search_cmd(self, msg):
-		if len(msg.args) < 1:
-			return None
+	def search(self, cmd):
+		if len(cmd.args) < 1:
+			return
 
-		search_string = ' '.join(msg.args).lower()
-		quotes = self.quotes.search(search_string)
-		if quotes:
-			return ', '.join([str(quote) for quote in quotes])
+		if cmd.args[0][0] == '#':
+			arg = int(cmd.args[0][1:])
 		else:
-			return "Nothing found matching those deets."
+			arg = ' '.join(cmd.args)
+
+		return _search_for_quote(arg)
