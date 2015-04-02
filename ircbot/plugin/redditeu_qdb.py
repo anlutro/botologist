@@ -40,7 +40,7 @@ def _search_for_quote(quote):
 		quote = quotes[0]
 
 	url = BASE_URL+'/'+str(quote['id'])
-	body = quote['body'].replace('\n', ' ').replace('\t', ' ')
+	body = quote['body'].replace('\r', '').replace('\n', ' ').replace('\t', ' ')
 	if (len(body) > 100):
 		body = body[:97] + '...'
 
