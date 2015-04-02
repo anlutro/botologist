@@ -5,7 +5,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-BASE_URL = 'http://qdb2.lutro.me'
+BASE_URL = 'http://qdb.lutro.me'
 
 
 def _search_for_quote(quote):
