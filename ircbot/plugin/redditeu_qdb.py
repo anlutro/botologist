@@ -13,8 +13,13 @@ def _search_for_quote(quote):
 		url = BASE_URL+'/'+str(quote)
 		single = True
 	else:
-		url = BASE_URL+'?'+urllib.parse.urlencode({'s': str(quote)})
 		single = False
+		if quote == 'random':
+			url = BASE_URL+'/random'
+		elif quote == 'latest':
+			url = BASE_URL
+		else:
+			url = BASE_URL+'?'+urllib.parse.urlencode({'s': str(quote)})
 
 	try:
 		request = urllib.request.Request(url)
