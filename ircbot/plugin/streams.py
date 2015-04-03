@@ -107,7 +107,7 @@ class Stream:
 
 		url = '/'.join(segments[:2])
 
-		return url
+		return url.lower()
 
 
 def _fetch_streams(streams):
