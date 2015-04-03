@@ -189,21 +189,21 @@ def _extract_channel(url, service):
 class StreamCache:
 	def __init__(self):
 		self.initiated = False
-		self._c1 = []
-		self._c2 = []
+		self.new_cache = []
+		self.old_cache = []
 
 	def push(self, streams):
-		assert(isinstance, streams, list)
-		self._c2 = self._c1
-		self._c1 = streams
+		assert isinstance(streams, list)
+		self.old_cache = self.new_cache
+		self.new_cache = streams
 		if not self.initiated:
 			self.initiated = True
 
 	def get_all(self):
-		return set(self._c1 + self._c2)
+		return set(self.new_cache + self.old_cache)
 
 	def __contains__(self, stream):
-		return stream in self._c1 or stream in self._c2
+		return stream in self.new_cache or stream in self.old_cache
 
 
 class StreamManager:

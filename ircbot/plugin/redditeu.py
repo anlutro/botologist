@@ -21,12 +21,15 @@ class YouPornComment():
 			if diff.seconds < (cls.THROTTLE_SECS):
 				log.debug('YouPorn comment less than {secs} seconds old, blocking'.format(
 					secs=cls.THROTTLE_SECS))
-				return None
-		cls._last_fetch = now
+				return False
 
+		cls._last_fetch = now
 		result = cls._get_random(include_url)
+
 		if result:
 			return result
+
+		return None
 
 	@staticmethod
 	def _get_random(include_url=False):
@@ -38,7 +41,7 @@ class YouPornComment():
 
 			result = re.findall('<p class="message">((?:.|\\n)*?)</p>', result)
 
-			if not result:
+			if result is None:
 				log.debug('No comments found in '+response.url)
 				return None
 
