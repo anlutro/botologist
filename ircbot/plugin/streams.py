@@ -247,6 +247,8 @@ class StreamManager:
 		return True
 
 	def find_stream(self, url):
+		url = url.lower()
+
 		if 'twitch.tv' in url or 'hitbox.tv' in url:
 			url = Stream.normalize_url(url)
 
@@ -254,14 +256,21 @@ class StreamManager:
 
 		if not streams:
 			raise StreamNotFoundException('Error: Stream not found: ' + url)
-		elif len(streams) > 1:
+
+		if len(streams) > 1:
 			# if there is an exact match, return that
 			if url in streams:
 				return url
+
+			# try a bit harder to find an exact match
+			exact_streams = [s for s in streams if s.endswith('/' + url)]
+			if len(exact_streams) == 1:
+				return exact_streams[0]
+
 			# else, raise an exception
 			raise AmbiguousStreamException(streams)
-		else:
-			return streams[0]
+
+		return streams[0]
 
 	def del_stream(self, url):
 		url = self.find_stream(url)
