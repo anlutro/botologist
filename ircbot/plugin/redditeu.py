@@ -83,7 +83,7 @@ class Bitcoin:
 
 
 class Raziel:
-	nicks = ('radio', 'brazier', 'easel', 'raIel', 'easiek', 'ramen')
+	nicks = ('radio', 'brazier', 'easel', 'raIel', 'easiek', 'ramen', 'russell')
 
 	@classmethod
 	def get_random_nick(cls):
