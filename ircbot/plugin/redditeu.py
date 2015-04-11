@@ -116,21 +116,6 @@ class RedditeuPlugin(ircbot.plugin.Plugin):
 				return 'Michael is ' + nick
 		return 'Michael not found!'
 
-	@ircbot.plugin.reply
-	def nay_here(self, msg):
-		if 'nay' not in msg.user.nick.lower():
-			return
-
-		# strip all non-standard characters
-		msg_str = ''.join([c for c in msg.message if 32 <= ord(c) <= 122])
-		msg_str = msg_str.lower().strip()
-
-		if 'sup' in msg_str and 'nay here' in msg_str:
-			return 'sup gay here'
-
-		if 'sup' == msg_str or 'yo' == msg_str:
-			return 'gay here'
-
 	@ircbot.plugin.join
 	def welcome(self, user, channel):
 		if 'happy0' in user.nick.lower():
