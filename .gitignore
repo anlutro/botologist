@@ -1,3 +1,4 @@
-virtualenv/
+/.virtualenv/
+/config.yml
 *.pyc
-config.yml
+__pycache__
