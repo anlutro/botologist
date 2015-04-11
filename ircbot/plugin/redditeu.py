@@ -26,10 +26,7 @@ class YouPornComment():
 		cls._last_fetch = now
 		result = cls._get_random(include_url)
 
-		if result:
-			return result
-
-		return None
+		return result
 
 	@staticmethod
 	def _get_random(include_url=False):
@@ -99,10 +96,11 @@ class RedditeuPlugin(ircbot.plugin.Plugin):
 	@ircbot.plugin.command('random')
 	def get_yp_comment(self, cmd):
 		result = YouPornComment.get_random(True)
+		if result is False:
+			return None
+
 		if result:
 			return result
-		elif result is False:
-			return 'Error, try again!'
 		else:
 			return 'No comment found, try again later!'
 
