@@ -13,6 +13,7 @@ url_shorteners = (
 	'https?://is\.gd',
 	'https?://redd\.it',
 	'https?://t\.co',
+	'https?://tinyurl\.com',
 )
 url_shorteners = '|'.join(url_shorteners)
 short_url_regex = re.compile(r'((' + url_shorteners + ')\/[a-zA-Z0-9]+)')
