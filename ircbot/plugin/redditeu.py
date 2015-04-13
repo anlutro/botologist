@@ -38,7 +38,7 @@ class YouPornComment():
 
 			result = re.findall('<p class="message">((?:.|\\n)*?)</p>', result)
 
-			if result is None:
+			if not result:
 				log.debug('No comments found in '+response.url)
 				return None
 
