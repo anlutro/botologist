@@ -2,6 +2,7 @@ from ircbot import log
 
 import socket
 import sys
+import threading
 
 
 def _decode(bytes):
@@ -210,8 +211,11 @@ class Connection:
 		if words[0] == 'PING':
 			self.send('PONG ' + words[1])
 		elif words[0] == 'ERROR':
-			log.error('Reconnecting: ' + msg)
-			self.reconnect()
+			log.warning('Received error message, disconnecting -- ' + msg)
+			self.disconnect()
+			log.info('Reconnecting in 10 seconds')
+			timer = threading.Timer(10, self.connect)
+			timer.start()
 		elif len(words) > 1:
 			if words[1] == '001':
 				# welcome message, lets us know that we're connected
