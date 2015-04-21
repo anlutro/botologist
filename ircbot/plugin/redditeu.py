@@ -11,7 +11,7 @@ import ircbot.plugin
 
 class YouPornComment():
 	_last_fetch = None
-	THROTTLE_SECS = 30
+	THROTTLE_SECS = 15
 
 	@classmethod
 	def get_random(cls, include_url=False):
@@ -25,6 +25,10 @@ class YouPornComment():
 
 		cls._last_fetch = now
 		result = cls._get_random(include_url)
+		# try a 2nd time
+		if not result:
+			log.debug('Retrying')
+			result = cls._get_random(include_url)
 
 		return result
 
