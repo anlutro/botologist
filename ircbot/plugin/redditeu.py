@@ -97,16 +97,15 @@ class RedditeuPlugin(ircbot.plugin.Plugin):
 	def get_btc_worth(self, cmd):
 		return '1 bitcoin is currently worth ' + Bitcoin.get_worth()
 
-	@ircbot.plugin.command('random')
-	def get_yp_comment(self, cmd):
-		result = YouPornComment.get_random(True)
-		if result is False:
-			return None
-
-		if result:
-			return result
-		else:
-			return 'No comment found, try again later!'
+	# @ircbot.plugin.command('random')
+	# def get_yp_comment(self, cmd):
+	# 	result = YouPornComment.get_random(True)
+	# 	if result is False:
+	# 		return None
+	# 	if result:
+	# 		return result
+	# 	else:
+	# 		return 'No comment found, try again later!'
 
 	@ircbot.plugin.command('michael')
 	def who_is_michael(self, cmd):
