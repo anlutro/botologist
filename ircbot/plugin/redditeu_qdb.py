@@ -34,7 +34,9 @@ def _search_for_quote(quote):
 	if single:
 		quote = data['quote']
 	else:
-		quotes = data['quotes']['items']
+		quotes = data['quotes']
+		if 'items' in quotes:
+			quotes = quotes['items']
 		if len(quotes) < 1:
 			return 'No quotes found!'
 		quote = quotes[0]
