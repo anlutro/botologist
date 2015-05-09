@@ -26,7 +26,7 @@ def _get_qlr_elo(nick, modes = None):
 	# have rank 0, it is safe to assume the player does not exist
 	unranked = [mode['rank'] == 0 for mode in data.values() if isinstance(mode, dict)]
 	if all(unranked):
-		return 'Player not found or no games played: ' + data['nick']
+		return 'Player not found or no games played: ' + data.get('nick', 'unknown')
 
 	retval = data['nick']
 
