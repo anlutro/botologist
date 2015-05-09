@@ -133,6 +133,7 @@ class Connection:
 		self._connect()
 
 	def disconnect(self):
+		print('Disconnecting')
 		self.sock.close()
 		self.sock = None
 
@@ -141,6 +142,7 @@ class Connection:
 		self._connect()
 
 	def _connect(self):
+		print('Connecting')
 		addrinfo = socket.getaddrinfo(
 			self.server.host, self.server.port,
 			socket.AF_UNSPEC, socket.SOCK_STREAM
@@ -169,6 +171,7 @@ class Connection:
 		if self.sock is None:
 			raise OSError('Could not open socket')
 
+		print('Connected!')
 		self.send('NICK ' + self.nick)
 		self.send('USER ' + self.username + ' 0 * :' + self.realname)
 		self.loop()
@@ -196,7 +199,6 @@ class Connection:
 
 			for msg in text.split('\r\n'):
 				if msg:
-					print('<- ' + msg)
 					log.debug(repr(msg))
 					self.handle_msg(msg)
 
@@ -274,14 +276,11 @@ class Connection:
 	def send(self, msg):
 		if len(msg) > self.MAX_MSG_CHARS:
 			msg = msg[:(self.MAX_MSG_CHARS - 3)] + '...'
-			print('-> ' + msg + ' (TRUNCATED)')
-		else:
-			print('-> ' + msg)
 
 		self.sock.send(str.encode(msg + '\r\n'))
 
 	def quit(self, reason='Leaving'):
-		print('** Quitting!')
+		print('Quitting!')
 		self.send('QUIT :' + reason)
 		self.disconnect()
 
