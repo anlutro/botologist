@@ -23,7 +23,7 @@ def run_bot(storage_dir, yml_config):
 	log_level = logging.INFO
 	if 'log_level' in cfg:
 		log_level = getattr(logging, cfg.get('log_level').upper())
-	_configure_logging(log_level)
+	_configure_logging(log_level, cfg.get('log_path'))
 
 	# initialize the bot object
 	bot = ircbot.bot.Bot(
@@ -39,13 +39,15 @@ def run_bot(storage_dir, yml_config):
 	bot.run_forever()
 
 
-def _configure_logging(log_level):
+def _configure_logging(log_level, log_path=None):
 	# set the level
 	root = logging.getLogger()
 	root.setLevel(log_level)
 
-	# add a handler that prints to stdout
-	ch = logging.StreamHandler(sys.stdout)
+	if log_path is None:
+		ch = logging.StreamHandler(sys.stdout)
+	else:
+		ch = logging.StreamHandler(log_path)
 	ch.setLevel(log_level)
 
 	# define the logging format
