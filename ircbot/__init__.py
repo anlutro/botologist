@@ -47,7 +47,7 @@ def _configure_logging(log_level, log_path=None):
 	if log_path is None:
 		ch = logging.StreamHandler(sys.stdout)
 	else:
-		ch = logging.StreamHandler(log_path)
+		ch = logging.RotatingFileHandler(log_path, maxBytes=(1048576*5), backupCount=7)
 	ch.setLevel(log_level)
 
 	# define the logging format
