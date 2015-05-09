@@ -1,3 +1,3 @@
 #!/bin/bash
-source .virtualenv/bin/activate && ./run.py
-
+dir=$(dirname $(readlink -f $0))
+source $dir/.virtualenv/bin/activate && $dir/run.py
