@@ -331,19 +331,23 @@ class StreamManager:
 			streams = _fetch_streams(self.streams)
 		except (urllib.error.URLError, socket.timeout):
 			log.warning('Could not fetch new online streams!')
-			return 'Could not fetch online streams, try again in {} seconds'.format(self.THROTTLE)
+			return False
 
 		diff = []
+
 		if self._cached_streams.initiated:
 			cached_stream_urls = [stream.url for stream in self._cached_streams.get_all()
 				if not stream.is_rebroadcast]
-			diff = [stream for stream in streams if stream.url not in cached_stream_urls]
+			diff = [stream for stream in streams
+				if stream.url not in cached_stream_urls
+				and not stream.is_rebroadcast]
 			log.debug('Cached streams: {cached} - Online streams: {online} - Diff: {diff}'.format(
 				cached=len(cached_stream_urls), online=len(streams), diff=len(diff)))
+
 		self._cached_streams.push(streams)
 		self._last_fetch = datetime.datetime.now()
 
-		return [stream for stream in diff if not stream.is_rebroadcast]
+		return diff
 
 
 class StreamsPlugin(ircbot.plugin.Plugin):
@@ -415,6 +419,7 @@ class StreamsPlugin(ircbot.plugin.Plugin):
 			s = stream.full_url
 			if stream.is_rebroadcast:
 				s += ' (re)'
+			stream_strings.append(s)
 
 		return ' - '.join(stream_strings)
 
