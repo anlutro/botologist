@@ -54,6 +54,8 @@ class Stream:
 		self.url = url
 		self.full_url = 'http://' + url
 		self.title = re.sub(r'\n', ' ', str(title))
+		title_lower = self.title.lower()
+		self.is_rebroadcast = '[re]' in title_lower or 'rebroadcast' in title_lower
 
 	def __eq__(self, other):
 		if isinstance(other, self.__class__):
@@ -404,14 +406,21 @@ class StreamsPlugin(ircbot.plugin.Plugin):
 	@ircbot.plugin.command('streams')
 	def list_streams_cmd(self, msg):
 		streams = self.streams.get_online_streams()
-		if streams:
-			return ' - '.join([s.full_url for s in streams])
-		else:
+		if not streams:
 			return 'No streams online!'
+
+		stream_strings = []
+		for stream in streams:
+			s = stream.full_url
+			if stream.is_rebroadcast:
+				s += ' (re)'
+
+		return ' - '.join(stream_strings)
 
 	@ircbot.plugin.ticker
 	def check_new_streams_tick(self):
 		streams = self.streams.get_new_online_streams()
+
 		if not streams:
 			log.debug('No new online streams')
 			return None
@@ -419,6 +428,9 @@ class StreamsPlugin(ircbot.plugin.Plugin):
 		retval = []
 
 		for stream in streams:
+			if stream.is_rebroadcast:
+				continue
+
 			highlights = []
 			for user, subs in self.streams.subs.items():
 				if stream.url in subs:
