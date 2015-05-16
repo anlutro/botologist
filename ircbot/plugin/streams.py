@@ -335,14 +335,15 @@ class StreamManager:
 
 		diff = []
 		if self._cached_streams.initiated:
-			cached_stream_urls = [stream.url for stream in self._cached_streams.get_all()]
+			cached_stream_urls = [stream.url for stream in self._cached_streams.get_all()
+				if not stream.is_rebroadcast]
 			diff = [stream for stream in streams if stream.url not in cached_stream_urls]
 			log.debug('Cached streams: {cached} - Online streams: {online} - Diff: {diff}'.format(
 				cached=len(cached_stream_urls), online=len(streams), diff=len(diff)))
 		self._cached_streams.push(streams)
 		self._last_fetch = datetime.datetime.now()
 
-		return diff
+		return [stream for stream in diff if not stream.is_rebroadcast]
 
 
 class StreamsPlugin(ircbot.plugin.Plugin):
