@@ -333,7 +333,9 @@ class StreamManager:
 			log.warning('Could not fetch new online streams!')
 			return 'Could not fetch online streams, try again in {} seconds'.format(self.THROTTLE)
 
+		streams = [s for s in streams if not s.is_rebroadcast]
 		diff = []
+
 		if self._cached_streams.initiated:
 			cached_stream_urls = [stream.url for stream in self._cached_streams.get_all()]
 			diff = [stream for stream in streams if stream.url not in cached_stream_urls]
