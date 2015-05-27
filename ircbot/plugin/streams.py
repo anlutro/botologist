@@ -54,8 +54,12 @@ class Stream:
 		self.url = url
 		self.full_url = 'http://' + url
 		self.title = re.sub(r'\n', ' ', str(title))
+
 		title_lower = self.title.lower()
-		self.is_rebroadcast = '[re]' in title_lower or 'rebroadcast' in title_lower
+		self.is_rebroadcast = any([
+			'[re]' in title_lower or 'rebroadcast' in title_lower,
+			url == 'twitch.tv/gsl' and not title,
+		])
 
 	def __eq__(self, other):
 		if isinstance(other, self.__class__):
