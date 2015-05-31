@@ -28,3 +28,24 @@ class StreamTest(unittest.TestCase):
 		self.assertEqual('twitch.tv/foobar', Stream.normalize_url('http://twitch.tv/foobar/'))
 		self.assertEqual('twitch.tv/foobar', Stream.normalize_url('http://twitch.tv/foobar/asdf'))
 		self.assertEqual('twitch.tv/foobar', Stream.normalize_url('https://twitch.tv/foobar'))
+
+	def test_is_rebroadcast(self):
+		data = {'channel': {'name': 'foobar', 'status': 'asdf'}}
+		s = Stream.from_twitch_data(data)
+		self.assertEqual(False, s.is_rebroadcast)
+
+		data = {'channel': {'name': 'foobar', 'status': 'asdf rebroadcast asdf'}}
+		s = Stream.from_twitch_data(data)
+		self.assertEqual(True, s.is_rebroadcast)
+
+		data = {'channel': {'name': 'foobar', 'status': '[re] asdf'}}
+		s = Stream.from_twitch_data(data)
+		self.assertEqual(True, s.is_rebroadcast)
+
+		data = {'channel': {'name': 'gsl', 'status': 'asdf'}}
+		s = Stream.from_twitch_data(data)
+		self.assertEqual(False, s.is_rebroadcast)
+
+		data = {'channel': {'name': 'gsl', 'status': ''}}
+		s = Stream.from_twitch_data(data)
+		self.assertEqual(True, s.is_rebroadcast)

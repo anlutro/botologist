@@ -56,10 +56,12 @@ class Stream:
 		self.title = re.sub(r'\n', ' ', str(title))
 
 		title_lower = self.title.lower()
-		self.is_rebroadcast = any([
-			'[re]' in title_lower or 'rebroadcast' in title_lower,
-			url == 'twitch.tv/gsl' and not title,
-		])
+		if '[re]' in title_lower or 'rebroadcast' in title_lower:
+			self.is_rebroadcast = True
+		elif url == 'twitch.tv/gsl' and not title:
+			self.is_rebroadcast = True
+		else:
+			self.is_rebroadcast = False
 
 	def __eq__(self, other):
 		if isinstance(other, self.__class__):
