@@ -58,7 +58,7 @@ class Stream:
 		title_lower = self.title.lower()
 		if '[re]' in title_lower or 'rebroadcast' in title_lower:
 			self.is_rebroadcast = True
-		elif url == 'twitch.tv/gsl' and not title:
+		elif (url == 'twitch.tv/gsl' or url == 'twitch.tv/wcs') and not title:
 			self.is_rebroadcast = True
 		else:
 			self.is_rebroadcast = False

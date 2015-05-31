@@ -49,3 +49,11 @@ class StreamTest(unittest.TestCase):
 		data = {'channel': {'name': 'gsl', 'status': ''}}
 		s = Stream.from_twitch_data(data)
 		self.assertEqual(True, s.is_rebroadcast)
+
+		data = {'channel': {'name': 'wcs', 'status': 'asdf'}}
+		s = Stream.from_twitch_data(data)
+		self.assertEqual(False, s.is_rebroadcast)
+
+		data = {'channel': {'name': 'wcs', 'status': ''}}
+		s = Stream.from_twitch_data(data)
+		self.assertEqual(True, s.is_rebroadcast)
