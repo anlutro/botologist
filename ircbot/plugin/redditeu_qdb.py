@@ -43,7 +43,7 @@ def _search_for_quote(quote):
 
 	url = BASE_URL+'/'+str(quote['id'])
 	body = quote['body'].replace('\r', '').replace('\n', ' ').replace('\t', ' ')
-	if (len(body) > 100):
+	if (len(body) > 160):
 		body = body[:97] + '...'
 
 	return url + ' - ' + body
