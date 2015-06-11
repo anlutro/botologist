@@ -31,6 +31,18 @@ class Raziel:
 		return random.choice(cls.nicks)
 
 
+def get_random_time():
+	h = random.randint(13,32)
+
+	if h < 24:
+		m = random.randint(0,59)
+		ampm = random.choice(('AM', 'PM'))
+		return '{}:{} {}'.format(h, str(m).zfill(2), ampm)
+
+	m = random.randint(60,99)
+	return '{}:{}'.format(h, m)
+
+
 class RedditeuPlugin(ircbot.plugin.Plugin):
 	"""#redditeu plugin."""
 	@ircbot.plugin.command('btc')
@@ -46,6 +58,10 @@ class RedditeuPlugin(ircbot.plugin.Plugin):
 			if 'nevzetz' in host or 'ip51cc146b.speed.planet.nl' in host:
 				return 'Michael is ' + nick
 		return 'Michael not found!'
+
+	@ircbot.plugin.command('time')
+	def the_time(self, cmd):
+		return 'the time is ' + get_random_time()
 
 	@ircbot.plugin.join
 	def welcome(self, user, channel):
