@@ -43,9 +43,9 @@ def _search_for_quote(quote):
 		quote = quotes[0]
 
 	url = BASE_URL+'/'+str(quote['id'])
-	body = quote['body']
 
-	if len(body) > 160:
+	if len(quote['body']) > 160:
+		body = quote['body']
 		if not single:
 			substr_pos = body.lower().index(search.lower())
 			start = body.rfind('\n', 0, substr_pos) + 1
@@ -56,13 +56,15 @@ def _search_for_quote(quote):
 			end = 100
 
 		body = body.replace('\r', '').replace('\n', ' ').replace('\t', ' ')
+		excerpt = body[start:end]
 
 		if start > 0:
-			body = '[...] ' + body[start:end] + ' [...]'
-		else:
-			body = body[start:end] + ' [...]'
+			excerpt = '[...] ' + excerpt
+		if end < len(quote['body']):
+			excerpt = excerpt + ' [...]'
+		body = excerpt
 	else:
-		body = body.replace('\r', '').replace('\n', ' ').replace('\t', ' ')
+		body = quote['body'].replace('\r', '').replace('\n', ' ').replace('\t', ' ')
 
 	return url + ' - ' + body
 
