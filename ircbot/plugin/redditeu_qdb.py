@@ -51,8 +51,8 @@ def _search_for_quote(quote):
 			try:
 				substr_pos = body.lower().index(search.lower())
 				start = body.rfind('\n', 0, substr_pos) + 1
-				start = max(start, substr_pos - 70)
-				end = start + 100 - len(search)
+				start = max(start, substr_pos - 100)
+				end = start + 150 - len(search)
 			except ValueError:
 				start = 0
 				end = 100
