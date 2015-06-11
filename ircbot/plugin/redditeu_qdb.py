@@ -11,15 +11,16 @@ BASE_URL = 'http://qdb.lutro.me'
 def _search_for_quote(quote):
 	if isinstance(quote, int):
 		url = BASE_URL+'/'+str(quote)
-		single = True
+		single_quote = True
 	else:
-		search = str(quote)
-		single = False
+		single_quote = False
+		search = False
 		if quote == 'random':
 			url = BASE_URL+'/random'
 		elif quote == 'latest':
 			url = BASE_URL
 		else:
+			search = str(quote)
 			url = BASE_URL+'?'+urllib.parse.urlencode({'s': search})
 
 	try:
@@ -32,7 +33,7 @@ def _search_for_quote(quote):
 
 	data = json.loads(content)
 
-	if single:
+	if single_quote:
 		quote = data['quote']
 	else:
 		quotes = data['quotes']
@@ -46,11 +47,15 @@ def _search_for_quote(quote):
 
 	if len(quote['body']) > 160:
 		body = quote['body']
-		if not single:
-			substr_pos = body.lower().index(search.lower())
-			start = body.rfind('\n', 0, substr_pos) + 1
-			start = max(start, substr_pos - 70)
-			end = start + 100 - len(search)
+		if search:
+			try:
+				substr_pos = body.lower().index(search.lower())
+				start = body.rfind('\n', 0, substr_pos) + 1
+				start = max(start, substr_pos - 70)
+				end = start + 100 - len(search)
+			except ValueError:
+				start = 0
+				end = 100
 		else:
 			start = 0
 			end = 100
