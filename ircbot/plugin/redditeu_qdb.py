@@ -43,21 +43,26 @@ def _search_for_quote(quote):
 		quote = quotes[0]
 
 	url = BASE_URL+'/'+str(quote['id'])
-	body = quote['body'].replace('\r', '').replace('\n', ' ').replace('\t', ' ')
+	body = quote['body']
 
 	if len(body) > 160:
 		if not single:
-			start = body.rfind('<', 0, body.index(search))
-			start = max(start, body.index(search) - 70)
+			substr_pos = body.lower().index(search.lower())
+			start = body.rfind('\n', 0, substr_pos) + 1
+			start = max(start, substr_pos - 70)
 			end = start + 100 - len(search)
 		else:
 			start = 0
 			end = 100
 
+		body = body.replace('\r', '').replace('\n', ' ').replace('\t', ' ')
+
 		if start > 0:
 			body = '[...] ' + body[start:end] + ' [...]'
 		else:
 			body = body[start:end] + ' [...]'
+	else:
+		body = body.replace('\r', '').replace('\n', ' ').replace('\t', ' ')
 
 	return url + ' - ' + body
 
