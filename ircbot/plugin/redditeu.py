@@ -1,68 +1,7 @@
-import datetime
 import random
-import re
-import socket
-import urllib.error
-import urllib.request
 
 from ircbot import log
 import ircbot.plugin
-
-
-class YouPornComment():
-	_last_fetch = None
-	THROTTLE_SECS = 15
-
-	@classmethod
-	def get_random(cls, include_url=False):
-		now = datetime.datetime.now()
-		if cls._last_fetch is not None:
-			diff = now - cls._last_fetch
-			if diff.seconds < (cls.THROTTLE_SECS):
-				log.debug('YouPorn comment less than {secs} seconds old, blocking'.format(
-					secs=cls.THROTTLE_SECS))
-				return False
-
-		cls._last_fetch = now
-		result = cls._get_random(include_url)
-		# try a 2nd time
-		if not result:
-			log.debug('Retrying')
-			result = cls._get_random(include_url)
-
-		return result
-
-	@staticmethod
-	def _get_random(include_url=False):
-		try:
-			response = urllib.request.urlopen('http://www.youporn.com/random/video/',
-				timeout=2)
-			result = response.read().decode()
-			response.close()
-
-			result = re.findall('<p class="message">((?:.|\\n)*?)</p>', result)
-
-			if not result:
-				log.debug('No comments found in '+response.url)
-				return None
-
-			result = random.choice(result).strip().replace('\r', '').replace('\n', ' ')
-
-			if ' ' not in result and '+' in result:
-				result = result.replace('+', ' ')
-
-			if include_url:
-				# remove the long slug at the end of the URL
-				url = '/'.join(response.url.split('/')[:-2])
-
-				result = result + ' (' + url + ')'
-
-			return result
-		except (socket.timeout, urllib.error.URLError, UnicodeDecodeError):
-			log.debug('HTTP request failed')
-			pass
-
-		return None
 
 
 class Bitcoin:
@@ -97,16 +36,6 @@ class RedditeuPlugin(ircbot.plugin.Plugin):
 	@ircbot.plugin.command('btc')
 	def get_btc_worth(self, cmd):
 		return '1 bitcoin is currently worth ' + Bitcoin.get_worth()
-
-	# @ircbot.plugin.command('random')
-	# def get_yp_comment(self, cmd):
-	# 	result = YouPornComment.get_random(True)
-	# 	if result is False:
-	# 		return None
-	# 	if result:
-	# 		return result
-	# 	else:
-	# 		return 'No comment found, try again later!'
 
 	@ircbot.plugin.command('michael')
 	def who_is_michael(self, cmd):
