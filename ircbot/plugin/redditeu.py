@@ -32,15 +32,16 @@ class Raziel:
 
 
 def get_random_time():
-	h = random.randint(13,32)
+	h = random.choice((
+		random.randint(-23, -1),
+		random.randint(13, 32),
+	))
 
-	if h < 24:
-		m = random.randint(0,59)
-		ampm = random.choice(('AM', 'PM'))
-		return '{}:{} {}'.format(h, str(m).zfill(2), ampm)
+	m = random.randint(0,99)
 
-	m = random.randint(60,99)
-	return '{}:{}'.format(h, m)
+	ampm = random.choice(('AM', 'PM'))
+
+	return '{}:{} {}'.format(h, str(m).zfill(2), ampm)
 
 
 class RedditeuPlugin(ircbot.plugin.Plugin):
