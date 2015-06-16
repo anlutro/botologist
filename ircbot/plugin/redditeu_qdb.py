@@ -9,12 +9,12 @@ BASE_URL = 'http://qdb.lutro.me'
 
 
 def _search_for_quote(quote):
+	search = False
 	if isinstance(quote, int):
 		url = BASE_URL+'/'+str(quote)
 		single_quote = True
 	else:
 		single_quote = False
-		search = False
 		if quote == 'random':
 			url = BASE_URL+'/random'
 		elif quote == 'latest':
