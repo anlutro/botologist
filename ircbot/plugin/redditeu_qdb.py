@@ -49,9 +49,15 @@ def _search_for_quote(quote):
 		body = quote['body']
 		if search:
 			try:
+				body_len = len(body)
 				substr_pos = body.lower().index(search.lower())
 				start = body.rfind('\n', 0, substr_pos) + 1
-				start = max(start, substr_pos - 100)
+				while body_len - start < 100:
+					substr_pos = body.rfind('\n', 0, start - 1) + 1
+					if body_len - substr_pos < 100:
+						start = substr_pos
+					else:
+						break
 				end = start + 150 - len(search)
 			except ValueError:
 				start = 0
