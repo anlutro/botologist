@@ -87,7 +87,10 @@ class RedditeuQdbPlugin(ircbot.plugin.Plugin):
 			return
 
 		if cmd.args[0][0] == '#':
-			arg = int(cmd.args[0][1:])
+			try: 
+				arg = int(cmd.args[0][1:])
+		    except ValueError:
+		        arg = ' '.join(cmd.args)
 		else:
 			arg = ' '.join(cmd.args)
 
