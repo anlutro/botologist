@@ -404,6 +404,8 @@ class StreamsPlugin(ircbot.plugin.Plugin):
 	@ircbot.plugin.command('sub')
 	@error_prone
 	def subscribe_stream_cmd(self, msg):
+		if 'irccloud' in msg.user.host:
+			return 'irccloud users cannot subscribe! try /mode {} +x'.format(msg.user.nick)
 		if len(msg.args) < 1:
 			streams = self.streams.get_subscriptions(msg.user.host)
 			if streams:
