@@ -3,10 +3,11 @@ import ircbot.irc
 import ircbot.bot
 
 
-def command(command):
+def command(command, threaded=False):
 	"""Plugin command decorator."""
 	def wrapper(func):
 		func._command = command
+		func._is_threaded = threaded
 		return func
 	return wrapper
 

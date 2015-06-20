@@ -121,8 +121,8 @@ class Bot(ircbot.irc.Client):
 		# iterate through join callbacks. the first, if any, to return a
 		# non-empty value, will be sent back to the channel as a response.
 		response = None
-		for callback in channel.joins:
-			response = callback(user, channel)
+		for join_func in channel.joins:
+			response = join_func(user, channel)
 			if response:
 				self._send_msg(response, channel.channel)
 				return
@@ -148,23 +148,40 @@ class Bot(ircbot.irc.Client):
 		response = None
 
 		if message.message.startswith(self.CMD_PREFIX):
-			# if the message starts with the command prefix, check for mathing
-			# command and fire its callback
-			cmd_string = message.words[0][1:].lower()
-			log.debug('Message starts with command prefix')
-			if cmd_string in channel.commands:
-				log.debug('Message is a channel registered command: {cmd}'.format(
-					cmd=cmd_string))
-				callback = channel.commands[cmd_string]
-				response = self._call_command(callback, message)
-		else:
-			# otherwise, call the channel's repliers
-			response = self._call_repliers(channel.replies, message)
+			return self._handle_command(message, channel)
+
+		# otherwise, call the channel's repliers
+		response = self._call_repliers(channel.replies, message)
 
 		if response:
 			self._send_msg(response, message.target)
 
-	def _call_command(self, callback, message):
+	def _handle_command(self, message, channel):
+		# if the message starts with the command prefix, check for mathing
+		# command and fire its callback
+		cmd_string = message.words[0][1:].lower()
+		log.debug('Message starts with command prefix')
+
+		if not cmd_string in channel.commands:
+			return
+
+		log.debug('Message is a channel registered command: {cmd}'.format(
+			cmd=cmd_string))
+		command_func = channel.commands[cmd_string]
+
+		if command_func._is_threaded:
+			thread = threading.Thread(target=self._maybe_send_cmd_reply,
+				args=(command_func, message))
+			thread.start()
+		else:
+			self._maybe_send_cmd_reply(command_func, message)
+
+	def _maybe_send_cmd_reply(self, command_func, message):
+		response = self._call_command(command_func, message)
+		if response:
+			self._send_msg(response, message.target)
+
+	def _call_command(self, command_func, message):
 		# turn the Message into a CommandMessage
 		command = CommandMessage(message)
 
@@ -184,14 +201,14 @@ class Bot(ircbot.irc.Client):
 		self._last_command = (command.user.host, command.command, command.args)
 		self._command_log[command.command] = now
 
-		return callback(command)
+		return command_func(command)
 
 	def _call_repliers(self, replies, message):
 		now = datetime.datetime.now()
 
 		# iterate through reply callbacks
-		for callback in replies:
-			reply = callback(message)
+		for reply_func in replies:
+			reply = reply_func(message)
 			if not reply:
 				continue
 
