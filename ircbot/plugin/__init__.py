@@ -15,7 +15,7 @@ def command(command, threaded=False):
 def reply(threaded=False):
 	"""Plugin reply decorator."""
 	def wrapper(func):
-		func._is_reply = true
+		func._is_reply = True
 		func._is_threaded = threaded
 		return func
 	return wrapper
