@@ -430,7 +430,7 @@ class StreamsPlugin(ircbot.plugin.Plugin):
 		else:
 			return 'You are not subscribed to that stream.'
 
-	@ircbot.plugin.command('streams')
+	@ircbot.plugin.command('streams', threaded=True)
 	def list_streams_cmd(self, msg):
 		streams = self.streams.get_online_streams()
 		if not streams:

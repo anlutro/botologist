@@ -14,7 +14,7 @@ class TwitterPlugin(ircbot.plugin.Plugin):
 		self.api = None
 		self.last_fetch = None
 
-	@ircbot.plugin.reply
+	@ircbot.plugin.reply(threaded=True)
 	def twitter(self, msg):
 		if 'twitter.com/' not in msg.message:
 			return

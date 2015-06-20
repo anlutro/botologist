@@ -12,15 +12,18 @@ def command(command, threaded=False):
 	return wrapper
 
 
+def reply(threaded=False):
+	"""Plugin reply decorator."""
+	def wrapper(func):
+		func._is_reply = true
+		func._is_threaded = threaded
+		return func
+	return wrapper
+
+
 def join(func):
 	"""Plugin join reply decorator."""
 	func._is_join = True
-	return func
-
-
-def reply(func):
-	"""Plugin reply decorator."""
-	func._is_reply = True
 	return func
 
 
