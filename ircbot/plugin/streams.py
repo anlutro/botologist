@@ -236,14 +236,15 @@ class StreamManager:
 
 	def _repair_subs_file(self):
 		changed = False
+		new_subs = {}
 		for host, subs in self.subs.items():
-			if not '@' in host:
-				continue
-			new_host = host[host.index('@')+1:]
-			del self.subs[host]
-			self.subs[new_host] = subs
-			changed = True
+			if '@' in host:
+				host = host[host.index('@')+1:]
+				changed = True
+			new_subs[host] = subs
+
 		if changed:
+			self.subs = new_subs
 			self._write()
 
 	def _write(self):
