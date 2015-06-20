@@ -232,6 +232,19 @@ class StreamManager:
 			data = json.loads(f.read())
 		self.streams = data.get('streams', [])
 		self.subs = data.get('subscriptions', {})
+		self._repair_subs_file()
+
+	def _repair_subs_file(self):
+		changed = False
+		for host, subs in self.subs.items():
+			if not '@' in host:
+				continue
+			new_host = host[host.index('@')+1:]
+			del self.subs[host]
+			self.subs[new_host] = subs
+			changed = True
+		if changed:
+			self._write()
 
 	def _write(self):
 		data = {'streams': self.streams, 'subscriptions': self.subs}

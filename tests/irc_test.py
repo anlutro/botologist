@@ -60,9 +60,10 @@ class IrcChannelTest(unittest.TestCase):
 
 class IrcUserTest(unittest.TestCase):
 	def test_strips_tilde(self):
-		user = User('foo_bar', '~foo@bar.baz')
+		user = User('foo_bar', '@bar.baz', '~foo')
 		self.assertEqual('foo_bar', user.nick)
-		self.assertEqual('foo@bar.baz', user.host)
+		self.assertEqual('bar.baz', user.host)
+		self.assertEqual('foo', user.ident)
 
 	def test_from_ircformat(self):
 		strings = (
@@ -72,7 +73,8 @@ class IrcUserTest(unittest.TestCase):
 		for string in strings:
 			user = User.from_ircformat('foo_bar!~foo@bar.baz')
 			self.assertEqual('foo_bar', user.nick)
-			self.assertEqual('foo@bar.baz', user.host)
+			self.assertEqual('bar.baz', user.host)
+			self.assertEqual('foo', user.ident)
 
 
 class IrcMessageTest(unittest.TestCase):

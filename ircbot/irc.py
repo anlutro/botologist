@@ -22,11 +22,14 @@ def _decode(bytes):
 
 
 class User:
-	def __init__(self, nick, host = None):
+	def __init__(self, nick, host=None, ident=None):
 		self.nick = nick
-		if host[0] == '~':
-			host = host[1:]
+		if host and '@' in host:
+			host = host[host.index('@')+1:]
 		self.host = host
+		if ident and ident[0] == '~':
+			ident = ident[1:]
+		self.ident = ident
 
 	@classmethod
 	def from_ircformat(cls, string):
@@ -34,10 +37,10 @@ class User:
 			string = string[1:]
 		parts = string.split('!')
 		nick = parts[0]
-		host = parts[1]
-		log.debug('{string} parsed into nick: {nick}, host: {host}'.format(
-			string=string, nick=nick, host=host))
-		return cls(nick, host)
+		ident, host = parts[1].split('@')
+		log.debug('{string} parsed into nick: {nick}, host: {host}, ident: {ident}'.format(
+			string=string, nick=nick, host=host, ident=ident))
+		return cls(nick, host, ident)
 
 
 class Message:
@@ -83,6 +86,8 @@ class Channel:
 		self.nick_map[user.nick] = user.host
 
 	def find_nick_from_host(self, host):
+		if '@' in host:
+			host = host[host.index('@')+1:]
 		if host in self.host_map:
 			return self.host_map[host]
 		return False
@@ -94,6 +99,9 @@ class Channel:
 
 	def remove_user(self, nick=None, host=None):
 		assert nick or host
+
+		if host and '@' in host:
+			host = host[host.index('@')+1:]
 
 		if nick is not None and nick in self.nick_map:
 			host = self.nick_map[nick]
@@ -227,8 +235,8 @@ class Connection:
 			elif words[1] == 'JOIN':
 				user = User.from_ircformat(words[0])
 				channel = words[2]
-				log.debug('User {user} ({host}) joined channel {channel}'.format(
-					user=user.nick, host=user.host, channel=channel))
+				log.debug('User {user} ({ident} @ {host}) joined channel {channel}'.format(
+					user=user.nick, ident=user.ident, host=user.host, channel=channel))
 				self.channels[words[2]].add_user(user)
 				for callback in self.on_join:
 					callback(self.channels[words[2]], user)
