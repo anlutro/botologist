@@ -237,9 +237,21 @@ class Connection:
 				channel = words[2]
 				log.debug('User {user} ({ident} @ {host}) joined channel {channel}'.format(
 					user=user.nick, ident=user.ident, host=user.host, channel=channel))
-				self.channels[words[2]].add_user(user)
-				for callback in self.on_join:
-					callback(self.channels[words[2]], user)
+				if user.nick == self.nick:
+					self.send('WHO '+channel)
+				else:
+					self.channels[words[2]].add_user(user)
+					for callback in self.on_join:
+						callback(self.channels[words[2]], user)
+
+			# response to WHO command
+			elif words[1] == '352':
+				channel = words[3]
+				ident = words[4]
+				host = words[5]
+				nick = words[7]
+				user = User(nick, host, ident)
+				self.channels[channel].add_user(user)
 
 			elif words[1] == 'NICK':
 				user = User.from_ircformat(words[0])
