@@ -282,8 +282,6 @@ class Connection:
 							channel=channel.channel))
 
 			elif words[1] == 'PRIVMSG':
-				if 'exceptiontest' in msg:
-					raise ValueError
 				message = Message.from_privmsg(msg)
 				if not message.is_private and message.user.host not in self.channels[message.target].host_map:
 					log.debug('Unknown user {user} ({host}) added to channel {channel}'.format(
