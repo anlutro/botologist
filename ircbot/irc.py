@@ -38,8 +38,6 @@ class User:
 		parts = string.split('!')
 		nick = parts[0]
 		ident, host = parts[1].split('@')
-		log.debug('{string} parsed into nick: {nick}, host: {host}, ident: {ident}'.format(
-			string=string, nick=nick, host=host, ident=ident))
 		return cls(nick, host, ident)
 
 
@@ -145,9 +143,14 @@ class Connection:
 		self.sock.close()
 		self.sock = None
 
-	def reconnect(self):
+	def reconnect(self, time=None):
 		self.disconnect()
-		self._connect()
+		if time:
+			log.info('Reconnecting in {} seconds'.format(time))
+			timer = threading.Timer(time, self._connect)
+			timer.start()
+		else:
+			self._connect()
 
 	def _connect(self):
 		print('Connecting')
@@ -221,11 +224,8 @@ class Connection:
 		if words[0] == 'PING':
 			self.send('PONG ' + words[1])
 		elif words[0] == 'ERROR':
-			log.warning('Received error message, disconnecting -- ' + msg)
-			self.disconnect()
-			log.info('Reconnecting in 10 seconds')
-			timer = threading.Timer(10, self.connect)
-			timer.start()
+			log.warning('Received error message: ' + msg)
+			self.reconnect(10)
 		elif len(words) > 1:
 			if words[1] == '001':
 				# welcome message, lets us know that we're connected
@@ -282,6 +282,8 @@ class Connection:
 							channel=channel.channel))
 
 			elif words[1] == 'PRIVMSG':
+				if 'exceptiontest' in msg:
+					raise ValueError
 				message = Message.from_privmsg(msg)
 				if not message.is_private and message.user.host not in self.channels[message.target].host_map:
 					log.debug('Unknown user {user} ({host}) added to channel {channel}'.format(
@@ -300,9 +302,8 @@ class Connection:
 		self.sock.send(str.encode(msg + '\r\n'))
 
 	def quit(self, reason='Leaving'):
-		print('Quitting!')
+		print('Quitting gracefully: '+reason)
 		self.send('QUIT :' + reason)
-		self.disconnect()
 
 
 class Client:
