@@ -440,7 +440,7 @@ class StreamsPlugin(ircbot.plugin.Plugin):
 		for stream in streams:
 			s = stream.full_url
 			if stream.is_rebroadcast:
-				s += ' (re)'
+				s += ' [R]'
 			stream_strings.append(s)
 
 		return ' - '.join(stream_strings)
