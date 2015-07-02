@@ -29,12 +29,12 @@ class DefaultPlugin(ircbot.plugin.Plugin):
 	@ircbot.plugin.reply()
 	def return_insults(self, msg):
 		for expr, reply in self.insults:
-			if expr.match(msg.message):
+			if expr.match(msg.message, re.IGNORECASE):
 				return reply.format(nick=msg.user.nick)
 
 	no_work = re.compile(r".*(__)?bot(__)?\s+(no|not|doesn.?t|does not)\s+work.*")
 
 	@ircbot.plugin.reply()
 	def bot_always_works(self, msg):
-		if self.no_work.match(msg.message):
+		if self.no_work.match(msg.message, re.IGNORECASE):
 			return 'I always work'
