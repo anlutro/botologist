@@ -14,7 +14,7 @@ class DefaultPlugin(ircbot.plugin.Plugin):
 			retstr += ' - password: {password}'
 		return retstr.format(**mumble_cfg)
 
-	@ircbot.plugin.reply
+	@ircbot.plugin.reply()
 	def tableflip(self, msg):
 		if '(╯°□°)╯︵ ┻━┻' in msg.message:
 			return '┬─┬ ノ( ゜-゜ノ)'
@@ -26,7 +26,7 @@ class DefaultPlugin(ircbot.plugin.Plugin):
 		'fuck you too {nick}'),
 	)
 
-	@ircbot.plugin.reply
+	@ircbot.plugin.reply()
 	def return_insults(self, msg):
 		for expr, reply in self.insults:
 			if expr.match(msg.message):
@@ -34,7 +34,7 @@ class DefaultPlugin(ircbot.plugin.Plugin):
 
 	no_work = re.compile(r".*(__)?bot(__)?\s+(no|not|doesn.?t|does not)\s+work.*")
 
-	@ircbot.plugin.reply
+	@ircbot.plugin.reply()
 	def bot_always_works(self, msg):
 		if self.no_work.match(msg.message):
 			return 'I always work'

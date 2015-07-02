@@ -40,7 +40,7 @@ def unshorten_url(url):
 
 
 class UrlPlugin(ircbot.plugin.Plugin):
-	@ircbot.plugin.reply
+	@ircbot.plugin.reply()
 	def reply(self, msg):
 		urls = find_shortened_urls(msg.message)
 
