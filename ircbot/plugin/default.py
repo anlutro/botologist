@@ -31,3 +31,9 @@ class DefaultPlugin(ircbot.plugin.Plugin):
 		for expr, reply in self.insults:
 			if expr.match(msg.message):
 				return reply.format(nick=msg.user.nick)
+
+	no_work = re.compile(r".*(__)?bot(__)?\s+(no|not|doesn.?t|does not)\s+work.*")
+
+	@ircbot.plugin.reply
+		if no_work.match(msg.message):
+			return 'I always work'
