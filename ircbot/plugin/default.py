@@ -36,5 +36,5 @@ class DefaultPlugin(ircbot.plugin.Plugin):
 
 	@ircbot.plugin.reply
 	def bot_always_works(self, msg):
-		if no_work.match(msg.message):
+		if self.no_work.match(msg.message):
 			return 'I always work'
