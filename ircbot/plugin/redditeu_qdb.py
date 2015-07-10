@@ -29,7 +29,7 @@ def _search_for_quote(quote):
 		response = urllib.request.urlopen(request, timeout=2)
 		content = response.read().decode()
 	except (urllib.error.URLError, socket.timeout):
-		return 'HTTP error, try again!'
+		return 'HTTP error!'
 
 	data = json.loads(content)
 
