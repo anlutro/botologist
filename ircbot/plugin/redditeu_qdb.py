@@ -21,7 +21,7 @@ def _search_for_quote(quote):
 			url = BASE_URL
 		else:
 			search = str(quote)
-			url = BASE_URL+'?'+urllib.parse.urlencode({'s': search})
+			url = BASE_URL+'/random?'+urllib.parse.urlencode({'s': search})
 
 	try:
 		request = urllib.request.Request(url)
