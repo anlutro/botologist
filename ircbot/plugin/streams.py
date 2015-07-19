@@ -50,6 +50,7 @@ def error_prone(func):
 
 class Stream:
 	rerun_searches = ('[re]', 'rebroadcast', 'rerun')
+	empty_title_rebroadcast = ('twitch.tv/gsl', 'twitch.tv/wcs', 'twitch.tv/esl_sc2')
 
 	def __init__(self, user, url, title=''):
 		self.user = user
@@ -60,7 +61,7 @@ class Stream:
 		title_lower = self.title.lower()
 		if any(s in title_lower for s in self.rerun_searches):
 			self.is_rebroadcast = True
-		elif (url == 'twitch.tv/gsl' or url == 'twitch.tv/wcs') and not title:
+		elif url in self.empty_title_rebroadcast and not title:
 			self.is_rebroadcast = True
 		else:
 			self.is_rebroadcast = False
