@@ -20,7 +20,7 @@ def get_conversion_result(qs):
 
 
 class ConversionPlugin(ircbot.plugin.Plugin):
-	pattern = re.compile(r'([\d.,]+) ([a-zA-Z]+) (into|in|to) ([a-zA-Z]+)')
+	pattern = re.compile(r'([\d.,]+) ?([a-zA-Z]+) (into|in|to) ([a-zA-Z]+)')
 
 	@ircbot.plugin.reply()
 	def convert(self, msg):
