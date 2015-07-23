@@ -8,7 +8,7 @@ import ircbot.plugin
 
 
 def get_conversion_result(qs):
-	url = 'http://api.duckduckgo.com/?q='+qs+'&format=json'
+	url = 'http://api.duckduckgo.com/?q='+qs+'&format=json&no_html=1'
 	try:
 		response = urllib.request.urlopen(url, timeout=2)
 		content = response.read().decode()
