@@ -399,8 +399,10 @@ class StreamsPlugin(ircbot.plugin.Plugin):
 			return None
 		if not msg.user.is_admin:
 			return None
-		if self.streams.del_stream(msg.args[0]):
-			return 'Stream deleted!'
+
+		stream = self.streams.del_stream(msg.args[0])
+		if stream:
+			return 'Stream deleted: {}'.format(stream)
 		else:
 			return '???'
 
