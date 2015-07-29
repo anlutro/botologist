@@ -26,7 +26,6 @@ class ConversionPlugin(ircbot.plugin.Plugin):
 	def convert(self, msg):
 		match = self.pattern.search(msg.message)
 		if not match:
-			print(msg.message)
 			return
 
 		qs = '+'.join(match.groups())
