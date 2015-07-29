@@ -40,6 +40,10 @@ class User:
 		ident, host = parts[1].split('@')
 		return cls(nick, host, ident)
 
+	def __eq__(self, other):
+		if not isinstance(other, self.__class__):
+			return False
+		return other.nick == self.nick and other.host == self.host
 
 class Message:
 	def __init__(self, source, target, message=None):
