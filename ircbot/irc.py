@@ -1,5 +1,6 @@
 from ircbot import log
 
+import signal
 import socket
 import sys
 import threading
@@ -196,18 +197,23 @@ class Connection:
 		while True:
 			try:
 				data = self.sock.recv(4096)
-			except OSError:
+			except OSError as e:
+				log.warning('Exception occured during sock.recv - reconnecting')
+				log.warning(e)
 				self.reconnect()
 				continue
 
 			if data == b'':
+				log.warning('Empty binary data received - reconnecting')
 				self.reconnect()
 
 			# 13 = \r -- 10 = \n
 			while data[-1] != 10 and data[-2] != 13:
 				try:
 					data += self.sock.recv(4096)
-				except OSError:
+				except OSError as e:
+					log.warning('Exception occured during sock.recv - reconnecting')
+					log.warning(e)
 					self.reconnect()
 					continue
 
@@ -326,10 +332,15 @@ class Client:
 			self.conn.join_channel(channel)
 
 	def run_forever(self):
+		# quit more gracefully
+		def sigterm_handler(signo, stack_frame):
+			sys.exit(0)
+		signal.signal(signal.SIGTERM, sigterm_handler)
+
 		try:
 			self.conn.connect(self.server)
-		except KeyboardInterrupt:
-			self.stop('Goodbye!')
+		except (InterruptedError, SystemExit, KeyboardInterrupt):
+			self.stop('Terminating, probably back soon!')
 		except:
 			self.stop('An error occured!')
 			raise
