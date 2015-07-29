@@ -36,6 +36,7 @@ class Channel(ircbot.irc.Channel):
 		self.joins = []
 		self.replies = []
 		self.tickers = []
+		self.admins = []
 
 	def register_plugin(self, plugin):
 		assert isinstance(plugin, ircbot.plugin.Plugin)
@@ -86,11 +87,11 @@ class Bot(ircbot.irc.Client):
 		log.debug('Plugin {name} registered'.format(name=name))
 		self.plugins[name] = plugin
 
-	def add_channel(self, channel, plugins=None):
+	def add_channel(self, channel, plugins=None, admins=None):
 		channel = Channel(channel)
 
 		# channel-specific plugins
-		if plugins is not None:
+		if plugins:
 			assert isinstance(plugins, list)
 			for plugin in plugins:
 				assert isinstance(plugin, str)
@@ -104,6 +105,10 @@ class Bot(ircbot.irc.Client):
 			log.debug('Adding plugin {plugin} to channel {channel}'.format(
 				plugin=plugin, channel=channel.channel))
 			channel.register_plugin(self.plugins[plugin](self, channel))
+
+		if admins:
+			assert isinstance(admins, list)
+			channel.admins = admins
 
 		self.server.channels[channel.channel] = channel
 
@@ -135,7 +140,8 @@ class Bot(ircbot.irc.Client):
 
 		# check if the user is an admin - add it to the message.user object for
 		# later re-use
-		message.user.is_admin = message.user.host in self.admins
+		message.user.is_admin = (message.user.host in self.admins or
+			message.user.host in message.channel.admins)
 
 		# self-explanatory...
 		if message.is_private:

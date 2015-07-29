@@ -71,7 +71,7 @@ def _configure_plugins(bot, plugins_dict):
 
 def _configure_channels(bot, channel_dict):
 	for channel, cfg in channel_dict.items():
-		bot.add_channel(channel, cfg.get('plugins', []))
+		bot.add_channel(channel, cfg.get('plugins', []), cfg.get('admins', []))
 
 
 def main():

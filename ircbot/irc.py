@@ -51,6 +51,7 @@ class Message:
 		self.target = target
 		self.message = message
 		self.words = message.strip().split()
+		self.channel = None
 
 	@classmethod
 	def from_privmsg(cls, msg):
@@ -287,6 +288,8 @@ class Connection:
 
 			elif words[1] == 'PRIVMSG':
 				message = Message.from_privmsg(msg)
+				if not message.is_private:
+					message.channel = self.channels[message.target]
 				if not message.is_private and message.user.host not in self.channels[message.target].host_map:
 					log.debug('Unknown user {user} ({host}) added to channel {channel}'.format(
 						user=message.user.nick, host=message.user.host, channel=message.target))
