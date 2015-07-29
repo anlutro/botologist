@@ -59,7 +59,7 @@ class Bot(ircbot.irc.Client):
 	TICK_INTERVAL = 120
 
 	# spam throttling in seconds
-	SPAM_THROTTLE = 3
+	SPAM_THROTTLE = 2
 
 	def __init__(self, server, admins=None, bans=None, storage_dir=None,
 	             global_plugins=None, **kwargs):
