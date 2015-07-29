@@ -43,7 +43,7 @@ class User:
 	def __eq__(self, other):
 		if not isinstance(other, self.__class__):
 			return False
-		return other.nick == self.nick and other.host == self.host
+		return other.host == self.host
 
 class Message:
 	def __init__(self, source, target, message=None):
