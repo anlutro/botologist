@@ -6,6 +6,7 @@ class KothPlugin(ircbot.plugin.Plugin):
 	def __init__(self, bot, channel):
 		super().__init__(bot, channel)
 		self.is_active = False
+		self.signups_open = False
 		self.queue = None
 
 	@ircbot.plugin.command('koth')
@@ -17,6 +18,8 @@ class KothPlugin(ircbot.plugin.Plugin):
 				return self.start()
 			if cmd.args[0] == 'next':
 				return self.next()
+			if cmd.args[0] == 'close':
+				return self.close()
 			if cmd.args[0] == 'end':
 				return self.end()
 		if cmd.args[0] == 'add':
@@ -27,6 +30,7 @@ class KothPlugin(ircbot.plugin.Plugin):
 	def start(self):
 		self.queue = collections.deque()
 		self.is_active = True
+		self.signups_open = True
 		return 'King of the hill started! Type \x02!koth add\x0F to add yourself!'
 
 	def list(self):
@@ -50,17 +54,29 @@ class KothPlugin(ircbot.plugin.Plugin):
 
 		return 'Last in queue: {} - queue empty!'.format(user.nick)
 
+	def close(self):
+		if not self.is_active:
+			return 'No king of the hill active!'
+		if not self.signups_open:
+			return 'Signups have already been closed!'
+
+		self.signups_open = False
+		return 'Signups closed!'
+
 	def end(self):
 		if not self.is_active:
 			return 'No king of the hill active! Type \x02!koth start\x0F to start one.'
 
 		self.queue = None
 		self.is_active = False
+		self.signups_open = False
 		return 'King of the hill ended, queue cleared!'
 
 	def add(self, user):
 		if not self.is_active:
 			return 'No king of the hill active.'
+		if not self.signups_open:
+			return 'Signups are closed!'
 		if user in self.queue:
 			return 'You are already in the queue!'
 
