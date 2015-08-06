@@ -28,6 +28,9 @@ class KothPlugin(ircbot.plugin.Plugin):
 			return self.remove(cmd.user)
 
 	def start(self):
+		if self.is_active:
+			return 'King of the hill already active!'
+
 		self.queue = collections.deque()
 		self.is_active = True
 		self.signups_open = True
@@ -61,7 +64,7 @@ class KothPlugin(ircbot.plugin.Plugin):
 			return 'Signups have already been closed!'
 
 		self.signups_open = False
-		return 'Signups closed!'
+		return 'Signups are now closed!'
 
 	def end(self):
 		if not self.is_active:

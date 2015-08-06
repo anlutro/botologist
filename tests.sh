@@ -1,9 +1,3 @@
 #!/usr/bin/env bash
 
-tests=''
-
-for file in tests/*.py; do
-	tests="$tests $file"
-done
-
-python3 -m unittest $tests
+python3 -m unittest discover -s tests/ -p '*_test.py'
