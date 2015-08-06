@@ -193,7 +193,7 @@ class Bot(ircbot.irc.Client):
 
 		# check for spam
 		now = datetime.datetime.now()
-		if command.command in self._command_log:
+		if command.command in self._command_log and not message.user.is_admin:
 			diff = now - self._command_log[command.command]
 			if self._last_command == (command.user.host, command.command, command.args):
 				threshold = self.SPAM_THROTTLE * 3
@@ -220,7 +220,7 @@ class Bot(ircbot.irc.Client):
 
 			# throttle spam - prevents the same reply from being sent more than
 			# once in a row within the throttle threshold
-			if reply in self._reply_log:
+			if reply in self._reply_log and not message.user.is_admin:
 				diff = now - self._reply_log[reply]
 				if diff.seconds < self.SPAM_THROTTLE:
 					log.debug('Reply throttled: "{reply}"'.format(reply=reply))
