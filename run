@@ -1,0 +1,12 @@
+#!/bin/sh
+
+dir=$(dirname $(readlink -f $0))
+python=$dir/.virtualenv/bin/python
+
+if [ "$1" = "test" ] || [ "$1" = "tests" ] || [ "$1" = "-t" ]; then
+	$python -m unittest discover -s ./tests/ -p '*_test.py'
+	exit $?
+fi
+
+$python -m ircbot
+exit $?
