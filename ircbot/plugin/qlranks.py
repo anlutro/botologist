@@ -6,6 +6,12 @@ import urllib.error
 import socket
 
 
+def _get_qlr_data(nick):
+	url = 'http://www.qlranks.com/api.aspx?' + urllib.parse.urlencode({'nick':nick})
+	response = urllib.request.urlopen(url, timeout=4)
+	data = response.read().decode()
+	return json.loads(content)['players'][0]
+
 def _get_qlr_elo(nick, modes = None):
 	"""Get someone's QLRanks ELO.
 
@@ -16,13 +22,9 @@ def _get_qlr_elo(nick, modes = None):
 		modes = ('duel',)
 
 	try:
-		url = 'http://www.qlranks.com/api.aspx?' + urllib.parse.urlencode({'nick':nick})
-		response = urllib.request.urlopen(url, timeout=4)
-		content = response.read().decode()
+		data = _get_qlr_data(nick)
 	except (urllib.error.URLError, socket.timeout):
 		return 'HTTP error, try again!'
-
-	data = json.loads(content)['players'][0]
 
 	# qlranks returns rank 0 indicating a player has no rating - if all modes
 	# have rank 0, it is safe to assume the player does not exist

@@ -8,6 +8,13 @@ import urllib.request
 BASE_URL = 'http://qdb.lutro.me'
 
 
+def _get_qdb_data(urllib):
+	request = urllib.request.Request(url)
+	request.add_header('Accept', 'application/json')
+	response = urllib.request.urlopen(request, timeout=2)
+	content = response.read().decode()
+	return json.loads(content)
+
 def _search_for_quote(quote):
 	search = False
 	if isinstance(quote, int):
@@ -24,14 +31,9 @@ def _search_for_quote(quote):
 			url = BASE_URL+'/random?'+urllib.parse.urlencode({'s': search})
 
 	try:
-		request = urllib.request.Request(url)
-		request.add_header('Accept', 'application/json')
-		response = urllib.request.urlopen(request, timeout=2)
-		content = response.read().decode()
+		data = _get_qdb_data(url)
 	except (urllib.error.URLError, socket.timeout):
 		return 'HTTP error!'
-
-	data = json.loads(content)
 
 	if single_quote:
 		quote = data['quote']

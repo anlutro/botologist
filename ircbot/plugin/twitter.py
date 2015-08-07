@@ -27,11 +27,7 @@ class TwitterPlugin(ircbot.plugin.Plugin):
 		if len(parts) < 5 or parts[4] != 'status':
 			return
 
-		if not self.api:
-			self.api = self.make_api()
-
 		return self.get_tweet_text(parts[5])
-		
 
 	def get_tweet_text(self, tweet_id):
 		if self.api is None:
