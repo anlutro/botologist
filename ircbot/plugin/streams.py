@@ -128,6 +128,16 @@ def _fetch_streams(streams):
 	hitbox_streams = _fetch_hitbox([s for s in streams if 'hitbox.tv' in s])
 	return twitch_streams + hitbox_streams
 
+
+def _fetch_twitch_data(channels):
+	url = 'https://api.twitch.tv/kraken/streams?channel=' + ','.join(channels)
+	log.info('Fetching ' + url)
+
+	result = urllib.request.urlopen(url, timeout=2)
+	response = result.read().decode()
+	result.close()
+	return json.loads(response)
+
 def _fetch_twitch(urls):
 	"""From a collection of URLs, get the ones that are live on twitch.tv."""
 	channels = [
@@ -138,13 +148,7 @@ def _fetch_twitch(urls):
 	if not channels:
 		return []
 
-	url = 'https://api.twitch.tv/kraken/streams?channel=' + ','.join(channels)
-	log.info('Fetching ' + url)
-
-	result = urllib.request.urlopen(url, timeout=2)
-	response = result.read().decode()
-	result.close()
-	data = json.loads(response)
+	data = _fetch_twitch_data(channels)
 	log.debug('{streams} online twitch.tv streams'.format(
 		streams=len(data['streams'])))
 
@@ -153,6 +157,19 @@ def _fetch_twitch(urls):
 		for stream in data['streams']
 	]
 
+
+def _fetch_hitbox_data(channels):
+	url = 'http://api.hitbox.tv/media/live/' + ','.join(channels)
+	log.info('Fetching ' + url)
+
+	result = urllib.request.urlopen(url, timeout=2)
+	response = result.read().decode()
+	result.close()
+
+	if response == 'no_media_found':
+		return []
+
+	return json.loads(response)
 
 def _fetch_hitbox(urls):
 	"""From a collection of URLs, get the ones that are live on hitbox.tv."""
@@ -164,17 +181,10 @@ def _fetch_hitbox(urls):
 	if not channels:
 		return []
 
-	url = 'http://api.hitbox.tv/media/live/' + ','.join(channels)
-	log.info('Fetching ' + url)
+	data = _fetch_hitbox_data(channels)
 
-	result = urllib.request.urlopen(url, timeout=2)
-	response = result.read().decode()
-	result.close()
-
-	if response == 'no_media_found':
-		return []
-
-	data = json.loads(response)
+	if not data:
+		return data
 
 	streams = [
 		Stream.from_hitbox_data(stream)

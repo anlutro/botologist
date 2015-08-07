@@ -1,4 +1,6 @@
 import unittest
+import os.path
+
 import ircbot
 import ircbot.irc as irc
 import ircbot.bot as bot
