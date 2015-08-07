@@ -12,7 +12,7 @@ def _get_qlr_data(nick):
 	data = response.read().decode()
 	return json.loads(content)['players'][0]
 
-def _get_qlr_elo(nick, modes = None):
+def _get_qlr_elo(nick, modes=None):
 	"""Get someone's QLRanks ELO.
 
 	nick should be a valid Quake Live nickname. modes should be an iterable
@@ -56,6 +56,10 @@ class QlranksPlugin(ircbot.plugin.Plugin):
 			return
 
 		if len(msg.args) > 1:
-			return _get_qlr_elo(msg.args[0], msg.args[1:])
+			if ',' in msg.args[1]:
+				modes = msg.args[1].split(',')
+			else:
+				modes = msg.args[1:]
+			return _get_qlr_elo(msg.args[0], modes)
 		else:
 			return _get_qlr_elo(msg.args[0])
