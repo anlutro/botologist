@@ -5,4 +5,4 @@ if [ "$1" = "-v" ] || [ "$1" = "--venv" ]; then
 	source $dir/.virtualenv/bin/activate
 fi
 
-python -m ircbot
+python -m unittest discover -s tests/ -p '*_test.py'

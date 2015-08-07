@@ -3,8 +3,6 @@ import logging, logging.handlers
 log = logging.getLogger(__name__)
 
 import importlib
-import os
-import os.path
 import sys
 import yaml
 
@@ -72,22 +70,3 @@ def _configure_plugins(bot, plugins_dict):
 def _configure_channels(bot, channel_dict):
 	for channel, cfg in channel_dict.items():
 		bot.add_channel(channel, cfg.get('plugins', []), cfg.get('admins', []))
-
-
-def main():
-	root = os.getcwd()
-	yml_config = os.path.join(root, 'config.yml')
-	storage_dir = os.path.join(root, 'storage')
-
-	if len(sys.argv) > 1:
-		yml_config = sys.argv[1]
-		if not yml_config.startswith('/'):
-			yml_config = os.path.join(root, yml_config)
-
-	run_bot(
-		yml_config = yml_config,
-		storage_dir = storage_dir
-	)
-
-if __name__ == '__main__':
-	main()
