@@ -1,4 +1,3 @@
-from ircbot import cfg
 from tests.plugin import PluginTestCase
 
 class DefaultPluginTest(PluginTestCase):
@@ -15,6 +14,7 @@ class DefaultPluginTest(PluginTestCase):
 	def test_mumble(self):
 		self.assertEqual(None, self.cmd('mumble'))
 
+		from ircbot import cfg
 		cfg.update({'mumble': {'address': 'localhost', 'port': 1234}})
 		self.assertEqual('Mumble (http://mumble.info) - address: localhost - port: 1234', self.cmd('mumble'))
 

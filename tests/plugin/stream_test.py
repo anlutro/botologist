@@ -1,6 +1,7 @@
 import unittest
+from tests.plugin import PluginTestCase
 
-from ircbot.plugin.streams import Stream, StreamManager
+from ircbot.plugin.streams import Stream
 
 class StreamTest(unittest.TestCase):
 	def test_equals(self):
@@ -57,3 +58,9 @@ class StreamTest(unittest.TestCase):
 		data = {'channel': {'name': 'wcs', 'status': ''}}
 		s = Stream.from_twitch_data(data)
 		self.assertEqual(True, s.is_rebroadcast)
+
+class StreamManagerTest(unittest.TestCase):
+	pass
+
+class StreamPluginTest(unittest.TestCase):
+	pass

@@ -1,4 +1,3 @@
-from ircbot import cfg
 from tests.plugin import PluginTestCase
 
 class RedditeuPluginTest(PluginTestCase):
