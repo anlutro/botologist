@@ -10,6 +10,10 @@ class PluginTestCase(unittest.TestCase):
 		ircbot.cfg.update(self.cfg)
 		self.channel = irc.Channel('#test')
 		self.bot = bot.Bot('localhost:6667')
+		self.plugin = self.create_plugin()
+
+	def create_plugin(self):
+		pass
 
 	def _create_msg(self, message, source=None, is_admin=False):
 		if not isinstance(message, irc.Message):
@@ -31,3 +35,13 @@ class PluginTestCase(unittest.TestCase):
 		command = bot.CommandMessage(message)
 		func = self.plugin.commands[command.command]
 		return func(command)
+
+	def join(self, nick, is_admin=False, channel=None):
+		user = irc.User(nick)
+		user.is_admin = is_admin
+		if channel and not isinstance(channel, irc.Channel):
+			channel = irc.Channel(channel)
+		for join in self.plugin.joins:
+			ret = join(user, channel)
+			if ret:
+				return ret

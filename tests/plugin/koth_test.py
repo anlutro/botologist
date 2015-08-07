@@ -2,10 +2,9 @@ from ircbot import cfg
 from tests.plugin import PluginTestCase
 
 class DefaultPluginTest(PluginTestCase):
-	def setUp(self):
-		super().setUp()
+	def create_plugin(self):
 		import ircbot.plugin.koth as koth
-		self.plugin = koth.KothPlugin(self.bot, self.channel)
+		return koth.KothPlugin(self.bot, self.channel)
 
 	def test_start(self):
 		self.assertEqual(None, self.cmd('koth start', is_admin=False))

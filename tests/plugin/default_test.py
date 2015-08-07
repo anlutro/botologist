@@ -4,10 +4,9 @@ from tests.plugin import PluginTestCase
 class DefaultPluginTest(PluginTestCase):
 	cfg = {'bot': {'nick': 'foobar'}}
 
-	def setUp(self):
-		super().setUp()
+	def create_plugin(self):
 		import ircbot.plugin.default as default
-		self.plugin = default.DefaultPlugin(self.bot, self.channel)
+		return default.DefaultPlugin(self.bot, self.channel)
 
 	def test_tablethrow(self):
 		ret = self.reply('(╯°□°)╯︵ ┻━┻')
