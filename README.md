@@ -15,19 +15,19 @@ Make sure you have python 3, pip and virtualenv installed. If either of the foll
 
 Create a virtualenv (you only have to do this once):
 
-	$ virtualenv -p python3 virtualenv
+	$ virtualenv -p python3 .virtualenv
 
 Activate the virtualenv:
 
-	$ source ./venv/bin/activate
+	$ source ./.virtualenv/bin/activate
 
 Install requirements (you only have to do this once):
 
-	$ pip install -r ./requirements.txt
+	$ pip install -r requirements.txt
 
 Copy `config.example.yml` to `config.yml` and edit it to your likings, then run the bot:
 
-	$ ./run.sh
+	$ ./run
 
 ### Streams plugin
 
