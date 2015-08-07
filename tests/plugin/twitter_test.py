@@ -1,7 +1,7 @@
 import unittest.mock as mock
 from tests.plugin import PluginTestCase
 
-class DefaultPluginTest(PluginTestCase):
+class TwitterPluginTest(PluginTestCase):
 	cfg = {'twitter_api': True}
 
 	def create_plugin(self):

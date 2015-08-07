@@ -22,13 +22,14 @@ def find_shortened_urls(message):
 	matches = short_url_regex.findall(message)
 	return [match[0] for match in matches]
 
-def unshorten_url(url):
-	limit = 2
+def get_location(url):
+	request = urllib.request.Request(url=url, method='HEAD')
+	response = urllib.request.urlopen(request, timeout=2)
+	return response.url
 
+def unshorten_url(url):
 	try:
-		request = urllib.request.Request(url=url, method='HEAD')
-		response = urllib.request.urlopen(request, timeout=2)
-		url = response.url
+		url = get_location(url)
 	except (urllib.error.URLError, socket.timeout):
 		log.debug('HTTP error, aborting')
 		return None
@@ -43,9 +44,12 @@ class UrlPlugin(ircbot.plugin.Plugin):
 	@ircbot.plugin.reply()
 	def reply(self, msg):
 		urls = find_shortened_urls(msg.message)
+		ret = []
 
 		for url in urls:
 			real_url = unshorten_url(url)
 			if real_url:
-				text = '{} => {}'.format(url, real_url)
-				self.bot._send_msg(text, msg.target)
+				ret.append('{} => {}'.format(url, real_url))
+
+		if ret:
+			return ret
