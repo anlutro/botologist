@@ -175,8 +175,21 @@ class StreamManagerTest(unittest.TestCase):
 			self.assertEqual(0, len(ret))
 
 class StreamPluginTest(PluginTestCase):
+	file_dir = os.path.dirname(os.path.dirname(__file__)) + '/tmp'
+
+	def setUp(self):
+		self.file_path = self.file_dir + '/streams_test.json'
+		super().setUp()
+		if os.path.isfile(self.file_path):
+			os.remove(self.file_path)
+
+	def tearDown(self):
+		if os.path.isfile(self.file_path):
+			os.remove(self.file_path)
+		super().tearDown()
+
 	def create_plugin(self):
-		self.bot.storage_dir = os.path.dirname(os.path.dirname(__file__)) + '/tmp'
+		self.bot.storage_dir = self.file_dir
 		return streams.StreamsPlugin(self.bot, self.channel)
 
 	def test_subscriber_is_notified(self):
