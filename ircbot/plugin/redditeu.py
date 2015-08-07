@@ -1,6 +1,8 @@
+import logging
+log = logging.getLogger(__name__)
+
 import random
 
-from ircbot import log
 import ircbot.plugin
 
 

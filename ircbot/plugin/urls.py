@@ -1,10 +1,12 @@
-import ircbot.plugin
-from ircbot import log
+import logging
+log = logging.getLogger(__name__)
 
 import urllib.request
 import urllib.error
 import socket
 import re
+
+import ircbot.plugin
 
 
 url_shorteners = (

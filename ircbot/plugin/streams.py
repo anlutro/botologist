@@ -1,5 +1,5 @@
-from ircbot import log
-import ircbot.plugin
+import logging
+log = logging.getLogger(__name__)
 
 import datetime
 import json
@@ -8,6 +8,8 @@ import re
 import socket
 import urllib.error
 import urllib.request
+
+import ircbot.plugin
 
 
 class StreamException(RuntimeError):

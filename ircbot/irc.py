@@ -1,4 +1,5 @@
-from ircbot import log
+import logging
+log = logging.getLogger(__name__)
 
 import signal
 import socket

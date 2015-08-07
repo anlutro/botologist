@@ -1,7 +1,9 @@
+import logging
+log = logging.getLogger(__name__)
+
 import datetime
 import threading
 
-from ircbot import log
 import ircbot.irc
 import ircbot.plugin
 
@@ -200,7 +202,7 @@ class Bot(ircbot.irc.Client):
 			else:
 				threshold = self.SPAM_THROTTLE
 			if diff.seconds < threshold:
-				log.info('Command {cmd} throttled'.format(cmd=command.command))
+				log.debug('Command {cmd} throttled'.format(cmd=command.command))
 				return None
 
 		# log the command call for spam throttling

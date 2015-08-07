@@ -1,6 +1,9 @@
-from ircbot import log
-import ircbot.plugin
+import logging
+log = logging.getLogger(__name__)
+
 import collections
+
+import ircbot.plugin
 
 class KothPlugin(ircbot.plugin.Plugin):
 	def __init__(self, bot, channel):

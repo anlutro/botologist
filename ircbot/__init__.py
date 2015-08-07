@@ -1,5 +1,4 @@
 import logging, logging.handlers
-# makes it possible to `import ircbot.log` for global access to application logging
 log = logging.getLogger(__name__)
 
 import importlib
@@ -51,7 +50,7 @@ def _configure_logging(log_level, log_path=None):
 	ch.setLevel(log_level)
 
 	# define the logging format
-	formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+	formatter = logging.Formatter('[%(asctime)s] %(levelname)s - %(name)s - %(message)s')
 	ch.setFormatter(formatter)
 
 	# add the logging handler for all loggers
