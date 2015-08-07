@@ -25,6 +25,11 @@ class PluginTestCase(unittest.TestCase):
 		message.user.is_admin = is_admin
 		return message
 
+	def _create_user(self, nick, host=None, is_admin=False):
+		user = irc.User(nick, host=host)
+		user.is_admin = is_admin
+		return user
+
 	def reply(self, message, **kwargs):
 		message = self._create_msg(message, **kwargs)
 		for reply in self.plugin.replies:
@@ -39,8 +44,7 @@ class PluginTestCase(unittest.TestCase):
 		return func(command)
 
 	def join(self, nick, is_admin=False, channel=None):
-		user = irc.User(nick)
-		user.is_admin = is_admin
+		user = self._create_user(nick, is_admin)
 		if channel and not isinstance(channel, irc.Channel):
 			channel = irc.Channel(channel)
 		for join in self.plugin.joins:
