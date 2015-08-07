@@ -35,7 +35,7 @@ class TwitterPlugin(ircbot.plugin.Plugin):
 
 	def get_tweet_text(self, tweet_id):
 		if self.api is None:
-			self.api = self.make_api();
+			self.api = self.make_api()
 
 		now = datetime.datetime.now()
 		if self.last_fetch:

@@ -1,7 +1,7 @@
 import unittest
 from tests.plugin import PluginTestCase
 
-from ircbot.plugin.streams import Stream
+from ircbot.plugin.streams import Stream, StreamCache, StreamManager, StreamsPlugin
 
 class StreamTest(unittest.TestCase):
 	def test_equals(self):
@@ -58,6 +58,30 @@ class StreamTest(unittest.TestCase):
 		data = {'channel': {'name': 'wcs', 'status': ''}}
 		s = Stream.from_twitch_data(data)
 		self.assertEqual(True, s.is_rebroadcast)
+
+class StreamCacheTest(unittest.TestCase):
+	def test_init(self):
+		sc = StreamCache()
+		self.assertFalse(sc.initiated)
+		self.assertEqual(set(), sc.get_all())
+
+	def test_cache_keeps_values_for_two_pushes(self):
+		sc = StreamCache()
+
+		sc.push(['a', 'b'])
+		self.assertEqual(set(['a', 'b']), sc.get_all())
+		self.assertTrue('a' in sc)
+		self.assertTrue('b' in sc)
+
+		sc.push([])
+		self.assertEqual(set(['a', 'b']), sc.get_all())
+		self.assertTrue('a' in sc)
+		self.assertTrue('b' in sc)
+
+		sc.push([])
+		self.assertEqual(set([]), sc.get_all())
+		self.assertFalse('a' in sc)
+		self.assertFalse('b' in sc)
 
 class StreamManagerTest(unittest.TestCase):
 	pass
