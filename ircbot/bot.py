@@ -153,8 +153,6 @@ class Bot(ircbot.irc.Client):
 		channel = self.conn.channels[message.target]
 		assert isinstance(channel, Channel)
 
-		response = None
-
 		if message.message.startswith(self.CMD_PREFIX):
 			return self._handle_command(message, channel)
 
@@ -240,13 +238,16 @@ class Bot(ircbot.irc.Client):
 		log.debug('Ticker started')
 
 	def _stop_tick_timer(self):
-		if self.timer is not None:
-			self.timer.cancel()
-			self.timer = None
-			log.info('Ticker stopped')
+		if self.timer is None:
+			return
+
+		self.timer.cancel()
+		self.timer = None
+		log.info('Ticker stopped')
 
 	def _tick(self):
 		log.info('Tick!')
+
 		# reset the spam throttle to prevent the log dictionaries from becoming
 		# too large
 		self._command_log = {}
