@@ -149,7 +149,7 @@ class StreamManagerTest(unittest.TestCase):
 		self.assertEqual('name', s.user)
 		self.assertEqual('status', s.title)
 
-	def test_new_online_streams(self):
+	def test_new_online_stream(self):
 		sm = streams.StreamManager(self.file_path)
 		sm.add_stream('twitch.tv/name1')
 		sm.add_stream('twitch.tv/name2')
@@ -157,13 +157,11 @@ class StreamManagerTest(unittest.TestCase):
 		data = {'streams': [{'channel': {'name': 'name1', 'status': 'status1'}}]}
 		with mock.patch(twitch_f, return_value=data) as mf:
 			ret = sm.get_new_online_streams()
-			mf.assert_called_with(['name1', 'name2'])
 			self.assertEqual([], ret)
 
 		data['streams'].append({'channel': {'name': 'name2', 'status': 'status2'}})
 		with mock.patch(twitch_f, return_value=data) as mf:
 			ret = sm.get_new_online_streams()
-			mf.assert_called_with(['name1', 'name2'])
 			self.assertEqual(1, len(ret))
 			s = ret.pop()
 			self.assertTrue(isinstance(s, streams.Stream))
@@ -171,8 +169,39 @@ class StreamManagerTest(unittest.TestCase):
 			self.assertEqual('status2', s.title)
 
 			ret = sm.get_new_online_streams()
-			mf.assert_called_with(['name1', 'name2'])
 			self.assertEqual(0, len(ret))
+
+	def test_rebroadcast_is_not_new_stream(self):
+		sm = streams.StreamManager(self.file_path)
+		sm.add_stream('twitch.tv/name')
+
+		data = {'streams': []}
+		with mock.patch(twitch_f, return_value=data) as mf:
+			ret = sm.get_new_online_streams()
+			self.assertEqual([], ret)
+
+		data['streams'].append({'channel': {'name': 'name', 'status': 'rebroadcast'}})
+		with mock.patch(twitch_f, return_value=data) as mf:
+			ret = sm.get_new_online_streams()
+			self.assertEqual([], ret)
+
+	def test_rebroadcast_namechange_is_new_stream(self):
+		sm = streams.StreamManager(self.file_path)
+		sm.add_stream('twitch.tv/name')
+
+		data = {'streams': [{'channel': {'name': 'name', 'status': 'rebroadcast'}}]}
+		with mock.patch(twitch_f, return_value=data) as mf:
+			ret = sm.get_new_online_streams()
+			self.assertEqual([], ret)
+
+		data['streams'].append({'channel': {'name': 'name', 'status': 'live'}})
+		with mock.patch(twitch_f, return_value=data) as mf:
+			ret = sm.get_new_online_streams()
+			self.assertEqual(1, len(ret))
+			s = ret.pop()
+			self.assertTrue(isinstance(s, streams.Stream))
+			self.assertEqual('name', s.user)
+			self.assertEqual('live', s.title)
 
 class StreamPluginTest(PluginTestCase):
 	file_dir = os.path.dirname(os.path.dirname(__file__)) + '/tmp'
