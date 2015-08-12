@@ -31,17 +31,21 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
 		self.wfile.write(b'OK\n')
 
 	def send_msg(self, method, body=None):
-		kwargs = {'method': method, 'path': self.path}
+		kwargs = {}
 		if body:
 			kwargs['body'] = body
 
 		for channel in self.bot.channels.values():
 			for handler in channel.http_handlers:
-				if (
-					handler._http_method == method and
-					(not handler._http_path or handler._http_path == self.path)
-				):
-					ret = handler(**kwargs)
+				if handler._http_method == method:
+					ret = None
+
+					if not handler._http_path:
+						ret = handler(path=path, **kwargs)
+					else:
+						if handler._http_path == self.path:
+							ret = handler(**kwargs)
+
 					if ret:
 						self.bot._send_msg(ret, channel.channel)
 
