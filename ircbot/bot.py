@@ -65,7 +65,7 @@ class Bot(ircbot.irc.Client):
 	SPAM_THROTTLE = 2
 
 	def __init__(self, server, admins=None, bans=None, storage_dir=None,
-	             global_plugins=None, http_port=None, **kwargs):
+	             global_plugins=None, http_port=None, http_host=None, **kwargs):
 		super().__init__(server, **kwargs)
 		self.conn.on_welcome.append(self._start_tick_timer)
 		self.conn.on_join.append(self._handle_join)
@@ -80,14 +80,16 @@ class Bot(ircbot.irc.Client):
 		self._reply_log = {}
 		self.timer = None
 		self.http_port = http_port
+		self.http_host = http_host
 		self.http_server = None
 
 	def run_forever(self):
 		if self.http_port:
-			log.info('Running HTTP server on port {}'.format(self.http_port))
+			log.info('Running HTTP server on {}:{}'.format(
+				self.http_host, self.http_port))
 			thread = threading.Thread(
 				target=ircbot.http.run_http_server,
-				args=(self, self.http_port))
+				args=(self, self.http_host, self.http_port))
 			thread.start()
 		super().run_forever()
 
