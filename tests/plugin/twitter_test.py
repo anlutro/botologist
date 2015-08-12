@@ -5,7 +5,7 @@ class TwitterPluginTest(PluginTestCase):
 	cfg = {'twitter_api': True}
 
 	def create_plugin(self):
-		from ircbot.plugin.twitter import TwitterPlugin
+		from plugins.twitter import TwitterPlugin
 		plugin = TwitterPlugin(self.bot, self.channel)
 		plugin.api = self.api = mock.MagicMock()
 		return plugin

@@ -2,7 +2,7 @@ from tests.plugin import PluginTestCase
 
 class QlredditPluginTest(PluginTestCase):
 	def create_plugin(self):
-		from ircbot.plugin.qlreddit import QlredditPlugin
+		from plugins.qlreddit import QlredditPlugin
 		return QlredditPlugin(self.bot, self.channel)
 
 	def test_opa_opa(self):

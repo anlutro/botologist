@@ -2,7 +2,7 @@ from tests.plugin import PluginTestCase
 
 class RedditeuPluginTest(PluginTestCase):
 	def create_plugin(self):
-		from ircbot.plugin.redditeu import RedditeuPlugin
+		from plugins.redditeu import RedditeuPlugin
 		return RedditeuPlugin(self.bot, self.channel)
 
 	def test_bitcoin(self):

@@ -1,11 +1,11 @@
 import unittest.mock as mock
 from tests.plugin import PluginTestCase
 
-f = 'ircbot.plugin.qlranks._get_qlr_data'
+f = 'plugins.qlranks._get_qlr_data'
 
 class QlranksPluginTest(PluginTestCase):
 	def create_plugin(self):
-		from ircbot.plugin.qlranks import QlranksPlugin
+		from plugins.qlranks import QlranksPlugin
 		return QlranksPlugin(self.bot, self.channel)
 
 	def test_qlranks(self):

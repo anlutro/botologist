@@ -85,7 +85,7 @@ class Stream:
 		return hash(self.url)
 
 	def __repr__(self):
-		return '<ircbot.plugin.streams.Stream object \'{url}\'>'.format(url=self.url)
+		return '<plugins.streams.Stream object \'{url}\'>'.format(url=self.url)
 
 	@classmethod
 	def from_twitch_data(cls, data):

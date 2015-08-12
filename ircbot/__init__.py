@@ -59,6 +59,9 @@ def _configure_logging(log_level, log_path=None):
 
 def _configure_plugins(bot, plugins_dict):
 	for name, plugin_class in plugins_dict.items():
+		# convenience compatibility layer for when plugins module was moved
+		plugin_class = plugin_class.replace('ircbot.plugin.', 'plugins.')
+
 		# dynamically import the plugin module and pass the class
 		parts = plugin_class.split('.')
 		module = importlib.import_module('.'.join(parts[:-1]))

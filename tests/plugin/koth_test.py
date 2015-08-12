@@ -3,7 +3,7 @@ from tests.plugin import PluginTestCase
 
 class DefaultPluginTest(PluginTestCase):
 	def create_plugin(self):
-		import ircbot.plugin.koth as koth
+		import plugins.koth as koth
 		return koth.KothPlugin(self.bot, self.channel)
 
 	def test_start(self):

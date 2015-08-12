@@ -4,7 +4,7 @@ class DefaultPluginTest(PluginTestCase):
 	cfg = {'bot': {'nick': 'foobar'}}
 
 	def create_plugin(self):
-		import ircbot.plugin.default as default
+		import plugins.default as default
 		return default.DefaultPlugin(self.bot, self.channel)
 
 	def test_tablethrow(self):

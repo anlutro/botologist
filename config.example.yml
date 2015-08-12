@@ -20,8 +20,8 @@ bot:
 # plugin map in the format of "name: classname"
 # the class will be lazily imported and instantiated.
 plugins:
-  default: ircbot.plugin.default.DefaultPlugin
-  streams: ircbot.plugin.streams.StreamsPlugin
+  default: plugins.default.DefaultPlugin
+  streams: plugins.streams.StreamsPlugin
 
 # plugins that are enabled in every channel
 global_plugins:

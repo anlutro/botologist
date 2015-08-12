@@ -1,11 +1,11 @@
 import unittest.mock as mock
 from tests.plugin import PluginTestCase
 
-f = 'ircbot.plugin.redditeu_qdb._get_qdb_data'
+f = 'plugins.redditeu_qdb._get_qdb_data'
 
 class RedditeuQdbPluginTest(PluginTestCase):
 	def create_plugin(self):
-		from ircbot.plugin.redditeu_qdb import RedditeuQdbPlugin
+		from plugins.redditeu_qdb import RedditeuQdbPlugin
 		return RedditeuQdbPlugin(self.bot, self.channel)
 
 	def test_search_quote_no_results(self):

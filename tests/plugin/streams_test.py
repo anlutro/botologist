@@ -3,10 +3,10 @@ import unittest.mock as mock
 import os.path
 
 from tests.plugin import PluginTestCase
-import ircbot.plugin.streams as streams
+import plugins.streams as streams
 
-twitch_f = 'ircbot.plugin.streams._fetch_twitch_data'
-hitbox_f = 'ircbot.plugin.streams._fetch_hitbox_data'
+twitch_f = 'plugins.streams._fetch_twitch_data'
+hitbox_f = 'plugins.streams._fetch_hitbox_data'
 
 class StreamTest(unittest.TestCase):
 	def test_equals(self):

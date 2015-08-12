@@ -3,10 +3,10 @@ from tests.plugin import PluginTestCase
 
 class ConversionPluginTest(PluginTestCase):
 	def create_plugin(self):
-		from ircbot.plugin.convert import ConversionPlugin
+		from plugins.convert import ConversionPlugin
 		return ConversionPlugin(self.bot, self.channel)
 
-	@mock.patch('ircbot.plugin.convert.get_conversion_result',
+	@mock.patch('plugins.convert.get_conversion_result',
 		return_value='test conversion result')
 	def test_converts(self, mock):
 		expected = 'test conversion result'
