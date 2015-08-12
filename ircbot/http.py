@@ -2,12 +2,22 @@ import http.server
 
 
 class RequestHandler(http.server.BaseHTTPRequestHandler):
+	@property
+	def bot(self):
+	    return self.server.bot
+
 	def do_GET(self):
 		self.send_response(200)
 		self.send_header('Content-type', 'text/plain')
 		self.end_headers()
 
-		self.server.bot._send_msg('Received HTTP request: '+self.path, '*')
+		for channel in self.bot.channels.values():
+			for handler in channel.http_handlers:
+				if handler._http_method == 'GET':
+					ret = handler()
+					if ret:
+						self.bot._send_msg(ret, channel.channel)
+
 		self.wfile.write(b'OK\n')
 
 	def do_POST(self):
@@ -17,8 +27,23 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
 
 		length = int(self.headers['Content-Length'])
 		body = self.rfile.read(length).decode()
-		self.server.bot._send_msg(body, '*')
+		self.send_msg('POST', body)
 		self.wfile.write(b'OK\n')
+
+	def send_msg(self, method, body=None):
+		kwargs = {'method': method, 'path': self.path}
+		if body:
+			kwargs['body'] = body
+
+		for channel in self.bot.channels.values():
+			for handler in channel.http_handlers:
+				if (
+					handler._http_method == method and
+					(not handler._http_path or handler._http_path == self.path)
+				):
+					ret = handler(**kwargs)
+					if ret:
+						self.bot._send_msg(ret, channel.channel)
 
 
 class HTTPServer(http.server.HTTPServer):

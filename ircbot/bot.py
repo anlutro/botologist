@@ -39,6 +39,7 @@ class Channel(ircbot.irc.Channel):
 		self.replies = []
 		self.tickers = []
 		self.admins = []
+		self.http_handlers = []
 
 	def register_plugin(self, plugin):
 		assert isinstance(plugin, ircbot.plugin.Plugin)
@@ -50,6 +51,8 @@ class Channel(ircbot.irc.Channel):
 			self.replies.append(reply_callback)
 		for tick_callback in plugin.tickers:
 			self.tickers.append(tick_callback)
+		for http_handler in plugin.http_handlers:
+			self.http_handlers.append(http_handler)
 
 
 class Bot(ircbot.irc.Client):
@@ -82,6 +85,10 @@ class Bot(ircbot.irc.Client):
 		self.http_port = http_port
 		self.http_host = http_host
 		self.http_server = None
+
+	@property
+	def channels(self):
+	    return self.server.channels
 
 	def run_forever(self):
 		if self.http_port:

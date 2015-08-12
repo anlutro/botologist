@@ -35,6 +35,15 @@ def ticker(func):
 	return func
 
 
+def http_handler(method='POST', path=None):
+	"""Plugin command decorator."""
+	def wrapper(func):
+		func._http_method = method
+		func._http_path = path
+		return func
+	return wrapper
+
+
 class PluginMetaclass(type):
 	"""Metaclass for the Plugin class."""
 	def __init__(self, name, bases, attrs):
@@ -49,6 +58,7 @@ class PluginMetaclass(type):
 		self._joins = []
 		self._replies = []
 		self._tickers = []
+		self._http_handlers = []
 
 		for fname, f in attrs.items():
 			if hasattr(f, '_command'):
@@ -70,6 +80,11 @@ class PluginMetaclass(type):
 				log.debug('{name}.{fname} is a ticker'.format(
 					name=name, fname=fname))
 				self._tickers.append(fname)
+
+			if hasattr(f, '_http_method'):
+				log.debug('{name}.{fname} is a HTTP request handler'.format(
+					name=name, fname=fname))
+				self._http_handlers.append(fname)
 
 		return super().__init__(name, bases, attrs)
 
@@ -95,6 +110,10 @@ class Plugin(metaclass=PluginMetaclass):
 		self.tickers = []
 		for ticker in self._tickers:
 			self.tickers.append(getattr(self, ticker))
+
+		self.http_handlers = []
+		for http_handler in self._http_handlers:
+			self.http_handlers.append(getattr(self, http_handler))
 
 		log.debug('Instantiating plugin {plugin} for channel {channel}'.format(
 			plugin=self.__class__.__name__, channel=channel.channel))
