@@ -6,7 +6,7 @@ import threading
 
 import ircbot.irc
 import ircbot.plugin
-
+import ircbot.http
 
 class CommandMessage:
 	"""Representation of an IRC message that is a command.
@@ -65,7 +65,7 @@ class Bot(ircbot.irc.Client):
 	SPAM_THROTTLE = 2
 
 	def __init__(self, server, admins=None, bans=None, storage_dir=None,
-	             global_plugins=None, **kwargs):
+	             global_plugins=None, http_port=None, **kwargs):
 		super().__init__(server, **kwargs)
 		self.conn.on_welcome.append(self._start_tick_timer)
 		self.conn.on_join.append(self._handle_join)
@@ -79,9 +79,23 @@ class Bot(ircbot.irc.Client):
 		self._last_command = None
 		self._reply_log = {}
 		self.timer = None
+		self.http_port = http_port
+		self.http_server = None
+
+	def run_forever(self):
+		if self.http_port:
+			log.info('Running HTTP server on port {}'.format(self.http_port))
+			thread = threading.Thread(
+				target=ircbot.http.run_http_server,
+				args=(self, self.http_port))
+			thread.start()
+		super().run_forever()
 
 	def stop(self, msg=None):
 		self._stop_tick_timer()
+		if self.http_server:
+			log.info('Shutting down HTTP server')
+			self.http_server.shutdown()
 		super().stop(msg)
 
 	def register_plugin(self, name, plugin):
@@ -114,12 +128,18 @@ class Bot(ircbot.irc.Client):
 
 		self.server.channels[channel.channel] = channel
 
-	def _send_msg(self, msg, target):
-		if isinstance(msg, list):
-			for item in msg:
-				self.conn.send_msg(target, item)
-		else:
-			self.conn.send_msg(target, msg)
+	def _send_msg(self, msgs, targets):
+		if targets == '*':
+			targets = (channel for channel in self.server.channels)
+		elif not isinstance(targets, list) and not isinstance(targets, set):
+			targets = set([targets])
+
+		if not isinstance(msgs, list) and not isinstance(msgs, set):
+			msgs = set([msgs])
+
+		for msg in msgs:
+			for target in targets:
+				self.conn.send_msg(target, msg)
 
 	def _handle_join(self, channel, user):
 		assert isinstance(channel, Channel)
