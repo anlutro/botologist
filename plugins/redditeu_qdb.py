@@ -8,6 +8,9 @@ import urllib.request
 BASE_URL = 'http://qdb.lutro.me'
 
 
+def _get_quote_url(quote):
+	return BASE_URL + '/' + quote['id']
+
 def _get_qdb_data(urllib):
 	request = urllib.request.Request(url)
 	request.add_header('Accept', 'application/json')
@@ -97,3 +100,12 @@ class RedditeuQdbPlugin(ircbot.plugin.Plugin):
 			arg = ' '.join(cmd.args)
 
 		return _search_for_quote(arg)
+
+	@ircbot.plugin.http_handler(method='POST', path='/qdb-update')
+	def quote_updated(self, body):
+		data = json.loads(body)
+		quote = data['quote']
+		if quote['approved']:
+			return 'New quote approved! ' + _get_quote_url(quote)
+		else:
+			return 'Quote pending approval!'
