@@ -1,3 +1,4 @@
+import random
 import re
 
 import ircbot.plugin
@@ -38,3 +39,10 @@ class DefaultPlugin(ircbot.plugin.Plugin):
 	def bot_always_works(self, msg):
 		if self.no_work.match(msg.message):
 			return 'I always work'
+
+	@ircbot.plugin.command('coinflip')
+	def coinflip(self):
+		value = random.randint(0, 1)
+		if value == 1:
+			return 'Heads!'
+		return 'Tails!'
