@@ -41,7 +41,7 @@ class DefaultPlugin(ircbot.plugin.Plugin):
 			return 'I always work'
 
 	@ircbot.plugin.command('coinflip')
-	def coinflip(self):
+	def coinflip(self, msg):
 		value = random.randint(0, 1)
 		if value == 1:
 			return 'Heads!'
