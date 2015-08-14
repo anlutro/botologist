@@ -169,15 +169,15 @@ class Bot(ircbot.irc.Client):
 		if message.user.host in self.bans:
 			return
 
-		# check if the user is an admin - add it to the message.user object for
-		# later re-use
-		message.user.is_admin = (message.user.host in self.admins or
-			message.user.host in message.channel.admins)
-
 		# self-explanatory...
 		if message.is_private:
 			log.debug('Message is private, not replying')
 			return None
+
+		# check if the user is an admin - add it to the message.user object for
+		# later re-use
+		message.user.is_admin = (message.user.host in self.admins or
+			message.user.host in message.channel.admins)
 
 		channel = self.conn.channels[message.target]
 		assert isinstance(channel, Channel)
