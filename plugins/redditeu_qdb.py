@@ -11,7 +11,7 @@ BASE_URL = 'http://qdb.lutro.me'
 def _get_quote_url(quote):
 	return BASE_URL + '/' + str(quote['id'])
 
-def _get_qdb_data(urllib):
+def _get_qdb_data(url):
 	request = urllib.request.Request(url)
 	request.add_header('Accept', 'application/json')
 	response = urllib.request.urlopen(request, timeout=2)
