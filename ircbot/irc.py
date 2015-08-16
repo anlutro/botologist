@@ -305,7 +305,10 @@ class Connection:
 					callback(message)
 
 	def send_msg(self, target, message):
-		self.send('PRIVMSG ' + target + ' :' + message)
+		if not isinstance(message, list):
+			message = message.split('\n')
+		for privmsg in message:
+			self.send('PRIVMSG ' + target + ' :' + privmsg)
 
 	def send(self, msg):
 		if len(msg) > self.MAX_MSG_CHARS:
