@@ -66,9 +66,14 @@ class RedditeuPlugin(ircbot.plugin.Plugin):
 	def the_time(self, cmd):
 		return 'the time is ' + get_random_time()
 
-	@ircbot.plugin.join
+	@ircbot.plugin.join()
 	def welcome(self, user, channel):
 		if 'happy0' in user.nick.lower():
 			return 'ypyotootp hippy 0'
 		if user.nick.lower().startswith('raziel'):
 			return 'hello ' + Raziel.get_random_nick()
+
+	@ircbot.plugin.reply()
+	def no_more_that_are_stupid(self, msg):
+		if 'no more irc binds that are stupid' in msg.message.lower():
+			return 'https://www.youtube.com/watch?v=LGxS-qjViNQ'
