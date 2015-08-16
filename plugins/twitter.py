@@ -43,7 +43,7 @@ class TwitterPlugin(ircbot.plugin.Plugin):
 		tweet = self.api.get_status(tweet_id)
 		
 		author = tweet.author.screen_name
-		body = tweet.text
+		body = tweet.text.replace('\n', ' ')
 
 		return '[{author}] {body}'.format(author='@'+author, body=body)
 
