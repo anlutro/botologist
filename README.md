@@ -1,4 +1,6 @@
-[![Build Status](https://travis-ci.org/autarky/framework.png?branch=master)](https://travis-ci.org/autarky/framework)
+# IRC bot
+
+[![Build Status](https://travis-ci.org/anlutro/ircbot.png?branch=master)](https://travis-ci.org/anlutro/ircbot)
 
 Plugin-based single-server IRC bot written in Python 3.
 
