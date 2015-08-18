@@ -66,7 +66,7 @@ class RedditeuPlugin(ircbot.plugin.Plugin):
 	def the_time(self, cmd):
 		return 'the time is ' + get_random_time()
 
-	@ircbot.plugin.join
+	@ircbot.plugin.join()
 	def welcome(self, user, channel):
 		if 'happy0' in user.nick.lower():
 			return 'ypyotootp hippy 0'

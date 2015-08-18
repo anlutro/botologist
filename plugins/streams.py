@@ -462,7 +462,7 @@ class StreamsPlugin(ircbot.plugin.Plugin):
 
 		return ' - '.join(stream_strings)
 
-	@ircbot.plugin.ticker
+	@ircbot.plugin.ticker()
 	def check_new_streams_tick(self):
 		streams = self.streams.get_new_online_streams()
 

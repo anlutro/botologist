@@ -23,16 +23,20 @@ def reply(threaded=False):
 	return wrapper
 
 
-def join(func):
+def join():
 	"""Plugin join reply decorator."""
-	func._is_join = True
-	return func
+	def wrapper(func):
+		func._is_join = True
+		return func
+	return wrapper
 
 
-def ticker(func):
+def ticker():
 	"""Plugin ticker decorator."""
-	func._is_ticker = True
-	return func
+	def wrapper(func):
+		func._is_ticker = True
+		return func
+	return wrapper
 
 
 def http_handler(method='POST', path=None):
