@@ -59,15 +59,20 @@ def run_bot(storage_dir, yml_config):
 		log_level = getattr(logging, cfg.get('log_level').upper())
 	configure_logging(log_level, cfg.get('log_path'))
 
-	# initialize the bot object
-	bot = ircbot.bot.Bot(
-		storage_dir = storage_dir,
-		global_plugins = cfg.get('global_plugins', []),
-		**cfg.get('bot', {})
-	)
+	try:
+		# initialize the bot object
+		bot = ircbot.bot.Bot(
+			storage_dir = storage_dir,
+			global_plugins = cfg.get('global_plugins', []),
+			**cfg.get('bot', {})
+		)
 
-	configure_plugins(bot, cfg.get('plugins', {}))
-	configure_channels(bot, cfg.get('channels', {}))
+		configure_plugins(bot, cfg.get('plugins', {}))
+		configure_channels(bot, cfg.get('channels', {}))
 
-	# infinite loop go!
-	bot.run_forever()
+		# infinite loop go!
+		bot.run_forever()
+	except:
+		log.exception('Uncaught exception')
+		print('An exception occurred - check log for details. Exiting!')
+		sys.exit(1)
