@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/autarky/framework.png?branch=master)](https://travis-ci.org/autarky/framework)
+
 Plugin-based single-server IRC bot written in Python 3.
 
 ## Installation
