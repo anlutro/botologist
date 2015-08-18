@@ -1,7 +1,11 @@
 #!/bin/sh
 
-dir=$(dirname $(readlink -f $0))
-python=$dir/.virtualenv/bin/python
+if [ -z $VIRTUAL_ENV ]; then
+	dir=$(dirname $(readlink -f $0))
+	python=$dir/.virtualenv/bin/python
+else
+	python=python
+fi
 
 if [ "$1" = "-t" ] || [ "$1" = "test" ] || [ "$1" = "tests" ] || [ "$1" = "tests/" ]; then
 	$python -m unittest discover -s ./tests/ -p '*_test.py'
