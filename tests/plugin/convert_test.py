@@ -6,12 +6,25 @@ class ConversionPluginTest(PluginTestCase):
 		from plugins.convert import ConversionPlugin
 		return ConversionPlugin(self.bot, self.channel)
 
-	@mock.patch('plugins.convert.get_conversion_result',
-		return_value='test conversion result')
-	def test_converts(self, mock):
-		expected = 'test conversion result'
-		self.assertEqual('test conversion result', self.reply('100 nok into eur'))
-		self.assertEqual('test conversion result', self.reply('100 nok to eur'))
-		self.assertEqual('test conversion result', self.reply('100 nok in eur'))
-		self.assertEqual('test conversion result', self.reply('100 NOK in EUR'))
-		self.assertEqual('test conversion result', self.reply('asdsa 100 nok in eur asda'))
+	@mock.patch('plugins.convert.get_currency_data', return_value={})
+	@mock.patch('plugins.convert.get_conversion_result', return_value='TEST')
+	def test_converts(self, currency_mock, convert_mock):
+		self.assertEqual('TEST', self.reply('100 kg into stones'))
+		self.assertEqual('TEST', self.reply('100 kg to stones'))
+		self.assertEqual('TEST', self.reply('100 kg in stones'))
+		self.assertEqual('TEST', self.reply('100 KG in stones'))
+		self.assertEqual('TEST', self.reply('asdsa 100 kg in stones asda'))
+
+	@mock.patch('plugins.convert.get_currency_data',
+		return_value={ 'NOK': 8.00, 'DKK': 6.00 })
+	@mock.patch('plugins.convert.get_conversion_result', return_value='TEST')
+	def test_converts(self, currency_mock, convert_mock):
+		self.assertEqual('10 eur = 80.00 nok', self.reply('10 eur into nok'))
+		self.assertEqual('10 eur = 60.00 dkk', self.reply('10 eur into dkk'))
+		self.assertEqual('10 nok = 1.25 eur', self.reply('10 nok into eur'))
+		self.assertEqual('10 dkk = 1.67 eur', self.reply('10 dkk into eur'))
+		self.assertEqual('10 nok = 13.33 dkk', self.reply('10 nok into dkk'))
+		self.assertEqual('10 dkk = 7.50 nok', self.reply('10 dkk into nok'))
+		self.assertEqual('TEST', self.reply('10 cny into eur'))
+		self.assertEqual('TEST', self.reply('10 eur into cny'))
+		self.assertEqual('TEST', self.reply('10 usd into cny'))
