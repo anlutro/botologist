@@ -97,7 +97,7 @@ class ConversionPlugin(ircbot.plugin.Plugin):
 		result = Currency.convert(amount, conv_from, conv_to)
 		if result:
 			if len(amount) > 8:
-				amount = '{:.2f}'.format(amount)
+				amount = '{:.2f}'.format(float(amount))
 			return '{} {} = {:.2f} {}'.format(amount, conv_from, result, conv_to)
 
 		qs = '+'.join(match.groups())
