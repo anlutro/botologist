@@ -66,8 +66,8 @@ class Currency:
 			return amount / cls.currency_data[from_cur]
 
 		if from_cur in cls.currency_data and to_cur in cls.currency_data:
-			amount = amount * cls.currency_data[from_cur]
-			return amount / cls.currency_data[to_cur]
+			amount = amount / cls.currency_data[from_cur]
+			return amount * cls.currency_data[to_cur]
 
 		return None
 
