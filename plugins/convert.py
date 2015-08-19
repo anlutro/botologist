@@ -52,7 +52,11 @@ class Currency:
 	def convert(cls, amount, from_cur, to_cur):
 		cls.load()
 
-		amount = float(amount)
+		try:
+			amount = float(amount)
+		except ValueError:
+			return None
+
 		from_cur = from_cur.upper()
 		to_cur = to_cur.upper()
 
