@@ -229,7 +229,7 @@ class Bot(ircbot.irc.Client):
 			else:
 				threshold = self.SPAM_THROTTLE
 			if diff.seconds < threshold:
-				log.debug('Command {cmd} throttled'.format(cmd=command.command))
+				log.info('Command {cmd} throttled'.format(cmd=command.command))
 				return None
 
 		# log the command call for spam throttling
@@ -252,7 +252,7 @@ class Bot(ircbot.irc.Client):
 			if reply in self._reply_log and not message.user.is_admin:
 				diff = now - self._reply_log[reply]
 				if diff.seconds < self.SPAM_THROTTLE:
-					log.debug('Reply throttled: "{reply}"'.format(reply=reply))
+					log.info('Reply throttled: "{reply}"'.format(reply=reply))
 					continue
 
 			# log the reply for spam throttling
@@ -275,7 +275,7 @@ class Bot(ircbot.irc.Client):
 		log.info('Ticker stopped')
 
 	def _tick(self):
-		log.info('Tick!')
+		log.debug('Tick!')
 
 		# reset the spam throttle to prevent the log dictionaries from becoming
 		# too large
