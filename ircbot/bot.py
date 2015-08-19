@@ -4,9 +4,10 @@ log = logging.getLogger(__name__)
 import datetime
 import threading
 
+import ircbot.error
+import ircbot.http
 import ircbot.irc
 import ircbot.plugin
-import ircbot.http
 
 class CommandMessage:
 	"""Representation of an IRC message that is a command.
@@ -70,6 +71,8 @@ class Bot(ircbot.irc.Client):
 	def __init__(self, server, admins=None, bans=None, storage_dir=None,
 	             global_plugins=None, http_port=None, http_host=None, **kwargs):
 		super().__init__(server, **kwargs)
+		self.error_handler = ircbot.error.ErrorHandler(self)
+		self.conn.error_handler = self.error_handler.handle_error
 		self.conn.on_welcome.append(self._start_tick_timer)
 		self.conn.on_join.append(self._handle_join)
 		self.conn.on_privmsg.append(self._handle_privmsg)
@@ -88,7 +91,16 @@ class Bot(ircbot.irc.Client):
 
 	@property
 	def channels(self):
-	    return self.server.channels
+		return self.server.channels
+
+	def get_admin_nicks(self):
+		admin_nicks = set()
+		for channel in self.server.channels.values():
+			for admin_host in self.admins:
+				nick = channel.find_nick_from_host(admin_host)
+				if nick:
+					admin_nicks.add(nick)
+		return admin_nicks
 
 	def run_forever(self):
 		if self.http_port:
@@ -148,6 +160,7 @@ class Bot(ircbot.irc.Client):
 
 		for msg in msgs:
 			for target in targets:
+				log.debug('Sending to {}: {}'.format(target, msg))
 				self.conn.send_msg(target, msg)
 
 	def _handle_join(self, channel, user):
@@ -195,16 +208,16 @@ class Bot(ircbot.irc.Client):
 		# if the message starts with the command prefix, check for mathing
 		# command and fire its callback
 		cmd_string = message.words[0][1:].lower()
-		log.debug('Message starts with command prefix')
 
 		if not cmd_string in channel.commands:
+			log.debug('Command {} not found in channel {}'.format(
+				cmd_string, channel.channel))
 			return
 
-		log.debug('Message is a channel registered command: {cmd}'.format(
-			cmd=cmd_string))
 		command_func = channel.commands[cmd_string]
 
 		if command_func._is_threaded:
+			log.debug('Starting thread for command {}'.format(cmd_string))
 			thread = threading.Thread(target=self._maybe_send_cmd_reply,
 				args=(command_func, message))
 			thread.start()
