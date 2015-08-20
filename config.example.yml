@@ -26,12 +26,14 @@ bot:
 # the class will be lazily imported and instantiated.
 plugins:
   default: plugins.default.DefaultPlugin
+  convert: plugins.convert.ConversionPlugin
   streams: plugins.streams.StreamsPlugin
-  twitter: plugins.twitter.TwitterPlugin
+  urls: plugins.urls.UrlPlugin
 
 # plugins that are enabled in every channel
 global_plugins:
   - default
+  - urls
 
 # channels the bot joins on connect. since the character starts a comment in
 # YAML, wrap the channel name in quotes or leave out the #. each channel can
@@ -44,7 +46,7 @@ channels:
       - streams
   '##otherchannel':
     plugins:
-      - twitter
+      - convert
 
 # uncomment these lines to enable the !mumble command
 # mumble:
