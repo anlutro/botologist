@@ -60,6 +60,3 @@ def run_http_server(bot, host='', port=8000):
 	httpd = HTTPServer((host, port), RequestHandler)
 	httpd.set_bot(bot)
 	httpd.serve_forever()
-
-if __name__ == '__main__':
-	run_http_server('hello world', 8000)
