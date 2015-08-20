@@ -10,7 +10,7 @@ class TwitterPlugin(ircbot.plugin.Plugin):
 		super().__init__(bot, channel)
 		self.cfg = cfg.get('twitter_api')
 		if not self.cfg:
-			raise RuntimeError('twitter_api missing from config')
+			raise RuntimeError('twitter_api config missing - check your config file!')
 		self.api = None
 		self.last_fetch = None
 
