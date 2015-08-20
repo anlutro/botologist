@@ -121,7 +121,7 @@ class Bot(ircbot.irc.Client):
 
 	def register_plugin(self, name, plugin):
 		assert issubclass(plugin, ircbot.plugin.Plugin)
-		log.debug('Plugin {name} registered'.format(name=name))
+		log.debug('Plugin "{name}" registered'.format(name=name))
 		self.plugins[name] = plugin
 
 	def add_channel(self, channel, plugins=None, admins=None):
