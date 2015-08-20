@@ -113,10 +113,15 @@ class Bot(ircbot.irc.Client):
 		super().run_forever()
 
 	def stop(self, msg=None):
-		self._stop_tick_timer()
 		if self.http_server:
 			log.info('Shutting down HTTP server')
 			self.http_server.shutdown()
+
+		if self.timer:
+			log.info('Ticker stopped')
+			self.timer.cancel()
+			self.timer = None
+
 		super().stop(msg)
 
 	def register_plugin(self, name, plugin):
@@ -278,14 +283,6 @@ class Bot(ircbot.irc.Client):
 		self.timer = threading.Timer(self.TICK_INTERVAL, self._tick)
 		self.timer.start()
 		log.debug('Ticker started')
-
-	def _stop_tick_timer(self):
-		if self.timer is None:
-			return
-
-		self.timer.cancel()
-		self.timer = None
-		log.info('Ticker stopped')
 
 	def _tick(self):
 		log.debug('Tick!')
