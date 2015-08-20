@@ -12,6 +12,7 @@ def _get_qlr_data(nick):
 	data = response.read().decode()
 	return json.loads(content)['players'][0]
 
+
 def _get_qlr_elo(nick, modes=None):
 	"""Get someone's QLRanks ELO.
 

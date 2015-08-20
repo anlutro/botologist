@@ -9,6 +9,7 @@ import ircbot.http
 import ircbot.irc
 import ircbot.plugin
 
+
 class CommandMessage:
 	"""Representation of an IRC message that is a command.
 

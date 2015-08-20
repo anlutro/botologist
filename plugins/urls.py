@@ -20,14 +20,17 @@ url_shorteners = (
 url_shorteners = '|'.join(url_shorteners)
 short_url_regex = re.compile(r'((' + url_shorteners + ')\/[a-zA-Z0-9]+)')
 
+
 def find_shortened_urls(message):
 	matches = short_url_regex.findall(message)
 	return [match[0] for match in matches]
+
 
 def get_location(url):
 	request = urllib.request.Request(url=url, method='HEAD')
 	response = urllib.request.urlopen(request, timeout=2)
 	return response.url
+
 
 def unshorten_url(url):
 	try:

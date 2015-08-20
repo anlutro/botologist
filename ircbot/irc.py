@@ -47,6 +47,7 @@ class User:
 			return False
 		return other.host == self.host
 
+
 class Message:
 	def __init__(self, source, target, message=None):
 		self.user = User.from_ircformat(source)

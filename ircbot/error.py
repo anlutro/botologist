@@ -7,6 +7,7 @@ import pwd
 import subprocess
 import traceback
 
+
 class ErrorHandler:
 	def __init__(self, bot):
 		self.bot = bot

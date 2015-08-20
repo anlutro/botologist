@@ -4,6 +4,7 @@ import re
 import ircbot.plugin
 from ircbot import cfg
 
+
 class DefaultPlugin(ircbot.plugin.Plugin):
 	@ircbot.plugin.command('mumble')
 	def mumble(self, msg):

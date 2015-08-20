@@ -5,6 +5,7 @@ import collections
 
 import ircbot.plugin
 
+
 class KothPlugin(ircbot.plugin.Plugin):
 	def __init__(self, bot, channel):
 		super().__init__(bot, channel)

@@ -1,5 +1,6 @@
 import ircbot.plugin
 
+
 class QlredditPlugin(ircbot.plugin.Plugin):
 	"""#qlreddit plugin."""
 

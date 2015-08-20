@@ -15,13 +15,16 @@ import ircbot.plugin
 class StreamException(RuntimeError):
 	pass
 
+
 class StreamNotFoundException(StreamException):
 	def __init__(self, message=None):
 		super().__init__(message or 'Error: Stream not found')
 
+
 class InvalidStreamException(StreamException):
 	def __init__(self, message=None):
 		super().__init__(message or 'Error: Invalid stream URL')
+
 
 class AmbiguousStreamException(StreamException):
 	def __init__(self, streams):
@@ -32,6 +35,7 @@ class AmbiguousStreamException(StreamException):
 			msg += 'options: ' + ', '.join(streams)
 		super().__init__(msg)
 		self.streams = streams
+
 
 class AlreadySubscribedException(StreamException):
 	def __init__(self, stream):
@@ -140,6 +144,7 @@ def _fetch_twitch_data(channels):
 	result.close()
 	return json.loads(response)
 
+
 def _fetch_twitch(urls):
 	"""From a collection of URLs, get the ones that are live on twitch.tv."""
 	channels = [
@@ -172,6 +177,7 @@ def _fetch_hitbox_data(channels):
 		return []
 
 	return json.loads(response)
+
 
 def _fetch_hitbox(urls):
 	"""From a collection of URLs, get the ones that are live on hitbox.tv."""

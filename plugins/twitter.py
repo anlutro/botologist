@@ -1,7 +1,9 @@
 import datetime
-import ircbot.plugin
 import tweepy
+
 from ircbot import cfg
+import ircbot.plugin
+
 
 class TwitterPlugin(ircbot.plugin.Plugin):
 	SPAM_THROTTLE = 10
