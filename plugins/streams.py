@@ -119,7 +119,7 @@ class Stream:
 		if validate and len(segments) < 2:
 			raise InvalidStreamException('Missing parts of URL')
 
-		if validate and re.match('^[\w\_]+$', segments[1]) is None:
+		if validate and re.match(r'^[\w\_]+$', segments[1]) is None:
 			raise InvalidStreamException('Invalid characters in channel name')
 
 		url = '/'.join(segments[:2])
@@ -358,7 +358,6 @@ class StreamManager:
 			self._cached_streams.push(streams)
 		except (urllib.error.URLError, socket.timeout):
 			log.warning('Could not fetch online streams!')
-			pass
 
 		self._last_fetch = now
 

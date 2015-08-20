@@ -10,7 +10,7 @@ def _get_qlr_data(nick):
 	url = 'http://www.qlranks.com/api.aspx?' + urllib.parse.urlencode({'nick':nick})
 	response = urllib.request.urlopen(url, timeout=4)
 	data = response.read().decode()
-	return json.loads(content)['players'][0]
+	return json.loads(data)['players'][0]
 
 
 def _get_qlr_elo(nick, modes=None):

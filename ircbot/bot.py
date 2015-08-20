@@ -34,7 +34,7 @@ class Channel(ircbot.irc.Channel):
 	Added functionality for adding various handlers from plugins, as plugins are
 	registered on a per-channel basis.
 	"""
-	def __init__(self, channel, **kwargs):
+	def __init__(self, channel):
 		super().__init__(channel)
 		self.commands = {}
 		self.joins = []
@@ -70,7 +70,7 @@ class Bot(ircbot.irc.Client):
 	SPAM_THROTTLE = 2
 
 	def __init__(self, server, admins=None, bans=None, storage_dir=None,
-	             global_plugins=None, http_port=None, http_host=None, **kwargs):
+			global_plugins=None, http_port=None, http_host=None, **kwargs):
 		super().__init__(server, **kwargs)
 		self.error_handler = ircbot.error.ErrorHandler(self)
 		self.conn.error_handler = self.error_handler.handle_error

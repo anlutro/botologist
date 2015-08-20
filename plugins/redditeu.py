@@ -14,14 +14,16 @@ class Bitcoin:
 		'mutalisks off creep', 'floating cars', 'floating keys', 'burned rice',
 		'wordpress conference tickets', 'base64 encoded o\'reilly books',
 		'rolls of vitamin E toilet paper', 'one-night trips to Rhodos',
-		'WISPY BEARDED POT SMOKING FAT FAGCUNT BITCOIN WORSHIPPERS WHO OBSESS OVER ME AND MAKE A SPORT OUT OF DRIVING ME INSANE AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+		('WISPY BEARDED POT SMOKING FAT FAGCUNT BITCOIN WORSHIPPERS WHO OBSESS '
+		 'OVER ME AND MAKE A SPORT OUT OF DRIVING ME INSANE AAAAAAAAAAAAAAAAAAA'
+		 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'),
 	)
 
 	@classmethod
 	def get_worth(cls):
-		num = random.randint(100,100000) / 100
+		num = random.randint(100, 100000) / 100
 		currency = random.choice(cls.currencies)
-		return '%.2f %s' % (num, currency)	
+		return '%.2f %s' % (num, currency)
 
 
 class Raziel:
@@ -34,16 +36,16 @@ class Raziel:
 
 
 def get_random_time():
-	h = random.choice((
+	hour = random.choice((
 		random.randint(-23, -1),
 		random.randint(13, 32),
 	))
 
-	m = random.randint(0,99)
+	minute = random.randint(0, 99)
 
 	ampm = random.choice(('AM', 'PM'))
 
-	return '{}:{} {}'.format(h, str(m).zfill(2), ampm)
+	return '{}:{} {}'.format(hour, str(minute).zfill(2), ampm)
 
 
 class RedditeuPlugin(ircbot.plugin.Plugin):
@@ -57,7 +59,7 @@ class RedditeuPlugin(ircbot.plugin.Plugin):
 		channel = self.bot.conn.channels.get(cmd.message.target)
 		if not channel:
 			return
-		for (host,nick) in channel.host_map.items():
+		for host, nick in channel.host_map.items():
 			if 'nevzetz' in host or 'ip51cc146b.speed.planet.nl' in host:
 				return 'Michael is ' + nick
 		return 'Michael not found!'

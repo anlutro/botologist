@@ -90,7 +90,7 @@ class PluginMetaclass(type):
 					name=name, fname=fname))
 				self._http_handlers.append(fname)
 
-		return super().__init__(name, bases, attrs)
+		super().__init__(name, bases, attrs)
 
 
 class Plugin(metaclass=PluginMetaclass):

@@ -7,7 +7,7 @@ import sys
 import threading
 
 
-def _decode(bytes):
+def _decode(bytestring):
 	"""Attempt to decode a byte string into a UTF-8 string.
 
 	Because IRC doesn't enforce any particular encoding, we have to either guess
@@ -15,12 +15,13 @@ def _decode(bytes):
 	ISO-8859-1 (Windows) are the most common, so we just try those two.
 	"""
 	try:
-		return bytes.decode('utf-8').strip()
+		return bytestring.decode('utf-8').strip()
 	except UnicodeDecodeError:
 		try:
-			return bytes.decode('iso-8859-1').strip()
+			return bytestring.decode('iso-8859-1').strip()
 		except:
 			log.error('Could not decode message')
+			return None
 
 
 class User:
@@ -128,7 +129,7 @@ class Channel:
 class Connection:
 	MAX_MSG_CHARS = 500
 
-	def __init__(self, nick, username = None, realname = None):
+	def __init__(self, nick, username=None, realname=None):
 		self.nick = nick
 		self.username = username or nick
 		self.realname = realname or nick
@@ -227,11 +228,11 @@ class Connection:
 					log.debug(repr(msg))
 					try:
 						self.handle_msg(msg)
-					except Exception as e:
+					except Exception as exception:
 						# if an error handler is defined, call it and continue
 						# the loop. if not, re-raise the exception
 						if self.error_handler:
-							self.error_handler(e)
+							self.error_handler(exception)
 						else:
 							raise
 
@@ -332,7 +333,7 @@ class Connection:
 
 
 class Client:
-	def __init__(self, server, nick = '__bot__', username = None, realname = None):
+	def __init__(self, server, nick='__bot__', username=None, realname=None):
 		self.conn = Connection(nick, username, realname)
 		self.server = Server(server)
 		self.conn.on_welcome.append(self._join_channels)
@@ -346,7 +347,7 @@ class Client:
 			self.conn.join_channel(channel)
 
 	def run_forever(self):
-		# quit more gracefully
+		# pylint: disable=unused-argument
 		def sigterm_handler(signo, stack_frame):
 			sys.exit(0)
 		signal.signal(signal.SIGTERM, sigterm_handler)

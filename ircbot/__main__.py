@@ -14,6 +14,6 @@ if len(sys.argv) > 1:
 		yml_config = os.path.join(root, yml_config)
 
 ircbot.run_bot(
-	yml_config = yml_config,
-	storage_dir = storage_dir
+	yml_config=yml_config,
+	storage_dir=storage_dir
 )

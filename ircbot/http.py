@@ -4,7 +4,7 @@ import http.server
 class RequestHandler(http.server.BaseHTTPRequestHandler):
 	@property
 	def bot(self):
-	    return self.server.bot
+		return self.server.bot
 
 	def do_GET(self):
 		self.send_response(200)
@@ -41,7 +41,7 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
 					ret = None
 
 					if not handler._http_path:
-						ret = handler(path=path, **kwargs)
+						ret = handler(path=self.path, **kwargs)
 					else:
 						if handler._http_path == self.path:
 							ret = handler(**kwargs)

@@ -6,8 +6,11 @@ python:
 
 install:
   - pip install -r requirements.txt
+  - pip install pylint
 
 script:
-  - ./run -t
+  - python -m unittest discover -s ./tests/ -p '*_test.py'
+  - pylint --rcfile=.pylintrc --format=text --reports=n --confidence=high ircbot
+  - pylint --rcfile=.pylintrc --format=text --reports=n --confidence=high plugins
 
 sudo: false

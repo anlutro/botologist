@@ -1,0 +1,17 @@
+[REPORTS]
+reports=no
+output-format=colorized
+
+[MESSAGES CONTROL]
+# C0103: invalid-name
+# C0111: missing-docstring
+# C0330: bad-continuation
+# W1202: logging-format-interpolation
+disable=
+  C0103,
+  C0111,
+  C0330,
+  W1202
+
+[FORMAT]
+indent-string=\t

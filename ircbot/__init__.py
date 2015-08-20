@@ -19,17 +19,17 @@ def run_bot(storage_dir, yml_config):
 		root.setLevel(log_level)
 
 		if log_path is None:
-			ch = logging.StreamHandler(sys.stdout)
+			handler = logging.StreamHandler(sys.stdout)
 		else:
-			ch = logging.handlers.RotatingFileHandler(log_path, maxBytes=(1048576*5), backupCount=7)
-		ch.setLevel(log_level)
+			handler = logging.handlers.RotatingFileHandler(log_path, maxBytes=(1048576*5), backupCount=7)
+		handler.setLevel(log_level)
 
 		# define the logging format
 		formatter = logging.Formatter('[%(asctime)s] %(levelname)s - %(name)s - %(message)s')
-		ch.setFormatter(formatter)
+		handler.setFormatter(formatter)
 
 		# add the logging handler for all loggers
-		root.addHandler(ch)
+		root.addHandler(handler)
 
 
 	def configure_plugins(bot, plugins_dict):
@@ -62,8 +62,8 @@ def run_bot(storage_dir, yml_config):
 	try:
 		# initialize the bot object
 		bot = ircbot.bot.Bot(
-			storage_dir = storage_dir,
-			global_plugins = cfg.get('global_plugins', []),
+			storage_dir=storage_dir,
+			global_plugins=cfg.get('global_plugins', []),
 			**cfg.get('bot', {})
 		)
 
