@@ -1,5 +1,6 @@
-# debug, info, warn, error
-log_level: debug
+# configure logging
+log_level: debug # debug, info, warn, error
+log_path: /var/log/ircbot.log
 
 bot:
   # the server to connect to
@@ -10,27 +11,49 @@ bot:
   username: pyircbot
   # the real name - shows up in /whois
   realname: pyircbot
-  # hostmarks for admins
+  # hosts of global admin users
   admins:
-    - user@some.host.com
-  # hostmarks for banned users
+    - my.host.com
+  # hosts of banned users
   bans:
-    - user@some.host.com
+    - banned.host.com
+  # if you want to run a HTTP server for webhooks, uncomment these lines
+  # http_host: localhost
+  # http_port: 9123
 
 # plugin map in the format of "name: classname"
 # the class will be lazily imported and instantiated.
 plugins:
   default: plugins.default.DefaultPlugin
   streams: plugins.streams.StreamsPlugin
+  twitter: plugins.twitter.TwitterPlugin
 
 # plugins that are enabled in every channel
 global_plugins:
   - default
 
-# channels the bot joins on connect. obviously omit the # character from the
-# channel name, as this is used to denote a comment in YML.
+# channels the bot joins on connect. since the character starts a comment in
+# YAML, wrap the channel name in quotes or leave out the #. each channel can
+# have their own set of admins and plugins which only apply to that channel.
 channels:
   mychannel:
-    plugins: []
-  myotherchannel:
-    plugins: ['streams']
+    admins:
+      - some.other.host.com
+    plugins:
+      - streams
+  '##otherchannel':
+    plugins:
+      - twitter
+
+# uncomment these lines to enable the !mumble command
+# mumble:
+#   address: my.host.com
+#   port: 64738
+#   password: p4sSw0rD
+
+# uncomment these lines to enable twitter text fetching
+# twitter_api:
+#   consumer_key: 'consumer_key'
+#   consumer_secret: 'consumer_secret'
+#   access_token: 'access_token'
+#   access_token_secret: 'access_token_secret'
