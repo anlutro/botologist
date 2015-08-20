@@ -8,6 +8,7 @@ import ircbot.error
 import ircbot.http
 import ircbot.irc
 import ircbot.plugin
+import ircbot.util
 
 
 class CommandMessage:
@@ -107,9 +108,10 @@ class Bot(ircbot.irc.Client):
 		if self.http_port:
 			log.info('Running HTTP server on {}:{}'.format(
 				self.http_host, self.http_port))
-			thread = threading.Thread(
+			thread = ircbot.util.ErrorProneThread(
 				target=ircbot.http.run_http_server,
-				args=(self, self.http_host, self.http_port))
+				args=(self, self.http_host, self.http_port),
+				error_handler=self.error_handler.handle_error)
 			thread.start()
 		super().run_forever()
 
@@ -224,8 +226,10 @@ class Bot(ircbot.irc.Client):
 
 		if command_func._is_threaded:
 			log.debug('Starting thread for command {}'.format(cmd_string))
-			thread = threading.Thread(target=self._maybe_send_cmd_reply,
-				args=(command_func, message))
+			thread = ircbot.util.ErrorProneThread(
+				target=self._maybe_send_cmd_reply,
+				args=(command_func, message),
+				error_handler=self.error_handler.handle_error)
 			thread.start()
 		else:
 			self._maybe_send_cmd_reply(command_func, message)
