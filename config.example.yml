@@ -1,6 +1,7 @@
-# configure logging
-log_level: debug # debug, info, warn, error
+# set this to null to log to STDOUT.
 log_path: /var/log/ircbot.log
+# available log levels: debug, info, warn, error
+log_level: debug
 
 bot:
   # the server to connect to
