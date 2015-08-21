@@ -1,8 +1,6 @@
 from tests.plugin import PluginTestCase
 
 class DefaultPluginTest(PluginTestCase):
-	cfg = {'bot': {'nick': 'foobar'}}
-
 	def create_plugin(self):
 		import plugins.default as default
 		return default.DefaultPlugin(self.bot, self.channel)
@@ -14,19 +12,20 @@ class DefaultPluginTest(PluginTestCase):
 	def test_mumble(self):
 		self.assertEqual(None, self.cmd('mumble'))
 
-		from ircbot import cfg
-		cfg.update({'mumble': {'address': 'localhost', 'port': 1234}})
+		self.bot.config.update({'mumble': {
+			'address': 'localhost', 'port': 1234
+		}})
 		self.assertEqual('Mumble (http://mumble.info) - address: localhost - port: 1234', self.cmd('mumble'))
 
 	def test_insults(self):
 		expected = 'fuck you too test'
-		self.assertEqual(expected, self.reply('fuck you foobar'))
-		self.assertEqual(expected, self.reply('fuck you, foobar'))
-		self.assertEqual(expected, self.reply('fuck you, foobar!'))
-		self.assertEqual(expected, self.reply('foobar fuck you'))
-		self.assertEqual(expected, self.reply('foobar, fuck you'))
-		self.assertEqual(expected, self.reply('foobar: fuck you'))
-		self.assertEqual(expected, self.reply('foobar: fuck you!'))
+		self.assertEqual(expected, self.reply('fuck you pyircbot'))
+		self.assertEqual(expected, self.reply('fuck you, pyircbot'))
+		self.assertEqual(expected, self.reply('fuck you, pyircbot!'))
+		self.assertEqual(expected, self.reply('pyircbot fuck you'))
+		self.assertEqual(expected, self.reply('pyircbot, fuck you'))
+		self.assertEqual(expected, self.reply('pyircbot: fuck you'))
+		self.assertEqual(expected, self.reply('pyircbot: fuck you!'))
 
 	def test_works(self):
 		expected = 'I always work'

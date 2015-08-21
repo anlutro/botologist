@@ -2,13 +2,22 @@ import random
 import re
 
 import ircbot.plugin
-from ircbot import cfg
 
 
 class DefaultPlugin(ircbot.plugin.Plugin):
+	def __init__(self, bot, channel):
+		super().__init__(bot, channel)
+
+		self.insults = (
+			(re.compile(r'.*fuck(\s+you)\s*,?\s*'+self.bot.nick+'.*', re.IGNORECASE),
+			'fuck you too {nick}'),
+			(re.compile(r'.*'+self.bot.nick+'[,:]?\s+fuck\s+you.*', re.IGNORECASE),
+			'fuck you too {nick}'),
+		)
+
 	@ircbot.plugin.command('mumble')
 	def mumble(self, msg):
-		mumble_cfg = cfg.get('mumble')
+		mumble_cfg = self.bot.config.get('mumble')
 		if not mumble_cfg:
 			return None
 		retstr = 'Mumble (http://mumble.info) - address: {address} - port: {port}'
@@ -21,12 +30,6 @@ class DefaultPlugin(ircbot.plugin.Plugin):
 		if '(╯°□°)╯︵ ┻━┻' in msg.message:
 			return '┬─┬ ノ( ゜-゜ノ)'
 
-	insults = (
-		(re.compile(r'.*fuck(\s+you)\s*,?\s*'+cfg['bot']['nick']+'.*', re.IGNORECASE),
-		'fuck you too {nick}'),
-		(re.compile(r'.*'+cfg['bot']['nick']+'[,:]?\s+fuck\s+you.*', re.IGNORECASE),
-		'fuck you too {nick}'),
-	)
 
 	@ircbot.plugin.reply()
 	def return_insults(self, msg):

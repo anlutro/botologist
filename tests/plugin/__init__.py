@@ -9,9 +9,14 @@ class PluginTestCase(unittest.TestCase):
 	cfg = {}
 
 	def setUp(self):
-		ircbot.cfg.update(self.cfg)
 		self.channel = irc.Channel('#test')
-		self.bot = bot.Bot('localhost:6667')
+		self.bot = bot.Bot({
+			'storage_dir': '/tmp/ircbot',
+			'bot': {
+				'server': 'localhost:6667',
+			},
+		})
+		self.bot.config.update(self.cfg)
 		self.plugin = self.create_plugin()
 
 	def create_plugin(self):

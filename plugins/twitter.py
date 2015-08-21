@@ -1,7 +1,6 @@
 import datetime
 import tweepy
 
-from ircbot import cfg
 import ircbot.plugin
 
 
@@ -10,7 +9,7 @@ class TwitterPlugin(ircbot.plugin.Plugin):
 
 	def __init__(self, bot, channel):
 		super().__init__(bot, channel)
-		self.cfg = cfg.get('twitter_api')
+		self.cfg = self.bot.config.get('twitter_api')
 		if not self.cfg:
 			raise RuntimeError('twitter_api config missing - check your config file!')
 		self.api = None

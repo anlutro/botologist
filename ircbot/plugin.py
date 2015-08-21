@@ -50,7 +50,7 @@ def http_handler(method='POST', path=None):
 
 class PluginMetaclass(type):
 	"""Metaclass for the Plugin class."""
-	def __init__(self, name, bases, attrs):
+	def __init__(cls, name, bases, attrs):
 		"""Initialize the metaclass, setting up the plugin's attributes.
 
 		This method scans the class definition for methods decorated with
@@ -58,37 +58,37 @@ class PluginMetaclass(type):
 		replies or tickers property, respectively.
 		"""
 
-		self._commands = {}
-		self._joins = []
-		self._replies = []
-		self._tickers = []
-		self._http_handlers = []
+		cls._commands = {}
+		cls._joins = []
+		cls._replies = []
+		cls._tickers = []
+		cls._http_handlers = []
 
 		for fname, f in attrs.items():
 			if hasattr(f, '_command'):
 				log.debug('{name}.{fname} is a command'.format(
 					name=name, fname=fname))
-				self._commands[f._command] = fname
+				cls._commands[f._command] = fname
 
 			if hasattr(f, '_is_join'):
 				log.debug('{name}.{fname} is a join reply'.format(
 					name=name, fname=fname))
-				self._joins.append(fname)
+				cls._joins.append(fname)
 
 			if hasattr(f, '_is_reply'):
 				log.debug('{name}.{fname} is a reply'.format(
 					name=name, fname=fname))
-				self._replies.append(fname)
+				cls._replies.append(fname)
 
 			if hasattr(f, '_is_ticker'):
 				log.debug('{name}.{fname} is a ticker'.format(
 					name=name, fname=fname))
-				self._tickers.append(fname)
+				cls._tickers.append(fname)
 
 			if hasattr(f, '_http_method'):
 				log.debug('{name}.{fname} is a HTTP request handler'.format(
 					name=name, fname=fname))
-				self._http_handlers.append(fname)
+				cls._http_handlers.append(fname)
 
 		super().__init__(name, bases, attrs)
 
@@ -99,6 +99,7 @@ class Plugin(metaclass=PluginMetaclass):
 		assert isinstance(channel, ircbot.irc.Channel)
 		assert isinstance(bot, ircbot.bot.Bot)
 
+		# pylint: disable=no-member
 		self.commands = {}
 		for command, callback in self._commands.items():
 			self.commands[command] = getattr(self, callback)
@@ -118,6 +119,7 @@ class Plugin(metaclass=PluginMetaclass):
 		self.http_handlers = []
 		for http_handler in self._http_handlers:
 			self.http_handlers.append(getattr(self, http_handler))
+		# pylint: enable=no-member
 
 		log.debug('Instantiating plugin {plugin} for channel {channel}'.format(
 			plugin=self.__class__.__name__, channel=channel.channel))

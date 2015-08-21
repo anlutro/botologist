@@ -338,6 +338,10 @@ class Client:
 		self.server = Server(server)
 		self.conn.on_welcome.append(self._join_channels)
 
+	@property
+	def nick(self):
+		return self.conn.nick
+
 	def add_channel(self, channel):
 		channel = Channel(channel)
 		self.server.add_channel(channel)
@@ -347,8 +351,7 @@ class Client:
 			self.conn.join_channel(channel)
 
 	def run_forever(self):
-		# pylint: disable=unused-argument
-		def sigterm_handler(signo, stack_frame):
+		def sigterm_handler(signo, stack_frame): # pylint: disable=unused-argument
 			sys.exit(0)
 		signal.signal(signal.SIGTERM, sigterm_handler)
 

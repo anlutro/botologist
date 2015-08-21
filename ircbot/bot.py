@@ -3,6 +3,7 @@ log = logging.getLogger(__name__)
 
 import datetime
 import threading
+import importlib
 
 import ircbot.error
 import ircbot.http
@@ -70,26 +71,55 @@ class Bot(ircbot.irc.Client):
 	# spam throttling in seconds
 	SPAM_THROTTLE = 2
 
-	def __init__(self, server, admins=None, bans=None, storage_dir=None,
-			global_plugins=None, http_port=None, http_host=None, **kwargs):
-		super().__init__(server, **kwargs)
+	def __init__(self, config):
+		bot_config = config['bot']
+		nick = bot_config.get('nick', 'pyircbot')
+		super().__init__(
+			server=bot_config['server'],
+			nick=nick,
+			username=bot_config.get('username', nick),
+			realname=bot_config.get('realname', nick),
+		)
+
+		self.config = config
+		self.storage_dir = config['storage_dir']
+
+		self.admins = bot_config.get('admins', [])
+		self.bans = bot_config.get('bans', [])
+		self.global_plugins = config.get('global_plugins', [])
+
+		self.plugins = {}
+		self._command_log = {}
+		self._last_command = None
+		self._reply_log = {}
+		self.timer = None
+
+		self.http_port = bot_config.get('http_port')
+		self.http_host = bot_config.get('http_host')
+		self.http_server = None
+
 		self.error_handler = ircbot.error.ErrorHandler(self)
 		self.conn.error_handler = self.error_handler.handle_error
 		self.conn.on_welcome.append(self._start_tick_timer)
 		self.conn.on_join.append(self._handle_join)
 		self.conn.on_privmsg.append(self._handle_privmsg)
-		self.storage_dir = storage_dir
-		self.plugins = {}
-		self.admins = admins or []
-		self.bans = bans or []
-		self.global_plugins = global_plugins or []
-		self._command_log = {}
-		self._last_command = None
-		self._reply_log = {}
-		self.timer = None
-		self.http_port = http_port
-		self.http_host = http_host
-		self.http_server = None
+
+		# configure plugins
+		for name, plugin_class in config.get('plugins', {}).items():
+			# convenience compatibility layer for when plugins module was moved
+			plugin_class = plugin_class.replace('ircbot.plugin.', 'plugins.')
+
+			# dynamically import the plugin module and pass the class
+			parts = plugin_class.split('.')
+			module = importlib.import_module('.'.join(parts[:-1]))
+			plugin_class = getattr(module, parts[-1])
+			self.register_plugin(name, plugin_class)
+
+		# configure channels
+		for name, channel in config.get('channels', {}).items():
+			self.add_channel(name,
+				channel.get('plugins', []),
+				channel.get('admins', []))
 
 	@property
 	def channels(self):
@@ -133,7 +163,8 @@ class Bot(ircbot.irc.Client):
 		self.plugins[name] = plugin
 
 	def add_channel(self, channel, plugins=None, admins=None):
-		channel = Channel(channel)
+		if not isinstance(channel, Channel):
+			channel = Channel(channel)
 
 		# channel-specific plugins
 		if plugins:
