@@ -79,3 +79,8 @@ class RedditeuPlugin(ircbot.plugin.Plugin):
 	def no_more_that_are_stupid(self, msg):
 		if 'no more irc binds that are stupid' in msg.message.lower():
 			return 'https://www.youtube.com/watch?v=LGxS-qjViNQ'
+
+	@ircbot.plugin.reply()
+	def garner_masturbation_video(self, msg):
+		if 'garner masturbation video' in msg.message.lower():
+			return 'https://www.youtube.com/watch?v=akTE1n-U0C0'
