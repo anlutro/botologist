@@ -52,7 +52,7 @@ Users have access to `!sub <stream>` and `!unsub <stream>`, which toggles notifi
 
 To run tests, `./run tests`. Note that not all parts of the code is under test, so do try to actually run the bot with your new functionaliy before you decide it's a success.
 
-To run code linting, `./run lint <module.name>`. Note that linting will show some false positives, but important ones should show up in red.
+To run code linting, first make sure pylint is installed in your virtualenv with `pip install pylint`. To run linting, run `./run lint`. Optionally, you can lint only a single module, for example `./run lint plugins.default` Note that linting will show some false positives, but important ones should show up in red.
 
 ### Pull requests
 
