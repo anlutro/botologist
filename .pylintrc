@@ -8,7 +8,8 @@ disable =
   invalid-name,
   logging-format-interpolation,
   missing-docstring,
-  protected-access
+  protected-access,
+  unused-argument
 
 [FORMAT]
 indent-string = \t
