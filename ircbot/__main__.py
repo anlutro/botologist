@@ -7,6 +7,7 @@ import sys
 import yaml
 
 import ircbot
+import ircbot.bot
 
 root_dir = os.getcwd()
 config_path = os.path.join(root_dir, 'config.yml')
@@ -51,4 +52,11 @@ handler.setFormatter(formatter)
 # add the logging handler for all loggers
 root.addHandler(handler)
 
-ircbot.run_bot(config)
+# initialize and run the bot
+try:
+	bot = ircbot.bot.Bot(config)
+	bot.run_forever()
+except:
+	log.exception('Uncaught exception')
+	print('An exception occurred - check log for details. Exiting!')
+	sys.exit(1)
