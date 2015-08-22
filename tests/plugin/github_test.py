@@ -24,7 +24,7 @@ class DefaultPluginTest(PluginTestCase):
 		return {
 			'X-GitHub-Event': event,
 			'X-GitHub-Delivery': 'FAKEGUID',
-			'X-Hub-Signature': signature,
+			'X-Hub-Signature': 'sha1=' + signature,
 		}
 
 	def trigger_webhook(self, event):

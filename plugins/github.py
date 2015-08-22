@@ -31,15 +31,14 @@ class GithubPlugin(ircbot.plugin.Plugin):
 		elif event == 'push':
 			ret = self.handle_push(data)
 
-		log.info('Returning from Github hook: %s', ret)
 		if ret:
 			return ret
 
 	def check_hmac(self, body, signature):
 		hmac_obj = hmac.new(self.secret, body.encode('utf-8'), hashlib.sha1)
-		calculated = hmac_obj.hexdigest()
+		calculated = 'sha1=' + hmac_obj.hexdigest()
 		if not hmac.compare_digest(calculated, signature):
-			print(calculated, signature)
+			log.warn('HMAC mismatch: %s %s', signature, calculated)
 			raise Exception('Github webhook signature mismatch!')
 
 	# https://developer.github.com/v3/activity/events/types/#issuesevent
