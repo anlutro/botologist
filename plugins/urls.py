@@ -9,15 +9,14 @@ import re
 import ircbot.plugin
 
 
-url_shorteners = (
+url_shorteners = r'|'.join((
 	r'https?://bit\.ly',
 	r'https?://goo\.gl',
 	r'https?://is\.gd',
 	r'https?://redd\.it',
 	r'https?://t\.co',
 	r'https?://tinyurl\.com',
-)
-url_shorteners = r'|'.join(url_shorteners)
+))
 short_url_regex = re.compile(r'((' + url_shorteners + r')\/[a-zA-Z0-9]+)')
 
 
