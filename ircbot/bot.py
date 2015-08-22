@@ -72,20 +72,25 @@ class Bot(ircbot.irc.Client):
 	SPAM_THROTTLE = 2
 
 	def __init__(self, config):
-		bot_config = config['bot']
-		nick = bot_config.get('nick', 'pyircbot')
+		bot_config = config.get('bot', {})
+
+		# some config options will be moved from "bot" to the root of the config
+		def get_config_compat(key, default=None):
+			return bot_config.get(key) or config.get(key, default)
+
+		nick = get_config_compat('nick', 'pyircbot')
 		super().__init__(
-			server=bot_config['server'],
+			server=get_config_compat('server'),
 			nick=nick,
-			username=bot_config.get('username', nick),
-			realname=bot_config.get('realname', nick),
+			username=get_config_compat('username', nick),
+			realname=get_config_compat('realname', nick),
 		)
 
 		self.config = config
 		self.storage_dir = config['storage_dir']
 
-		self.admins = bot_config.get('admins', [])
-		self.bans = bot_config.get('bans', [])
+		self.admins = get_config_compat('admins', [])
+		self.bans = get_config_compat('bans', [])
 		self.global_plugins = config.get('global_plugins', [])
 
 		self.plugins = {}
@@ -94,8 +99,8 @@ class Bot(ircbot.irc.Client):
 		self._reply_log = {}
 		self.timer = None
 
-		self.http_port = bot_config.get('http_port')
-		self.http_host = bot_config.get('http_host')
+		self.http_port = get_config_compat('http_port')
+		self.http_host = get_config_compat('http_host')
 		self.http_server = None
 
 		self.error_handler = ircbot.error.ErrorHandler(self)

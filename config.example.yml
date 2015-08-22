@@ -1,26 +1,27 @@
-# set this to null to log to STDOUT.
+# set this to null to log to STDOUT instead
 log_path: /var/log/ircbot.log
 # available log levels: debug, info, warn, error
 log_level: debug
 
-bot:
-  # the server to connect to
-  server: irc.quakenet.org:6667
-  # the nick to use
-  nick: pyircbot
-  # the username (ident)
-  username: pyircbot
-  # the real name - shows up in /whois
-  realname: pyircbot
-  # hosts of global admin users
-  admins:
-    - my.host.com
-  # hosts of banned users
-  bans:
-    - banned.host.com
-  # if you want to run a HTTP server for webhooks, uncomment these lines
-  # http_host: localhost
-  # http_port: 9123
+# the server to connect to
+server: irc.quakenet.org:6667
+
+# the nick to use
+nick: pyircbot
+
+# the username (ident)
+username: pyircbot
+
+# the real name - shows up in /whois
+realname: pyircbot
+
+# hosts of global admin users
+admins:
+  - my.host.com
+
+# hosts of banned users
+bans:
+  - banned.host.com
 
 # plugins that are enabled in every channel
 global_plugins:
@@ -52,3 +53,7 @@ channels:
 #   consumer_secret: 'consumer_secret'
 #   access_token: 'access_token'
 #   access_token_secret: 'access_token_secret'
+
+# if you want to run a HTTP server for webhooks, uncomment these lines
+# http_host: localhost
+# http_port: 9123
