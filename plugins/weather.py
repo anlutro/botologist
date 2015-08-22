@@ -27,10 +27,11 @@ class WeatherPlugin(ircbot.plugin.Plugin):
 			return 'An HTTP error occured, try again later!'
 
 		data = json.loads(response)
+		status = int(data['cod'])
 
-		if int(data['cod']) != 200:
-			if 'Error: Not found city' in data['message']:
-				return 'Error: City not found'
+		if status == 404:
+			return 'Error: City not found'
+		elif status != 200
 			return data['message']
 
 		location = '{}, {}'.format(data['name'], data['sys']['country'])
