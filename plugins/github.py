@@ -15,7 +15,7 @@ class GithubPlugin(ircbot.plugin.Plugin):
 	@ircbot.plugin.http_handler(method='POST', path='/github')
 	def handle_github_hook(self, body, headers):
 		event = headers['X-GitHub-Event']
-		guid = headers['X-GitHub-Deliver']
+		guid = headers['X-GitHub-Delivery']
 		log.info('Received github event: %s - GUID: %s', event, guid)
 
 		signature = headers['X-Hub-Signature']

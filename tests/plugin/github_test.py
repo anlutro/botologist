@@ -23,7 +23,7 @@ class DefaultPluginTest(PluginTestCase):
 		signature = hmac_obj.hexdigest()
 		return {
 			'X-GitHub-Event': event,
-			'X-GitHub-Deliver': 'FAKEGUID',
+			'X-GitHub-Delivery': 'FAKEGUID',
 			'X-Hub-Signature': signature,
 		}
 
