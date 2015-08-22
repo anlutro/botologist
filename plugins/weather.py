@@ -28,6 +28,9 @@ class WeatherPlugin(ircbot.plugin.Plugin):
 
 		data = json.loads(response)
 
+		if int(data['cod']) != 200:
+			return data['message']
+
 		location = '{}, {}'.format(data['name'], data['sys']['country'])
 		weather = data['weather'][0]['main']
 		temperature = data['main']['temp']
