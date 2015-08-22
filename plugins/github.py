@@ -31,6 +31,7 @@ class GithubPlugin(ircbot.plugin.Plugin):
 		elif event == 'push':
 			ret = self.handle_push(data)
 
+		log.info('Returning from Github hook: %s', ret)
 		if ret:
 			return ret
 
