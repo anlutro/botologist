@@ -3,11 +3,11 @@ from tests.plugin import PluginTestCase
 
 class ConversionPluginTest(PluginTestCase):
 	def create_plugin(self):
-		from plugins.convert import ConversionPlugin
+		from plugins.conversion import ConversionPlugin
 		return ConversionPlugin(self.bot, self.channel)
 
-	@mock.patch('plugins.convert.get_currency_data', return_value={})
-	@mock.patch('plugins.convert.get_conversion_result', return_value='TEST')
+	@mock.patch('plugins.conversion.get_currency_data', return_value={})
+	@mock.patch('plugins.conversion.get_conversion_result', return_value='TEST')
 	def test_converts(self, currency_mock, convert_mock):
 		self.assertEqual('TEST', self.reply('100 kg into stones'))
 		self.assertEqual('TEST', self.reply('100 kg to stones'))
@@ -15,9 +15,9 @@ class ConversionPluginTest(PluginTestCase):
 		self.assertEqual('TEST', self.reply('100 KG in stones'))
 		self.assertEqual('TEST', self.reply('asdsa 100 kg in stones asda'))
 
-	@mock.patch('plugins.convert.get_currency_data',
+	@mock.patch('plugins.conversion.get_currency_data',
 		return_value={ 'NOK': 8.00, 'DKK': 6.00 })
-	@mock.patch('plugins.convert.get_conversion_result', return_value='TEST')
+	@mock.patch('plugins.conversion.get_conversion_result', return_value='TEST')
 	def test_converts(self, currency_mock, convert_mock):
 		self.assertEqual('10 eur = 80.00 nok', self.reply('10 eur into nok'))
 		self.assertEqual('10 eur = 60.00 dkk', self.reply('10 eur into dkk'))

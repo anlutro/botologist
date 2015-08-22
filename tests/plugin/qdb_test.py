@@ -1,12 +1,12 @@
 import unittest.mock as mock
 from tests.plugin import PluginTestCase
 
-f = 'plugins.redditeu_qdb._get_qdb_data'
+f = 'plugins.qdb._get_qdb_data'
 
-class RedditeuQdbPluginTest(PluginTestCase):
+class QdbPluginTest(PluginTestCase):
 	def create_plugin(self):
-		from plugins.redditeu_qdb import RedditeuQdbPlugin
-		return RedditeuQdbPlugin(self.bot, self.channel)
+		from plugins.qdb import QdbPlugin
+		return QdbPlugin(self.bot, self.channel)
 
 	def test_search_quote_no_results(self):
 		data = {'quotes': []}

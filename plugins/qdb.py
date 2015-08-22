@@ -87,7 +87,7 @@ def _search_for_quote(quote):
 	return url + ' - ' + body
 
 
-class RedditeuQdbPlugin(ircbot.plugin.Plugin):
+class QdbPlugin(ircbot.plugin.Plugin):
 	@ircbot.plugin.command('qdb')
 	def search(self, cmd):
 		if len(cmd.args) < 1:
