@@ -43,4 +43,3 @@ class DefaultPluginTest(PluginTestCase):
 	def test_pull_request(self):
 		ret = self.trigger_webhook('pull_request')
 		self.assertEqual('[baxterthehacker/public-repo] Pull request opened: Update the README with new information - https://github.com/baxterthehacker/public-repo/pull/1', ret)
-
