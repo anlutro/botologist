@@ -12,20 +12,26 @@ class ErrorHandler:
 	def __init__(self, bot):
 		self.bot = bot
 
-	def handle_error(self, exception):
-		log.exception(exception)
-
-		short_msg = type(exception).__name__ + ' - ' + str(exception)
+	def handle_error(self, exception=None):
 		long_msg = traceback.format_exc()
 
-		self.bot._send_msg('An exception has occured: '+short_msg,
-			self.bot.get_admin_nicks())
+		if isinstance(exception, str):
+			short_msg = exception.split('\n')[0]
+		elif isinstance(exception, Exception):
+			short_msg = 'Uncaught exception - {}: {}'.format(
+				type(exception).__name__, + str(exception))
+		else:
+			short_msg = long_msg.split('\n')[-1]
 
-		email = MIMEText(long_msg, _charset='utf-8')
+		log.exception(short_msg)
+
+		self.bot._send_msg(short_msg, self.bot.get_admin_nicks())
+
+		email = MIMEText(long_msg)
 		user = pwd.getpwuid(os.getuid())[0]
 		email['From'] = user
 		email['To'] = user
-		email['Subject'] = 'IRC bot: Uncaught exception'
+		email['Subject'] = '[pyircbot] ' + short_msg
 
 		p = subprocess.Popen(['/usr/sbin/sendmail', '-t', '-oi'],
 			stdin=subprocess.PIPE)

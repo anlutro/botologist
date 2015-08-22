@@ -1,3 +1,6 @@
+import logging
+log = logging.getLogger(__name__)
+
 import http.server
 
 
@@ -50,11 +53,18 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
 					if ret:
 						self.bot._send_msg(ret, channel.channel)
 
+	def log_message(self, string, *args):
+		log.info(string, *args)
+
 
 class HTTPServer(http.server.HTTPServer):
 	def set_bot(self, bot):
 		self.bot = bot
 		bot.http_server = self
+
+	def handle_error(self, request, client_address):
+		msg = 'Exception while handling HTTP request from {}'.format(client_address)
+		self.bot.error_handler.handle_error(msg)
 
 
 def run_http_server(bot, host='', port=8000):
