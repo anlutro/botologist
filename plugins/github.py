@@ -45,7 +45,7 @@ class GithubPlugin(ircbot.plugin.Plugin):
 	def handle_issue(self, data):
 		action = data['action']
 
-		if action not in ('opened', 'closed'):
+		if action not in ('opened', 'reopened', 'closed'):
 			log.info('Not doing anything with Github issue action: %s', action)
 			return None
 
@@ -59,7 +59,7 @@ class GithubPlugin(ircbot.plugin.Plugin):
 	def handle_pr(self, data):
 		action = data['action']
 
-		if action not in ('opened', 'closed'):
+		if action not in ('opened', 'reopened', 'closed'):
 			log.info('Not doing anything with Github pull request action: %s', action)
 			return None
 
