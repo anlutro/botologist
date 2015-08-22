@@ -7,6 +7,10 @@ import ircbot.plugin
 import socket
 
 
+def get_wunderground_data(url):
+	return urllib.request.urlopen(url, timeout=2).read().decode('utf-8')
+
+
 class WeatherPlugin(ircbot.plugin.Plugin):
 	@ircbot.plugin.command('weather')
 	def weather(self, cmd):
@@ -15,24 +19,27 @@ class WeatherPlugin(ircbot.plugin.Plugin):
 			log.warning('Wunderground API key not set on config.yml!')
 			return
 
-		url = 'http://api.wunderground.com/api/{}/geolookup/conditions/q/{}/{}.json'.format(
-			api_key, cmd.args[1], cmd.args[0])
-
 		if len(cmd.args) < 2:
 			return 'Usage: !weather city state/country'
+
+		city = '_'.join(cmd.args[:-1])
+		state_or_country = cmd.args[-1]
+		url = 'http://api.wunderground.com/api/{}/geolookup/conditions/q/{}/{}.json'.format(
+			api_key, city, state_or_country)
+
 		try:
-			response = urllib.request.urlopen(url, timeout=2).read()
+			response = get_wunderground_data(url)
 		except (urllib.error.URLError, socket.timeout):
 			return 'An HTTP error occured, try again later!'
 
-		data = json.loads(response.decode('utf-8'))
+		data = json.loads(response)
 
-		try:
-			city = data['location']['city']
-			weather = data['current_observation']['weather']
-			temperature_string = data['current_observation']['temperature_string']
-		except KeyError as e:
-			return 'Invalid data returned!'
+		if 'error' in data['response']:
+			return 'Error: {}'.format(data['response']['error']['description'])
 
-		return 'Weather in {}: {}, the temperature is {} '.format(
-			city, weather.lower(), temperature_string)
+		location = data['location']['city']
+		weather = data['current_observation']['weather'].lower()
+		temperature = data['current_observation']['temp_c']
+
+		return 'Weather in {}: {} - the temperature is {}°C'.format(
+			location, weather, temperature)

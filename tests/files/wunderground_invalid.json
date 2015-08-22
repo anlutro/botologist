@@ -1,0 +1,17 @@
+
+{
+  "response": {
+  "version":"0.1",
+  "termsofService":"http://www.wunderground.com/weather/api/d/terms.html",
+  "features": {
+  "geolookup": 1
+  ,
+  "conditions": 1
+  }
+		,
+	"error": {
+		"type": "querynotfound"
+		,"description": "No cities match your search query"
+	}
+	}
+}

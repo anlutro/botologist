@@ -5,7 +5,7 @@ import os.path
 from tests.plugin import PluginTestCase
 import plugins.github
 
-class DefaultPluginTest(PluginTestCase):
+class GithubPluginTest(PluginTestCase):
 	def create_plugin(self):
 		self.bot.config['github_secret'] = 'asdf'
 		return plugins.github.GithubPlugin(self.bot, self.channel)
