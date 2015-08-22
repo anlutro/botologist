@@ -22,18 +22,10 @@ bot:
   # http_host: localhost
   # http_port: 9123
 
-# plugin map in the format of "name: classname"
-# the class will be lazily imported and instantiated.
-plugins:
-  default: plugins.default.DefaultPlugin
-  convert: plugins.convert.ConversionPlugin
-  streams: plugins.streams.StreamsPlugin
-  urls: plugins.urls.UrlPlugin
-
 # plugins that are enabled in every channel
 global_plugins:
   - default
-  - urls
+  - url
 
 # channels the bot joins on connect. since the character starts a comment in
 # YAML, wrap the channel name in quotes or leave out the #. each channel can
@@ -46,7 +38,7 @@ channels:
       - streams
   '##otherchannel':
     plugins:
-      - convert
+      - conversion
 
 # uncomment these lines to enable the !mumble command
 # mumble:
@@ -54,7 +46,7 @@ channels:
 #   port: 64738
 #   password: p4sSw0rD
 
-# uncomment these lines to enable twitter text fetching
+# uncomment these lines if you want to use the twitter plugin
 # twitter_api:
 #   consumer_key: 'consumer_key'
 #   consumer_secret: 'consumer_secret'
