@@ -31,7 +31,7 @@ class WeatherPlugin(ircbot.plugin.Plugin):
 
 		if status == 404:
 			return 'Error: City not found'
-		elif status != 200
+		elif status != 200:
 			return data['message']
 
 		location = '{}, {}'.format(data['name'], data['sys']['country'])
