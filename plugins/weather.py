@@ -29,6 +29,8 @@ class WeatherPlugin(ircbot.plugin.Plugin):
 		data = json.loads(response)
 
 		if int(data['cod']) != 200:
+			if 'Error: Not found city' in data['message']:
+				return 'Error: City not found'
 			return data['message']
 
 		location = '{}, {}'.format(data['name'], data['sys']['country'])
