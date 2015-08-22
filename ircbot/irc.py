@@ -352,8 +352,11 @@ class Client:
 
 	def run_forever(self):
 		def sigterm_handler(signo, stack_frame): # pylint: disable=unused-argument
+			self.stop('Terminating, probably back soon!')
 			sys.exit(0)
+		signal.signal(signal.SIGQUIT, sigterm_handler)
 		signal.signal(signal.SIGTERM, sigterm_handler)
+		signal.signal(signal.SIGINT, sigterm_handler)
 
 		try:
 			self.conn.connect(self.server)
