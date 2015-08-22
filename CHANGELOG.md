@@ -4,9 +4,15 @@ This document will describe **breaking changes only** and how to fix issues as y
 
 ## 2015-08-22
 
-Due to https://github.com/anlutro/ircbot/issues/11, your config will probably lead to a few error messages about plugins. To fix this:
+### Plugin system refactored
 
-1. Remove the "plugins" dictionary in your config.yml
+Due to [#11](https://github.com/anlutro/ircbot/issues/11), your config will probably lead to a few error messages about plugins. To fix this:
+
+1. Remove the "plugins" map in your config.yml
 2. Replace "urls" with "url" in global_plugins/channel plugins
 3. Replace "redditeu_qdb" with "qdb" in global_plugins/channel plugins
 4. Replace "convert" with "conversion" in global_plugins/channel plugins
+
+### Config restructuring
+
+Remove the line "bot:" from your config.yml, and un-indent everything that was inside that map.
