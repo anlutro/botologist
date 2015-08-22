@@ -158,11 +158,24 @@ class Bot(ircbot.irc.Client):
 		super().stop(msg)
 
 	def register_plugin(self, name, plugin):
+		if isinstance(plugin, str):
+			parts = plugin.split('.')
+			try:
+				module = importlib.import_module('.'.join(parts[:-1]))
+				plugin = getattr(module, parts[-1])
+			except (AttributeError, ImportError) as exception:
+				msg = 'Could not find plugin class: {}'.format(plugin)
+				raise Exception(msg) from exception
+
 		assert issubclass(plugin, ircbot.plugin.Plugin)
 		log.debug('Plugin "{name}" registered'.format(name=name))
 		self.plugins[name] = plugin
 
 	def add_channel(self, channel, plugins=None, admins=None):
+		def guess_plugin_class(plugin):
+			plugin_class = ''.join(part.title() for part in plugin.split('_'))
+			return 'plugins.{}.{}Plugin'.format(plugin, plugin_class)
+
 		if not isinstance(channel, Channel):
 			channel = Channel(channel)
 
@@ -171,6 +184,9 @@ class Bot(ircbot.irc.Client):
 			assert isinstance(plugins, list)
 			for plugin in plugins:
 				assert isinstance(plugin, str)
+				if not plugin in self.plugins:
+					plugin_class = guess_plugin_class(plugin)
+					self.register_plugin(plugin, plugin_class)
 				log.debug('Adding plugin {plugin} to channel {channel}'.format(
 					plugin=plugin, channel=channel.channel))
 				channel.register_plugin(self.plugins[plugin](self, channel))
@@ -178,6 +194,9 @@ class Bot(ircbot.irc.Client):
 		# global plugins
 		for plugin in self.global_plugins:
 			assert isinstance(plugin, str)
+			if not plugin in self.plugins:
+				plugin_class = guess_plugin_class(plugin)
+				self.register_plugin(plugin, plugin_class)
 			log.debug('Adding plugin {plugin} to channel {channel}'.format(
 				plugin=plugin, channel=channel.channel))
 			channel.register_plugin(self.plugins[plugin](self, channel))
