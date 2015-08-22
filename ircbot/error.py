@@ -19,7 +19,7 @@ class ErrorHandler:
 			short_msg = exception.split('\n')[0]
 		elif isinstance(exception, Exception):
 			short_msg = 'Uncaught exception - {}: {}'.format(
-				type(exception).__name__, + str(exception))
+				type(exception).__name__, str(exception))
 		else:
 			short_msg = long_msg.split('\n')[-1]
 
