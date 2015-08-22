@@ -54,8 +54,10 @@ root.addHandler(handler)
 
 # initialize and run the bot
 try:
+	print('Starting IRC bot...')
 	bot = ircbot.bot.Bot(config)
 	bot.run_forever()
+	print('Exiting!')
 except:
 	log.exception('Uncaught exception')
 	print('An exception occurred - check log for details. Exiting!')

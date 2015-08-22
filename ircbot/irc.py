@@ -3,25 +3,9 @@ log = logging.getLogger(__name__)
 
 import signal
 import socket
-import sys
 import threading
 
-
-def _decode(bytestring):
-	"""Attempt to decode a byte string into a UTF-8 string.
-
-	Because IRC doesn't enforce any particular encoding, we have to either guess
-	what encoding is being used, or keep trying until it works. UTF-8 and
-	ISO-8859-1 (Windows) are the most common, so we just try those two.
-	"""
-	try:
-		return bytestring.decode('utf-8').strip()
-	except UnicodeDecodeError:
-		try:
-			return bytestring.decode('iso-8859-1').strip()
-		except:
-			log.error('Could not decode message')
-			return None
+import ircbot.util
 
 
 class User:
@@ -140,6 +124,7 @@ class Connection:
 		self.on_join = []
 		self.on_privmsg = []
 		self.error_handler = None
+		self.quitting = False
 
 	def connect(self, server):
 		assert isinstance(server, Server)
@@ -149,12 +134,12 @@ class Connection:
 		self._connect()
 
 	def disconnect(self):
-		print('Disconnecting')
 		self.sock.close()
 		self.sock = None
 
 	def reconnect(self, time=None):
-		self.disconnect()
+		if self.sock:
+			self.disconnect()
 		if time:
 			log.info('Reconnecting in {} seconds'.format(time))
 			timer = threading.Timer(time, self._connect)
@@ -163,7 +148,8 @@ class Connection:
 			self._connect()
 
 	def _connect(self):
-		print('Connecting')
+		log.info('Connecting to %s:%s', self.server.host, self.server.port)
+
 		addrinfo = socket.getaddrinfo(
 			self.server.host, self.server.port,
 			socket.AF_UNSPEC, socket.SOCK_STREAM
@@ -192,36 +178,37 @@ class Connection:
 		if self.sock is None:
 			raise OSError('Could not open socket')
 
-		print('Connected!')
+		log.info('Successfully connected to server!')
 		self.send('NICK ' + self.nick)
 		self.send('USER ' + self.username + ' 0 * :' + self.realname)
 		self.loop()
 
 	def loop(self):
 		while True:
-			try:
-				data = self.sock.recv(4096)
-			except OSError as e:
-				log.warning('Exception occured during sock.recv - reconnecting')
-				log.warning(e)
-				self.reconnect()
-				continue
-
-			if data == b'':
-				log.warning('Empty binary data received - reconnecting')
-				self.reconnect()
+			data = b''
 
 			# 13 = \r -- 10 = \n
-			while data[-1] != 10 and data[-2] != 13:
+			while data == b'' or (data[-1] != 10 and data[-2] != 13):
 				try:
 					data += self.sock.recv(4096)
-				except OSError as e:
-					log.warning('Exception occured during sock.recv - reconnecting')
-					log.warning(e)
-					self.reconnect()
+				except OSError:
+					if self.quitting:
+						log.info('sock.recv threw an exception, but the client '
+							'is quitting, so exiting loop', exc_info=True)
+						return
+					log.exception('sock.recv threw an exception')
+					self.reconnect(5)
+					continue
+				if data == b'':
+					if self.quitting:
+						log.info('sock.recv returned empty binary string, but '
+							'the client is quitting, so exiting loop')
+						return
+					log.warning('sock.recv returned empty binary string')
+					self.reconnect(5)
 					continue
 
-			text = _decode(data)
+			text = ircbot.util.decode(data)
 
 			for msg in text.split('\r\n'):
 				if msg:
@@ -238,6 +225,7 @@ class Connection:
 
 	def join_channel(self, channel):
 		assert isinstance(channel, Channel)
+		log.info('Joining channel: %s', channel.channel)
 		self.channels[channel.channel] = channel
 		self.send('JOIN ' + channel.channel)
 
@@ -328,7 +316,8 @@ class Connection:
 		self.sock.send(str.encode(msg + '\r\n'))
 
 	def quit(self, reason='Leaving'):
-		print('Quitting gracefully: '+reason)
+		log.info('Quitting, reason: '+reason)
+		self.quitting = True
 		self.send('QUIT :' + reason)
 
 
@@ -351,8 +340,10 @@ class Client:
 			self.conn.join_channel(channel)
 
 	def run_forever(self):
+		log.info('Starting client!')
+
 		def sigterm_handler(signo, stack_frame): # pylint: disable=unused-argument
-			sys.exit(0)
+			self.stop('Terminating, probably back soon!')
 		signal.signal(signal.SIGQUIT, sigterm_handler)
 		signal.signal(signal.SIGTERM, sigterm_handler)
 		signal.signal(signal.SIGINT, sigterm_handler)
@@ -365,7 +356,5 @@ class Client:
 			self.stop('An error occured!')
 			raise
 
-	def stop(self, msg=None):
-		if msg is None:
-			msg = 'Leaving'
+	def stop(self, msg='Leaving'):
 		self.conn.quit(msg)
