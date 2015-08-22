@@ -22,14 +22,13 @@ class WeatherPlugin(ircbot.plugin.Plugin):
 			return 'Usage: !weather city state/country'
 		try:
 			response = urllib.request.urlopen(url, timeout=2).read()
-		except (urllib.error.URLError, socket.timeout) as e:
+		except (urllib.error.URLError, socket.timeout):
 			return 'An HTTP error occured, try again later!'
 
 		data = json.loads(response.decode('utf-8'))
 
 		try:
 			city = data['location']['city']
-			state = data['location']['state']
 			weather = data['current_observation']['weather']
 			temperature_string = data['current_observation']['temperature_string']
 		except KeyError as e:
