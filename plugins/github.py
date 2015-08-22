@@ -51,7 +51,6 @@ class GithubPlugin(ircbot.plugin.Plugin):
 
 		title = data['issue']['title']
 		url = data['issue']['html_url']
-		user = data['issue']['user']['login']
 		repository = data['repository']['full_name']
 
 		return '[{}] Issue {}: {} - {}'.format(repository, action, title, url)
@@ -66,7 +65,6 @@ class GithubPlugin(ircbot.plugin.Plugin):
 
 		title = data['pull_request']['title']
 		url = data['pull_request']['html_url']
-		user = data['pull_request']['user']['login']
 		repository = data['repository']['full_name']
 
 		return '[{}] Pull request {}: {} - {}'.format(
