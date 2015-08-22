@@ -15,8 +15,8 @@ class WeatherPlugin(ircbot.plugin.Plugin):
 			log.warning('Wunderground API key not set on config.yml!')
 			return
 
-		url = 'http://api.wunderground.com/api/{}/geolookup/conditions/q/{}/{}.json'
-			.format(api_key, cmd.args[1], cmd.args[0])
+		url = 'http://api.wunderground.com/api/{}/geolookup/conditions/q/{}/{}.json'.format(
+			api_key, cmd.args[1], cmd.args[0])
 
 		if len(cmd.args) < 2:
 			return 'Usage: !weather city state/country'
