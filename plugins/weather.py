@@ -18,7 +18,7 @@ class WeatherPlugin(ircbot.plugin.Plugin):
 			return 'Usage: !weather city'
 
 		city = '-'.join(cmd.args)
-		url = 'http://api.openweathermap.org/data/2.5/weather?q={}&unit=metric'.format(
+		url = 'http://api.openweathermap.org/data/2.5/weather?q={}&units=metric'.format(
 			city)
 
 		try:
