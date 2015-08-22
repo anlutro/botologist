@@ -34,4 +34,4 @@ class WeatherPluginTest(PluginTestCase):
 	@mock.patch(f, return_value=get_json('404'))
 	def test_not_found(self, mock):
 		ret = self.cmd('weather asljkhajkhf')
-		self.assertEqual('Error: Not found city', ret)
+		self.assertEqual('Error: City not found', ret)
