@@ -33,6 +33,58 @@ Copy `config.example.yml` to `config.yml` and edit it to your likings, then run 
 
 	$ ./run
 
+## Plugins
+
+Plugins can be added globally or to individual channels:
+
+```yaml
+global_plugins:
+  - default
+  - twitter
+
+channels:
+  mychannel:
+    plugins:
+      - koth
+```
+
+The name of the plugin corresponds to the name of the python file in the `plugins` directory.
+
+As long as the plugin class matches the module (file) name, you don't need to do anything more than that. For example, `foo.py` should contain the class `FooPlugin`. If the plugin class name differs from the module, you need to register an alias in the config. This can also be used to import plugins that are part of an external module.
+
+```yaml
+plugins:
+  foo: plugins.foo.RandomlyNamedPlugin
+  bar: externalmodule.ExternalPlugin
+
+global_plugins:
+  - foo
+  - bar
+```
+
+### Default plugin
+
+Just a plugin with simple functionality that doesn't deserve its own plugin.
+
+### Conversion plugin
+
+Get the results of conversion queries like "100 kg to stones" or "100 eur in usd".
+
+### KOTH (king of the hill) plugin
+
+Run a king of the hill tournament (winner stays on). Admins have access to the following commands:
+
+- **!koth start** starts a new KOTH.
+- **!koth next** lets you know who the next player up is.
+- **!koth close** prevents further signups.
+- **!koth end** ends the KOTH.
+
+Regular users have access to these commands:
+
+- **!koth** lists the current participant queue.
+- **!koth add** adds you to the queue.
+- **!koth remove** removes you from the queue.
+
 ### Streams plugin
 
 Admins have access to `!addstream <stream_url>` and `!delstream <stream_url>`.
@@ -47,6 +99,14 @@ Users have access to `!sub <stream>` and `!unsub <stream>`, which toggles notifi
 
 	!elo raziel2p
 	!elo raziel2p tdm,ca
+
+### Twitter plugin
+
+When a twitter link is pasted into IRC, fetches and announces the tweet body. Requires the `twitter_api` config values to be present in `config.yml`.
+
+### URL plugin
+
+When a shortened link (is.gd, t.co, goo.gl etc) is posted, the real URL will be announced.
 
 ## Development
 

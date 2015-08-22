@@ -21,7 +21,7 @@ class ErrorHandler:
 		self.bot._send_msg('An exception has occured: '+short_msg,
 			self.bot.get_admin_nicks())
 
-		email = MIMEText(traceback.format_exc(), _charset='utf-8')
+		email = MIMEText(long_msg, _charset='utf-8')
 		user = pwd.getpwuid(os.getuid())[0]
 		email['From'] = user
 		email['To'] = user

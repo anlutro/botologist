@@ -11,7 +11,7 @@ class DefaultPlugin(ircbot.plugin.Plugin):
 		self.insults = (
 			(re.compile(r'.*fuck(\s+you)\s*,?\s*'+self.bot.nick+'.*', re.IGNORECASE),
 			'fuck you too {nick}'),
-			(re.compile(r'.*'+self.bot.nick+'[,:]?\s+fuck\s+you.*', re.IGNORECASE),
+			(re.compile(r'.*'+self.bot.nick+r'[,:]?\s+fuck\s+you.*', re.IGNORECASE),
 			'fuck you too {nick}'),
 		)
 
@@ -29,7 +29,6 @@ class DefaultPlugin(ircbot.plugin.Plugin):
 	def tableflip(self, msg):
 		if '(╯°□°)╯︵ ┻━┻' in msg.message:
 			return '┬─┬ ノ( ゜-゜ノ)'
-
 
 	@ircbot.plugin.reply()
 	def return_insults(self, msg):
