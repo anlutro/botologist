@@ -1,4 +1,5 @@
 import hmac
+import hashlib
 import os.path
 
 from tests.plugin import PluginTestCase
@@ -18,7 +19,7 @@ class DefaultPluginTest(PluginTestCase):
 			return f.read()
 
 	def get_headers(self, body, event):
-		hmac_obj = hmac.new(self.plugin.secret, body.encode('utf-8'), 'sha1')
+		hmac_obj = hmac.new(self.plugin.secret, body.encode('utf-8'), hashlib.sha1)
 		signature = hmac_obj.hexdigest()
 		return {
 			'X-GitHub-Event': event,

@@ -2,6 +2,7 @@ import logging
 log = logging.getLogger(__name__)
 
 import hmac
+import hashlib
 import json
 import ircbot.plugin
 
@@ -34,7 +35,7 @@ class GithubPlugin(ircbot.plugin.Plugin):
 			return ret
 
 	def check_hmac(self, body, signature):
-		hmac_obj = hmac.new(self.secret, body.encode('utf-8'), 'sha1')
+		hmac_obj = hmac.new(self.secret, body.encode('utf-8'), hashlib.sha1)
 		calculated = hmac_obj.hexdigest()
 		if not hmac.compare_digest(calculated, signature):
 			print(calculated, signature)
