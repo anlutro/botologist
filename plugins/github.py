@@ -102,6 +102,7 @@ class GithubPlugin(ircbot.plugin.Plugin):
 		ret = '[{}] {} commits pushed'.format(repository, data['size'])
 
 		# check if there's more than 1 author of the commits
+		author = None
 		for commit in commits:
 			if author is None:
 				author = commit['author']
