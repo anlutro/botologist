@@ -77,10 +77,8 @@ class GithubPlugin(ircbot.plugin.Plugin):
 			parts[-1] = parts[-1][:10]
 			return '/'.join(parts)
 
-		commits = [commit for commit in data['commits'] if not commit['distinct']]
-
-		if len(commits) > 2:
-			return self.handle_push_many(data, commits)
+		if len(data['commits']) > 2:
+			return self.handle_push_many(data)
 
 		ret = []
 		repository = data['repository']['full_name']
@@ -95,13 +93,13 @@ class GithubPlugin(ircbot.plugin.Plugin):
 
 		return ret
 
-	def handle_push_many(self, data, commits):
+	def handle_push_many(self, data):
 		repository = data['repository']['full_name']
 		ret = '[{}] {} commits pushed'.format(repository, data['size'])
 
 		# check if there's more than 1 author of the commits
 		author = None
-		for commit in commits:
+		for commit in data['commits']:
 			if author is None:
 				author = commit['author']
 			elif commit['author'] != author:
