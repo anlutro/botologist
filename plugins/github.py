@@ -46,6 +46,7 @@ class GithubPlugin(ircbot.plugin.Plugin):
 		action = data['action']
 
 		if action not in ('opened', 'closed'):
+			log.info('Not doing anything with Github issue action: %s', action)
 			return None
 
 		title = data['issue']['title']
@@ -60,6 +61,7 @@ class GithubPlugin(ircbot.plugin.Plugin):
 		action = data['action']
 
 		if action not in ('opened', 'closed'):
+			log.info('Not doing anything with Github pull request action: %s', action)
 			return None
 
 		title = data['pull_request']['title']
