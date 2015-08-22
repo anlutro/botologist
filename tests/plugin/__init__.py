@@ -56,3 +56,27 @@ class PluginTestCase(unittest.TestCase):
 			ret = join(user, channel)
 			if ret:
 				return ret
+
+	def http(self, method, path, body=None, headers=None):
+		if body is None:
+			body = ''
+		if headers is None:
+			headers = {}
+
+		kwargs = {
+			'body': body,
+			'headers': headers,
+		}
+
+		for handler in self.plugin.http_handlers:
+			if handler._http_method == method:
+				ret = None
+
+				if not handler._http_path:
+					ret = handler(path=path, **kwargs)
+				else:
+					if handler._http_path == path:
+						ret = handler(**kwargs)
+
+				if ret:
+					return ret

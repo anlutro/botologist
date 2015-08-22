@@ -31,9 +31,10 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
 		self.wfile.write(b'OK\n')
 
 	def send_msg(self, method, body=None):
-		kwargs = {}
-		if body:
-			kwargs['body'] = body
+		kwargs = {
+			'body': body,
+			'headers': self.headers,
+		}
 
 		for channel in self.bot.channels.values():
 			for handler in channel.http_handlers:
