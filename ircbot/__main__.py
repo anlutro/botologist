@@ -6,7 +6,6 @@ import os.path
 import sys
 import yaml
 
-import ircbot
 import ircbot.bot
 
 root_dir = os.getcwd()

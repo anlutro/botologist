@@ -1,10 +1,10 @@
 import logging
 log = logging.getLogger(__name__)
 
-import urllib.request
-import urllib.error
-import socket
 import re
+import socket
+import urllib.error
+import urllib.request
 
 import ircbot.plugin
 

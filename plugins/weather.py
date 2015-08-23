@@ -1,10 +1,13 @@
 import logging
 log = logging.getLogger(__name__)
 
-import urllib
 import json
-import ircbot.plugin
 import socket
+import urllib.error
+import urllib.parse
+import urllib.request
+
+import ircbot.plugin
 
 
 def make_http_request(url):

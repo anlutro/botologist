@@ -7,11 +7,13 @@ import re
 import socket
 import urllib.error
 import urllib.request
+import urllib.parse
 
 import ircbot.plugin
 
 
 def get_conversion_result(qs):
+	qs = urllib.parse.quote(qs)
 	url = 'http://api.duckduckgo.com/?q='+qs+'&format=json&no_html=1'
 	log.info('Fetching: '+url)
 	try:

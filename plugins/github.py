@@ -4,6 +4,7 @@ log = logging.getLogger(__name__)
 import hmac
 import hashlib
 import json
+
 import ircbot.plugin
 
 

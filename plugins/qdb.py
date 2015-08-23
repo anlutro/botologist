@@ -1,9 +1,10 @@
-import ircbot.plugin
 import json
 import socket
 import urllib.error
 import urllib.parse
 import urllib.request
+
+import ircbot.plugin
 
 BASE_URL = 'http://qdb.lutro.me'
 

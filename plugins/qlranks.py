@@ -1,13 +1,14 @@
-import ircbot.plugin
 import json
-import urllib.request
-import urllib.parse
-import urllib.error
 import socket
+import urllib.error
+import urllib.parse
+import urllib.request
+
+import ircbot.plugin
 
 
 def _get_qlr_data(nick):
-	url = 'http://www.qlranks.com/api.aspx?' + urllib.parse.urlencode({'nick':nick})
+	url = 'http://www.qlranks.com/api.aspx?nick=' + urllib.parse.quote(nick)
 	response = urllib.request.urlopen(url, timeout=4)
 	data = response.read().decode()
 	return json.loads(data)['players'][0]
