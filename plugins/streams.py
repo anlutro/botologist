@@ -137,7 +137,6 @@ def _fetch_streams(streams):
 
 def _fetch_twitch_data(channels):
 	url = 'https://api.twitch.tv/kraken/streams'
-	log.debug('Fetching from %s: %s', url, ', '.join(channels))
 
 	query_params = {'channel': ','.join(channels)}
 	response = ircbot.http.get(url, query_params=query_params)
@@ -169,7 +168,6 @@ def _fetch_twitch(urls):
 def _fetch_hitbox_data(channels):
 	channels = [urllib.parse.quote(channel) for channel in channels]
 	url = 'http://api.hitbox.tv/media/live/' + ','.join(channels)
-	log.debug('Fetching ' + url)
 
 	response = ircbot.http.get(url)
 	contents = response.read().decode()

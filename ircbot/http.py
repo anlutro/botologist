@@ -14,6 +14,8 @@ def request(method, url, body, headers=None, timeout=2):
 
 	request = urllib.request.Request(url=url, method=method, headers=headers)
 
+	log.info('Making %s request: %s', method.upper(), url)
+
 	try:
 		return urllib.request.urlopen(request, timeout=timeout)
 	except socket.timeout as exception:

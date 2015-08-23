@@ -13,7 +13,6 @@ import ircbot.plugin
 def get_conversion_result(qs):
 	qs = urllib.parse.quote(qs)
 	url = 'http://api.duckduckgo.com/?q='+qs+'&format=json&no_html=1'
-	log.info('Fetching: '+url)
 
 	try:
 		response = ircbot.http.get(url)
@@ -29,7 +28,6 @@ def get_conversion_result(qs):
 
 def get_currency_data():
 	url = 'http://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml'
-	log.info('Fetching: '+url)
 	try:
 		response = ircbot.http.get(url)
 		content = response.read().decode()
