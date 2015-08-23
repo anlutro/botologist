@@ -62,6 +62,8 @@ class Channel(ircbot.irc.Channel):
 class Bot(ircbot.irc.Client):
 	"""IRC bot."""
 
+	version = None
+
 	# the character commands start with
 	CMD_PREFIX = '!'
 

@@ -56,3 +56,7 @@ class DefaultPlugin(ircbot.plugin.Plugin):
 	@ircbot.plugin.command('repo')
 	def repo(self, msg):
 		return 'https://github.com/anlutro/ircbot'
+
+	@ircbot.plugin.command('version')
+	def version(self, msg):
+		return self.bot.version

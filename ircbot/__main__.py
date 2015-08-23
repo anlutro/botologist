@@ -55,6 +55,15 @@ root.addHandler(handler)
 try:
 	print('Starting IRC bot...')
 	bot = ircbot.bot.Bot(config)
+
+	# use the git commit hash as version
+	git_dir = os.path.join(root_dir, '.git')
+	if os.path.isdir(git_dir):
+		with open(os.path.join(git_dir, 'HEAD')) as f:
+			ref = f.read().strip().split(': ')[-1]
+		with open(os.path.join(git_dir, ref)) as f:
+			bot.version = f.read().strip()[:8]
+
 	bot.run_forever()
 	print('Exiting!')
 except:
