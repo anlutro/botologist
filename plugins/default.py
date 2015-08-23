@@ -36,7 +36,7 @@ class DefaultPlugin(ircbot.plugin.Plugin):
 			if expr.match(msg.message):
 				return reply.format(nick=msg.user.nick)
 
-	no_work = re.compile(r".*(__)?bot(__)?\s+(no|not|doesn.?t|does not)\s+work.*", re.IGNORECASE)
+	no_work = re.compile(r".*(__)?bot(__)?\s+(no|not|does ?n.?t)\s+work.*", re.IGNORECASE)
 
 	@ircbot.plugin.reply()
 	def bot_always_works(self, msg):

@@ -5,7 +5,7 @@ from tests.plugin import PluginTestCase
 import plugins.weather
 
 
-f = 'plugins.weather.make_http_request'
+f = 'plugins.weather.get_owm_json'
 
 
 def get_json(state):
@@ -35,8 +35,3 @@ class WeatherPluginTest(PluginTestCase):
 	def test_not_found(self, mock):
 		ret = self.cmd('weather asljkhajkhf')
 		self.assertEqual('Error: City not found', ret)
-
-	@mock.patch(f, return_value=get_json('404'))
-	def test_query_params_cannot_be_injected(self, mock):
-		ret = self.cmd('weather foo&format=xml')
-		mock.assert_called_with('http://api.openweathermap.org/data/2.5/weather?q=foo%26format%3Dxml&units=metric')

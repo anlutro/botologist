@@ -1,16 +1,18 @@
-import json
-import socket
-import urllib.error
-import urllib.parse
-import urllib.request
+import logging
+log = logging.getLogger(__name__)
 
+import json
+import urllib.error
+
+import ircbot.http
 import ircbot.plugin
 
 
 def _get_qlr_data(nick):
-	url = 'http://www.qlranks.com/api.aspx?nick=' + urllib.parse.quote(nick)
-	response = urllib.request.urlopen(url, timeout=4)
+	url = 'http://www.qlranks.com/api.aspx'
+	response = ircbot.http.get(url, query_params={'nick': nick}, timeout=4)
 	data = response.read().decode()
+	response.close()
 	return json.loads(data)['players'][0]
 
 
@@ -25,7 +27,8 @@ def _get_qlr_elo(nick, modes=None):
 
 	try:
 		data = _get_qlr_data(nick)
-	except (urllib.error.URLError, socket.timeout):
+	except urllib.error.URLError:
+		log.warning('QLRanks request caused an exception', exc_info=True)
 		return 'HTTP error, try again!'
 
 	# qlranks returns rank 0 indicating a player has no rating - if all modes

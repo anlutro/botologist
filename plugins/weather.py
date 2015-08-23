@@ -2,16 +2,17 @@ import logging
 log = logging.getLogger(__name__)
 
 import json
-import socket
 import urllib.error
-import urllib.parse
-import urllib.request
 
+import ircbot.http
 import ircbot.plugin
 
 
-def make_http_request(url):
-	return urllib.request.urlopen(url, timeout=2).read().decode('utf-8')
+def get_owm_json(*args, **kwargs):
+	response = ircbot.http.get(*args, **kwargs)
+	contents = response.read().decode('utf-8')
+	response.close()
+	return contents
 
 
 class WeatherPlugin(ircbot.plugin.Plugin):
@@ -21,12 +22,13 @@ class WeatherPlugin(ircbot.plugin.Plugin):
 			return 'Usage: !weather city'
 
 		city = '-'.join(cmd.args)
-		url = 'http://api.openweathermap.org/data/2.5/weather?q={}&units=metric'.format(
-			urllib.parse.quote(city))
+		url = 'http://api.openweathermap.org/data/2.5/weather'
+		query_params = {'q': city, 'units': 'metric'}
 
 		try:
-			response = make_http_request(url)
-		except (urllib.error.URLError, socket.timeout):
+			response = get_owm_json(url, query_params=query_params)
+		except urllib.error.URLError:
+			log.warning('OpenWeatherMap request caused an exception', exc_info=True)
 			return 'An HTTP error occured, try again later!'
 
 		data = json.loads(response)

@@ -2,10 +2,9 @@ import logging
 log = logging.getLogger(__name__)
 
 import re
-import socket
 import urllib.error
-import urllib.request
 
+import ircbot.http
 import ircbot.plugin
 
 
@@ -26,19 +25,19 @@ def find_shortened_urls(message):
 
 
 def get_location(url):
-	request = urllib.request.Request(url=url, method='HEAD')
-	response = urllib.request.urlopen(request, timeout=2)
+	response = ircbot.http.head(url)
 	return response.url
 
 
 def unshorten_url(url):
 	try:
 		url = get_location(url)
-	except (urllib.error.URLError, socket.timeout):
-		log.debug('HTTP error, aborting')
+	except urllib.error.URLError:
+		log.info('HTTP error while unshortening URL', exc_info=True)
 		return None
 
 	if len(url) > 300:
+		log.info('Unshortened URL is too long (%d characters)', len(url))
 		return None
 
 	return url

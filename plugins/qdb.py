@@ -1,9 +1,10 @@
-import json
-import socket
-import urllib.error
-import urllib.parse
-import urllib.request
+import logging
+log = logging.getLogger(__name__)
 
+import json
+import urllib.error
+
+import ircbot.http
 import ircbot.plugin
 
 BASE_URL = 'http://qdb.lutro.me'
@@ -13,16 +14,19 @@ def _get_quote_url(quote):
 	return BASE_URL + '/' + str(quote['id'])
 
 
-def _get_qdb_data(url):
-	request = urllib.request.Request(url)
-	request.add_header('Accept', 'application/json')
-	response = urllib.request.urlopen(request, timeout=2)
-	content = response.read().decode()
+def _get_qdb_data(*args, **kwargs):
+	if 'headers' not in kwargs:
+		kwargs['headers'] = {}
+	kwargs['headers']['Accept'] = 'application/json'
+
+	response = ircbot.http.get(*args, **kwargs)
+	content = response.read().decode('utf-8')
 	return json.loads(content)
 
 
 def _search_for_quote(quote):
 	search = False
+	query_params = None
 	if isinstance(quote, int):
 		url = BASE_URL+'/'+str(quote)
 		single_quote = True
@@ -34,11 +38,13 @@ def _search_for_quote(quote):
 			url = BASE_URL
 		else:
 			search = str(quote)
-			url = BASE_URL+'/random?'+urllib.parse.urlencode({'s': search})
+			url = BASE_URL+'/random'
+			query_params = {'s': search}
 
 	try:
-		data = _get_qdb_data(url)
-	except (urllib.error.URLError, socket.timeout):
+		data = _get_qdb_data(url, query_params=query_params)
+	except urllib.error.URLError:
+		log.warning('QDB request caused an exception', exc_info=True)
 		return 'HTTP error!'
 
 	if single_quote:

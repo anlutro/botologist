@@ -5,10 +5,10 @@ import datetime
 import json
 import os.path
 import re
-import socket
 import urllib.error
-import urllib.request
+import urllib.parse
 
+import ircbot.http
 import ircbot.plugin
 
 
@@ -136,13 +136,14 @@ def _fetch_streams(streams):
 
 
 def _fetch_twitch_data(channels):
-	url = 'https://api.twitch.tv/kraken/streams?channel=' + ','.join(channels)
-	log.debug('Fetching ' + url)
+	url = 'https://api.twitch.tv/kraken/streams'
+	log.debug('Fetching from %s: %s', url, ', '.join(channels))
 
-	result = urllib.request.urlopen(url, timeout=2)
-	response = result.read().decode()
-	result.close()
-	return json.loads(response)
+	query_params = {'channel': ','.join(channels)}
+	response = ircbot.http.get(url, query_params=query_params)
+	contents = response.read().decode()
+	response.close()
+	return json.loads(contents)
 
 
 def _fetch_twitch(urls):
@@ -166,17 +167,18 @@ def _fetch_twitch(urls):
 
 
 def _fetch_hitbox_data(channels):
+	channels = [urllib.parse.quote(channel) for channel in channels]
 	url = 'http://api.hitbox.tv/media/live/' + ','.join(channels)
 	log.debug('Fetching ' + url)
 
-	result = urllib.request.urlopen(url, timeout=2)
-	response = result.read().decode()
-	result.close()
+	response = ircbot.http.get(url)
+	contents = response.read().decode()
+	response.close()
 
-	if response == 'no_media_found':
+	if contents == 'no_media_found':
 		return []
 
-	return json.loads(response)
+	return json.loads(contents)
 
 
 def _fetch_hitbox(urls):
@@ -356,8 +358,8 @@ class StreamManager:
 		try:
 			streams = _fetch_streams(self.streams)
 			self._cached_streams.push(streams)
-		except (urllib.error.URLError, socket.timeout):
-			log.warning('Could not fetch online streams!')
+		except urllib.error.URLError:
+			log.warning('Could not fetch online streams!', exc_info=True)
 
 		self._last_fetch = now
 
@@ -369,8 +371,8 @@ class StreamManager:
 
 		try:
 			streams = _fetch_streams(self.streams)
-		except (urllib.error.URLError, socket.timeout):
-			log.warning('Could not fetch new online streams!')
+		except urllib.error.URLError:
+			log.warning('Could not fetch new online streams!', exc=True)
 			return False
 
 		diff = []

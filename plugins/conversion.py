@@ -4,11 +4,9 @@ log = logging.getLogger(__name__)
 import datetime
 import json
 import re
-import socket
 import urllib.error
-import urllib.request
-import urllib.parse
 
+import ircbot.http
 import ircbot.plugin
 
 
@@ -16,12 +14,16 @@ def get_conversion_result(qs):
 	qs = urllib.parse.quote(qs)
 	url = 'http://api.duckduckgo.com/?q='+qs+'&format=json&no_html=1'
 	log.info('Fetching: '+url)
+
 	try:
-		response = urllib.request.urlopen(url, timeout=2)
+		response = ircbot.http.get(url)
 		content = response.read().decode()
-	except (urllib.error.URLError, socket.timeout):
+	except urllib.error.URLError:
+		log.warning('DuckDuckGo request failed', exc_info=True)
 		return False
+
 	data = json.loads(content)
+
 	if data['AnswerType'] == 'conversions' and data['Answer']:
 		return data['Answer']
 
@@ -29,16 +31,18 @@ def get_currency_data():
 	url = 'http://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml'
 	log.info('Fetching: '+url)
 	try:
-		response = urllib.request.urlopen(url, timeout=2)
+		response = ircbot.http.get(url)
 		content = response.read().decode()
-	except (urllib.error.URLError, socket.timeout):
+	except urllib.error.URLError:
+		log.warning('ECB exchange data request failed', exc_info=True)
 		return {}
 
 	matches = re.findall(r'<Cube currency=["\']([A-Za-z]{3})["\'] rate=["\']([\d.]+)["\']/>', content)
 	currency_data = {}
 	for currency, exchange_rate in matches:
 		currency_data[currency.upper()] = float(exchange_rate)
-	log.info('Found {} currencies'.format(len(currency_data)))
+	log.info('Found %d currencies', len(currency_data))
+
 	return currency_data
 
 class Currency:
