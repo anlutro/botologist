@@ -52,3 +52,7 @@ class DefaultPlugin(ircbot.plugin.Plugin):
 		if value == 1:
 			return 'Heads!'
 		return 'Tails!'
+
+	@ircbot.plugin.command('repo')
+	def repo(self, msg):
+		return 'https://github.com/anlutro/ircbot'

@@ -84,7 +84,3 @@ class RedditeuPlugin(ircbot.plugin.Plugin):
 	def garner_masturbation_video(self, msg):
 		if 'garner masturbation video' in msg.message.lower():
 			return 'https://www.youtube.com/watch?v=akTE1n-U0C0'
-
-	@ircbot.plugin.command('repo')
-	def repo(self,msg):
-		return 'https://github.com/anlutro/ircbot'
