@@ -50,26 +50,30 @@ class GithubPlugin(ircbot.plugin.Plugin):
 			log.info('Not doing anything with Github issue action: %s', action)
 			return None
 
+		repository = data['repository']['full_name']
+		user = data['issue']['user']['login']
 		title = data['issue']['title']
 		url = data['issue']['html_url']
-		repository = data['repository']['full_name']
 
-		return '[{}] Issue {}: {} - {}'.format(repository, action, title, url)
+		return '[{}] Issue {} by {}: {} - {}'.format(
+			repository, action, user, title, url)
 
 	# https://developer.github.com/v3/activity/events/types/#pullrequestevent
 	def handle_pr(self, data):
 		action = data['action']
 
 		if action not in ('opened', 'reopened', 'closed'):
-			log.info('Not doing anything with Github pull request action: %s', action)
+			log.info('Not doing anything with Github pull request action: %s',
+				action)
 			return None
 
+		repository = data['repository']['full_name']
+		user = data['pull_request']['user']['login']
 		title = data['pull_request']['title']
 		url = data['pull_request']['html_url']
-		repository = data['repository']['full_name']
 
-		return '[{}] Pull request {}: {} - {}'.format(
-			repository, action, title, url)
+		return '[{}] Pull request {} by {}: {} - {}'.format(
+			repository, action, user, title, url)
 
 	# https://developer.github.com/v3/activity/events/types/#pushevent
 	def handle_push(self, data):

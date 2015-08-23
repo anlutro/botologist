@@ -38,8 +38,8 @@ class GithubPluginTest(PluginTestCase):
 
 	def test_issue(self):
 		ret = self.trigger_webhook('issues')
-		self.assertEqual('[baxterthehacker/public-repo] Issue opened: Spelling error in the README file - https://github.com/baxterthehacker/public-repo/issues/2', ret)
+		self.assertEqual('[baxterthehacker/public-repo] Issue opened by baxterthehacker: Spelling error in the README file - https://github.com/baxterthehacker/public-repo/issues/2', ret)
 
 	def test_pull_request(self):
 		ret = self.trigger_webhook('pull_request')
-		self.assertEqual('[baxterthehacker/public-repo] Pull request opened: Update the README with new information - https://github.com/baxterthehacker/public-repo/pull/1', ret)
+		self.assertEqual('[baxterthehacker/public-repo] Pull request opened by baxterthehacker: Update the README with new information - https://github.com/baxterthehacker/public-repo/pull/1', ret)
