@@ -40,6 +40,8 @@ channels:
   '##otherchannel':
     plugins:
       - conversion
+  # if you want to add a channel with no specific admins or plugins:
+  genericchannel: {}
 
 # uncomment these lines to enable the !mumble command
 # mumble:
