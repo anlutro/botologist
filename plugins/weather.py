@@ -19,7 +19,7 @@ class WeatherPlugin(ircbot.plugin.Plugin):
 
 		city = '-'.join(cmd.args)
 		url = 'http://api.openweathermap.org/data/2.5/weather?q={}&units=metric'.format(
-			city)
+			urllib.parse.quote(city))
 
 		try:
 			response = make_http_request(url)
