@@ -3,12 +3,12 @@ log = logging.getLogger(__name__)
 
 import threading
 
+import html
 try:
-	import html
 	unescape_html = html.unescape
-except (ImportError, AttributeError):
-	import HTMLParser
-	html = HTMLParser.HTMLParser()
+except AttributeError:
+	import html.parser
+	html = html.parser.HTMLParser()
 	unescape_html = html.unescape
 
 
