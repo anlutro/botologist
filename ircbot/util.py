@@ -3,6 +3,14 @@ log = logging.getLogger(__name__)
 
 import threading
 
+try:
+	import html
+	unescape_html = html.unescape
+except (ImportError, AttributeError):
+	import HTMLParser
+	html = HTMLParser.HTMLParser()
+	unescape_html = html.unescape
+
 
 def decode(bytestring):
 	"""Attempt to decode a byte string into a UTF-8 string.

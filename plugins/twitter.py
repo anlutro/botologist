@@ -1,8 +1,8 @@
 import datetime
-import html
 import tweepy
 
 import ircbot.plugin
+import ircbot.util
 
 
 class TwitterPlugin(ircbot.plugin.Plugin):
@@ -46,7 +46,7 @@ class TwitterPlugin(ircbot.plugin.Plugin):
 
 		author = tweet.author.screen_name
 		body = tweet.text.replace('\n', ' ')
-		body = html.unescape(body)
+		body = ircbot.util.unescape_html(body)
 
 		return '[{author}] {body}'.format(author='@'+author, body=body)
 
