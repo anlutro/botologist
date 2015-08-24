@@ -5,7 +5,7 @@ import threading
 
 import html
 try:
-	unescape_html = html.unescape
+	unescape_html = html.unescape # pylint: disable=no-member
 except AttributeError:
 	import html.parser
 	html = html.parser.HTMLParser()
