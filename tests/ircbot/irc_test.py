@@ -52,7 +52,7 @@ class IrcChannelTest(unittest.TestCase):
 		chan.add_user(usr)
 		self.assertEqual(usr.nick, chan.find_nick_from_host(usr.host))
 		self.assertEqual(usr.host, chan.find_host_from_nick('oldnick'))
-		chan.update_nick('oldnick', 'newnick')
+		chan.update_nick(user, 'newnick')
 		self.assertEqual(False, chan.find_host_from_nick('oldnick'))
 		self.assertEqual('newnick', chan.find_nick_from_host(usr.host))
 		self.assertEqual(usr.host, chan.find_host_from_nick('newnick'))

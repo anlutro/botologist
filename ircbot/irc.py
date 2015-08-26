@@ -103,11 +103,15 @@ class Channel:
 		if host is not None and host in self.host_map:
 			del self.host_map[host]
 
-	def update_nick(self, old_nick, new_nick):
-		host = self.nick_map[old_nick]
-		del self.nick_map[old_nick]
-		self.nick_map[new_nick] = host
-		self.host_map[host] = new_nick
+	def update_nick(self, user, new_nick):
+		assert isinstance(user, User)
+
+		old_nick = user.nick
+		if old_nick in self.nick_map:
+			del self.nick_map[old_nick]
+
+		self.nick_map[new_nick] = user.host
+		self.host_map[user.host] = new_nick
 
 
 class Connection:
@@ -273,7 +277,7 @@ class Connection:
 					if channel.find_nick_from_host(user.host):
 						log.debug('Updating nick for user in Channel {channel}'.format(
 							channel=channel.channel))
-						channel.update_nick(user.nick, new_nick)
+						channel.update_nick(user, new_nick)
 
 			elif words[1] == 'PART':
 				user = User.from_ircformat(words[0])
