@@ -5,8 +5,8 @@ import os.path
 from tests.plugin import PluginTestCase
 import plugins.streams as streams
 
-twitch_f = 'plugins.streams._fetch_twitch_data'
-hitbox_f = 'plugins.streams._fetch_hitbox_data'
+twitch_f = 'plugins.streams.twitch.get_twitch_data'
+hitbox_f = 'plugins.streams.hitbox.get_hitbox_data'
 
 class StreamTest(unittest.TestCase):
 	def test_equals(self):
@@ -15,14 +15,14 @@ class StreamTest(unittest.TestCase):
 
 	def test_from_twitch_data(self):
 		data = {'channel': {'name': 'foobar'}}
-		s = streams.Stream.from_twitch_data(data)
+		s = streams.twitch.make_twitch_stream(data)
 		self.assertEqual('foobar', s.user)
 		self.assertEqual('twitch.tv/foobar', s.url)
 		self.assertEqual('http://twitch.tv/foobar', s.full_url)
 
 	def test_from_hitbox_data(self):
 		data = {'media_user_name': 'foobar'}
-		s = streams.Stream.from_hitbox_data(data)
+		s = streams.hitbox.make_hitbox_stream(data)
 		self.assertEqual('foobar', s.user)
 		self.assertEqual('hitbox.tv/foobar', s.url)
 		self.assertEqual('http://hitbox.tv/foobar', s.full_url)
@@ -38,41 +38,41 @@ class StreamTest(unittest.TestCase):
 
 	def test_is_rebroadcast(self):
 		data = {'channel': {'name': 'foobar', 'status': 'asdf'}}
-		s = streams.Stream.from_twitch_data(data)
+		s = streams.twitch.make_twitch_stream(data)
 		self.assertEqual(False, s.is_rebroadcast)
 
 		data = {'channel': {'name': 'foobar', 'status': 'asdf rebroadcast asdf'}}
-		s = streams.Stream.from_twitch_data(data)
+		s = streams.twitch.make_twitch_stream(data)
 		self.assertEqual(True, s.is_rebroadcast)
 
 		data = {'channel': {'name': 'foobar', 'status': '[re] asdf'}}
-		s = streams.Stream.from_twitch_data(data)
+		s = streams.twitch.make_twitch_stream(data)
 		self.assertEqual(True, s.is_rebroadcast)
 
 		data = {'channel': {'name': 'gsl', 'status': 'asdf'}}
-		s = streams.Stream.from_twitch_data(data)
+		s = streams.twitch.make_twitch_stream(data)
 		self.assertEqual(False, s.is_rebroadcast)
 
 		data = {'channel': {'name': 'gsl', 'status': ''}}
-		s = streams.Stream.from_twitch_data(data)
+		s = streams.twitch.make_twitch_stream(data)
 		self.assertEqual(True, s.is_rebroadcast)
 
 		data = {'channel': {'name': 'wcs', 'status': 'asdf'}}
-		s = streams.Stream.from_twitch_data(data)
+		s = streams.twitch.make_twitch_stream(data)
 		self.assertEqual(False, s.is_rebroadcast)
 
 		data = {'channel': {'name': 'wcs', 'status': ''}}
-		s = streams.Stream.from_twitch_data(data)
+		s = streams.twitch.make_twitch_stream(data)
 		self.assertEqual(True, s.is_rebroadcast)
 
 class StreamCacheTest(unittest.TestCase):
 	def test_init(self):
-		sc = streams.StreamCache()
+		sc = streams.cache.StreamCache()
 		self.assertFalse(sc.initiated)
 		self.assertEqual(set(), sc.get_all())
 
 	def test_cache_keeps_values_for_two_pushes(self):
-		sc = streams.StreamCache()
+		sc = streams.cache.StreamCache()
 
 		sc.push(['a', 'b'])
 		self.assertEqual(set(['a', 'b']), sc.get_all())
@@ -104,12 +104,12 @@ class StreamManagerTest(unittest.TestCase):
 
 	def test_can_add_and_remove_streams(self):
 		sm = streams.StreamManager(self.file_path)
-		with self.assertRaises(streams.StreamNotFoundException):
+		with self.assertRaises(streams.error.StreamNotFoundException):
 			sm.find_stream('asdf')
 		sm.add_stream('twitch.tv/asdf')
 		self.assertEqual('twitch.tv/asdf', sm.find_stream('asdf'))
 		sm.del_stream('asdf')
-		with self.assertRaises(streams.StreamNotFoundException):
+		with self.assertRaises(streams.error.StreamNotFoundException):
 			sm.find_stream('asdf')
 
 	def test_streams_are_persisted(self):

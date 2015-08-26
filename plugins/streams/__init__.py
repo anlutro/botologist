@@ -10,48 +10,7 @@ import urllib.parse
 
 import ircbot.http
 import ircbot.plugin
-
-
-class StreamException(RuntimeError):
-	pass
-
-
-class StreamNotFoundException(StreamException):
-	def __init__(self, message=None):
-		super().__init__(message or 'Error: Stream not found')
-
-
-class InvalidStreamException(StreamException):
-	def __init__(self, message=None):
-		super().__init__(message or 'Error: Invalid stream URL')
-
-
-class AmbiguousStreamException(StreamException):
-	def __init__(self, streams):
-		msg = 'Ambiguous stream choice - '
-		if len(streams) > 5:
-			msg += str(len(streams)) + ' options'
-		else:
-			msg += 'options: ' + ', '.join(streams)
-		super().__init__(msg)
-		self.streams = streams
-
-
-class AlreadySubscribedException(StreamException):
-	def __init__(self, stream):
-		super().__init__('Already subscribed to stream: ' + stream)
-		self.stream = stream
-
-
-def error_prone(func):
-	"""Decorator that automatically catches stream exceptions and returns the
-	exception's string representation."""
-	def wrapper(*args, **kwargs):
-		try:
-			return func(*args, **kwargs)
-		except StreamException as e:
-			return str(e)
-	return wrapper
+from plugins.streams import twitch, hitbox, error, cache
 
 
 class Stream:
@@ -91,19 +50,6 @@ class Stream:
 	def __repr__(self):
 		return '<plugins.streams.Stream object \'{url}\'>'.format(url=self.url)
 
-	@classmethod
-	def from_twitch_data(cls, data):
-		channel = data.get('channel', {}).get('name', '').lower()
-		title = data.get('channel', {}).get('status', '')
-		obj = cls(channel, 'twitch.tv/' + channel, title)
-		return obj
-
-	@classmethod
-	def from_hitbox_data(cls, data):
-		channel = data.get('media_user_name', '').lower()
-		title = data.get('media_status')
-		return cls(channel, 'hitbox.tv/' + channel, title)
-
 	@staticmethod
 	def normalize_url(url, validate=True):
 		"""Normalize a stream URL."""
@@ -112,127 +58,20 @@ class Stream:
 		elif 'hitbox.tv' in url:
 			url = url[url.index('hitbox.tv'):]
 		else:
-			raise InvalidStreamException('Only twitch and hitbox URLs allowed')
+			raise error.InvalidStreamException('Only twitch and hitbox URLs allowed')
 
 		segments = url.split('/')
 
 		if validate and len(segments) < 2:
-			raise InvalidStreamException('Missing parts of URL')
+			raise error.InvalidStreamException('Missing parts of URL')
 
 		if validate and re.match(r'^[\w\_]+$', segments[1]) is None:
-			raise InvalidStreamException('Invalid characters in channel name')
+			raise error.InvalidStreamException('Invalid characters in channel name')
 
 		url = '/'.join(segments[:2])
 
 		return url.lower()
 
-
-def _fetch_streams(streams):
-	"""Return an array of Stream objects for the streams in the array of urls
-	that are currently live."""
-	twitch_streams = _fetch_twitch([s for s in streams if 'twitch.tv' in s])
-	hitbox_streams = _fetch_hitbox([s for s in streams if 'hitbox.tv' in s])
-	return twitch_streams + hitbox_streams
-
-
-def _fetch_twitch_data(channels):
-	url = 'https://api.twitch.tv/kraken/streams'
-
-	query_params = {'channel': ','.join(channels)}
-	response = ircbot.http.get(url, query_params=query_params)
-	contents = response.read().decode()
-	response.close()
-	return json.loads(contents)
-
-
-def _fetch_twitch(urls):
-	"""From a collection of URLs, get the ones that are live on twitch.tv."""
-	channels = [
-		_extract_channel(url, 'twitch.tv')
-		for url in urls if url is not None
-	]
-
-	if not channels:
-		return []
-
-	data = _fetch_twitch_data(channels)
-	log.debug('{streams} online twitch.tv streams'.format(
-		streams=len(data['streams'])))
-
-	return [
-		Stream.from_twitch_data(stream)
-		for stream in data['streams']
-	]
-
-
-def _fetch_hitbox_data(channels):
-	channels = [urllib.parse.quote(channel) for channel in channels]
-	url = 'http://api.hitbox.tv/media/live/' + ','.join(channels)
-
-	response = ircbot.http.get(url)
-	contents = response.read().decode()
-	response.close()
-
-	if contents == 'no_media_found':
-		return []
-
-	return json.loads(contents)
-
-
-def _fetch_hitbox(urls):
-	"""From a collection of URLs, get the ones that are live on hitbox.tv."""
-	channels = [
-		_extract_channel(url, 'hitbox.tv')
-		for url in urls if url is not None
-	]
-
-	if not channels:
-		return []
-
-	data = _fetch_hitbox_data(channels)
-
-	if not data:
-		return data
-
-	streams = [
-		Stream.from_hitbox_data(stream)
-		for stream in data['livestream']
-		if stream['media_is_live'] == '1'
-	]
-
-	log.debug('{streams} online hitbox.tv streams'.format(streams=len(streams)))
-
-	return streams
-
-
-def _extract_channel(url, service):
-	parts = url.split('/')
-
-	for (key, part) in enumerate(parts):
-		if service in part:
-			return parts[key + 1].lower()
-
-	return None
-
-
-class StreamCache:
-	def __init__(self):
-		self.initiated = False
-		self.new_cache = []
-		self.old_cache = []
-
-	def push(self, streams):
-		assert isinstance(streams, list)
-		self.old_cache = self.new_cache
-		self.new_cache = streams
-		if not self.initiated:
-			self.initiated = True
-
-	def get_all(self):
-		return set(self.new_cache + self.old_cache)
-
-	def __contains__(self, stream):
-		return stream in self.new_cache or stream in self.old_cache
 
 
 class StreamManager:
@@ -242,7 +81,7 @@ class StreamManager:
 		self.streams = []
 		self.subs = {}
 		self._last_fetch = None
-		self._cached_streams = StreamCache()
+		self._cached_streams = cache.StreamCache()
 		self.stor_path = stor_path
 		self._read()
 
@@ -274,6 +113,17 @@ class StreamManager:
 		with open(self.stor_path, 'w') as f:
 			f.write(content)
 
+	def _fetch_streams(self):
+		"""Return a list of Stream objects for the streams in the array of urls
+		that are currently live."""
+		twitch_streams = [s for s in self.streams if 'twitch.tv' in s]
+		twitch_streams = twitch.get_online_streams(twitch_streams)
+
+		hitbox_streams = [s for s in self.streams if 'hitbox.tv' in s]
+		hitbox_streams = hitbox.get_online_streams(hitbox_streams)
+
+		return twitch_streams + hitbox_streams
+
 	def add_stream(self, url):
 		"""Add a stream.
 
@@ -298,7 +148,7 @@ class StreamManager:
 		streams = [s for s in self.streams if url in s]
 
 		if not streams:
-			raise StreamNotFoundException('Error: Stream not found: ' + url)
+			raise error.StreamNotFoundException('Error: Stream not found: ' + url)
 
 		if len(streams) > 1:
 			# if there is an exact match, return that
@@ -311,7 +161,7 @@ class StreamManager:
 				return exact_streams[0]
 
 			# else, raise an exception
-			raise AmbiguousStreamException(streams)
+			raise error.AmbiguousStreamException(streams)
 
 		return streams[0]
 
@@ -354,7 +204,7 @@ class StreamManager:
 				return self._cached_streams.get_all()
 
 		try:
-			streams = _fetch_streams(self.streams)
+			streams = self._fetch_streams()
 			self._cached_streams.push(streams)
 		except urllib.error.URLError:
 			log.warning('Could not fetch online streams!', exc_info=True)
@@ -368,7 +218,7 @@ class StreamManager:
 			return None
 
 		try:
-			streams = _fetch_streams(self.streams)
+			streams = self._fetch_streams()
 		except urllib.error.URLError:
 			log.warning('Could not fetch new online streams!', exc=True)
 			return False
@@ -398,7 +248,7 @@ class StreamsPlugin(ircbot.plugin.Plugin):
 		self.streams = StreamManager(stor_path)
 
 	@ircbot.plugin.command('addstream')
-	@error_prone
+	@error.return_streamerror_message
 	def add_stream_cmd(self, msg):
 		if len(msg.args) < 1:
 			return None
@@ -410,7 +260,7 @@ class StreamsPlugin(ircbot.plugin.Plugin):
 			return 'Stream already added.'
 
 	@ircbot.plugin.command('delstream')
-	@error_prone
+	@error.return_streamerror_message
 	def del_stream_cmd(self, msg):
 		if len(msg.args) < 1:
 			return None
@@ -418,13 +268,11 @@ class StreamsPlugin(ircbot.plugin.Plugin):
 			return None
 
 		stream = self.streams.del_stream(msg.args[0])
-		if stream:
-			return 'Stream deleted: {}'.format(stream)
-		else:
-			return '???'
+
+		return 'Stream deleted: {}'.format(stream)
 
 	@ircbot.plugin.command('sub')
-	@error_prone
+	@error.return_streamerror_message
 	def subscribe_stream_cmd(self, msg):
 		if 'irccloud' in msg.user.host:
 			return 'irccloud users cannot subscribe! try /mode {} +x'.format(msg.user.nick)
@@ -442,7 +290,7 @@ class StreamsPlugin(ircbot.plugin.Plugin):
 				return 'You are already subscribed to that stream.'
 
 	@ircbot.plugin.command('unsub')
-	@error_prone
+	@error.return_streamerror_message
 	def unsubscribe_stream_cmd(self, msg):
 		if len(msg.args) < 1:
 			return None
