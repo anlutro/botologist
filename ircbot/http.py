@@ -12,12 +12,12 @@ def request(method, url, body, headers=None, timeout=2):
 	if headers is None:
 		headers = {}
 
-	request = urllib.request.Request(url=url, method=method, headers=headers)
+	req = urllib.request.Request(url=url, method=method, headers=headers)
 
 	log.debug('Making %s request: %s', method.upper(), url)
 
 	try:
-		return urllib.request.urlopen(request, timeout=timeout)
+		return urllib.request.urlopen(req, timeout=timeout)
 	except socket.timeout as exception:
 		raise urllib.error.URLError('Request timed out') from exception
 
@@ -30,7 +30,7 @@ def get(url, query_params=None, **kwargs):
 			url_query_params.update(query_params)
 			query_params = url_query_params
 		new_query_string = urllib.parse.urlencode(query_params, doseq=True)
-		url = urllib.parse.urlunsplit((scheme, host, path, new_query_string, ''))
+		url = urllib.parse.urlunsplit((scheme, host, path, new_query_string, fragment))
 
 	return request('GET', url, '', **kwargs)
 

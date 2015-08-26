@@ -48,7 +48,7 @@ class Stream:
 		return hash(self.url)
 
 	def __repr__(self):
-		return '<plugins.streams.Stream object \'{url}\'>'.format(url=self.url)
+		return '<plugins.streams.Stream object \'{}\'>'.format(self.url)
 
 	@staticmethod
 	def normalize_url(url, validate=True):
@@ -137,6 +137,7 @@ class StreamManager:
 
 		self.streams.append(url)
 		self._write()
+
 		return True
 
 	def find_stream(self, url):
@@ -169,6 +170,7 @@ class StreamManager:
 		url = self.find_stream(url)
 		self.streams.remove(url)
 		self._write()
+
 		return url
 
 	def add_subscriber(self, host, url):
@@ -176,17 +178,23 @@ class StreamManager:
 		if host not in self.subs:
 			self.subs[host] = []
 		elif url in self.subs[host]:
+			# user is already subscribed
 			return False
+
 		self.subs[host].append(url)
 		self._write()
+
 		return url
 
 	def del_subscriber(self, host, url):
 		url = self.find_stream(url)
 		if host not in self.subs or url not in self.subs[host]:
+			# user is not subscribed to that stream
 			return False
+
 		self.subs[host].remove(url)
 		self._write()
+
 		return url
 
 	def get_subscriptions(self, host):
@@ -226,13 +234,14 @@ class StreamManager:
 		diff = []
 
 		if self._cached_streams.initiated:
-			cached_stream_urls = [stream.url for stream in self._cached_streams.get_all()
+			cached_stream_urls = [stream.url for stream
+				in self._cached_streams.get_all()
 				if not stream.is_rebroadcast]
 			diff = [stream for stream in streams
 				if stream.url not in cached_stream_urls
 				and not stream.is_rebroadcast]
-			log.debug('Cached streams: {cached} - Online streams: {online} - Diff: {diff}'.format(
-				cached=len(cached_stream_urls), online=len(streams), diff=len(diff)))
+			log.debug('Cached streams: {} - Online streams: {} - Diff: {}'.format(
+				len(cached_stream_urls), len(streams), len(diff)))
 
 		self._cached_streams.push(streams)
 		self._last_fetch = datetime.datetime.now()
@@ -275,7 +284,8 @@ class StreamsPlugin(ircbot.plugin.Plugin):
 	@error.return_streamerror_message
 	def subscribe_stream_cmd(self, msg):
 		if 'irccloud' in msg.user.host:
-			return 'irccloud users cannot subscribe! try /mode {} +x'.format(msg.user.nick)
+			return 'irccloud users cannot subscribe! try /mode {} +x'.format(
+				msg.user.nick)
 		if len(msg.args) < 1:
 			streams = self.streams.get_subscriptions(msg.user.host)
 			if streams:
@@ -285,7 +295,7 @@ class StreamsPlugin(ircbot.plugin.Plugin):
 		else:
 			result = self.streams.add_subscriber(msg.user.host, msg.args[0])
 			if result:
-				return 'You are now subscribed to ' + result + '!'
+				return 'You are now subscribed to {}!'.format(result)
 			else:
 				return 'You are already subscribed to that stream.'
 
@@ -296,7 +306,7 @@ class StreamsPlugin(ircbot.plugin.Plugin):
 			return None
 		result = self.streams.del_subscriber(msg.user.host, msg.args[0])
 		if result:
-			return 'You are no longer subscribed to ' + result + '.'
+			return 'You are no longer subscribed to {}.'.format(result)
 		else:
 			return 'You are not subscribed to that stream.'
 
@@ -339,7 +349,7 @@ class StreamsPlugin(ircbot.plugin.Plugin):
 			if stream.title:
 				stream_str += ' - ' + stream.title
 			if highlights:
-				stream_str += ' (' + ' '.join(highlights) + ')'
+				stream_str += ' ({})'.format(' '.join(highlights))
 			retval.append(stream_str)
 
 		return retval
