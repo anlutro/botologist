@@ -226,7 +226,7 @@ class Bot(ircbot.irc.Client):
 		for msg in msgs:
 			for target in targets:
 				log.debug('Sending to {}: {}'.format(target, msg))
-				self.conn.send_msg(target, msg)
+				self.conn.send_msg(target, '> ' + msg)
 
 	def _handle_join(self, channel, user):
 		assert isinstance(channel, Channel)
