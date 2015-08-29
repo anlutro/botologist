@@ -78,7 +78,9 @@ class Bot(botologist.irc.Client):
 
 		# some config options will be moved from "bot" to the root of the config
 		def get_config_compat(key, default=None):
-			return bot_config.get(key) or config.get(key, default)
+			if key in bot_config:
+				return bot_config.get(key)
+			return config.get(key, default)
 
 		nick = get_config_compat('nick', 'botologist')
 		super().__init__(
