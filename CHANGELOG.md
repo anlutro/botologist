@@ -2,6 +2,10 @@
 
 This document will describe **breaking changes only** and how to fix issues as you upgrade. For a full list of new features/improvements, try the commit log.
 
+## 2015-08-29
+
+Renamed the entire module from "ircbot" to "botologist".
+
 ## 2015-08-22
 
 ### Plugin system refactored
