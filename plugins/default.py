@@ -50,6 +50,26 @@ class DefaultPlugin(botologist.plugin.Plugin):
 			return 'Heads!'
 		return 'Tails!'
 
+	roll_pattern = re.compile(r'(\d+)d(\d+)')
+
+	@botologist.plugin.command('roll')
+	def roll(self, cmd):
+		if cmd.args:
+			match = self.roll_pattern.match(cmd.args[0])
+		if not cmd.args or not match:
+			return 'Usage: \x02!roll 6\x0F or \x02!roll 2d10\x0F'
+
+		num_die = int(match.group(1))
+		if num_die < 1:
+			return 'Cannot roll less than 1 die!'
+
+		die_sides = int(match.group(2))
+		if die_sides < 2:
+			return 'Cannot roll die with less than 2 sides!'
+
+		return 'Rolling {} die with {} sides: {}'.format(num_die, die_sides,
+			sum([random.randint(1, die_sides) for i in range(0, num_die)]))
+
 	@botologist.plugin.command('repo')
 	def repo(self, msg):
 		return 'https://github.com/anlutro/botologist'

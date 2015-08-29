@@ -31,3 +31,9 @@ class DefaultPluginTest(PluginTestCase):
 		expected = 'I always work'
 		self.assertEqual(expected, self.reply('bot no work'))
 		self.assertEqual(expected, self.reply('__bot__ no work'))
+
+	def test_roll(self):
+		self.assertIn('Rolling 2 die with 6 sides:', self.cmd('roll 2d6'))
+		self.assertIn('Rolling 12 die with 34 sides:', self.cmd('roll 12d34'))
+		self.assertEqual('Cannot roll less than 1 die!', self.cmd('roll 0d9'))
+		self.assertEqual('Cannot roll die with less than 2 sides!', self.cmd('roll 1d1'))
