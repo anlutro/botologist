@@ -1,11 +1,11 @@
 import datetime
 import tweepy
 
-import ircbot.plugin
-import ircbot.util
+import botologist.plugin
+import botologist.util
 
 
-class TwitterPlugin(ircbot.plugin.Plugin):
+class TwitterPlugin(botologist.plugin.Plugin):
 	SPAM_THROTTLE = 10
 
 	def __init__(self, bot, channel):
@@ -16,7 +16,7 @@ class TwitterPlugin(ircbot.plugin.Plugin):
 		self.api = None
 		self.last_fetch = None
 
-	@ircbot.plugin.reply(threaded=True)
+	@botologist.plugin.reply(threaded=True)
 	def twitter(self, msg):
 		if 'twitter.com/' not in msg.message:
 			return
@@ -46,7 +46,7 @@ class TwitterPlugin(ircbot.plugin.Plugin):
 
 		author = tweet.author.screen_name
 		body = tweet.text.replace('\n', ' ')
-		body = ircbot.util.unescape_html(body)
+		body = botologist.util.unescape_html(body)
 
 		return '[{author}] {body}'.format(author='@'+author, body=body)
 

@@ -5,7 +5,7 @@ import signal
 import socket
 import threading
 
-import ircbot.util
+import botologist.util
 
 
 class User:
@@ -212,7 +212,7 @@ class Connection:
 					self.reconnect(5)
 					continue
 
-			text = ircbot.util.decode(data)
+			text = botologist.util.decode(data)
 
 			for msg in text.split('\r\n'):
 				if msg:

@@ -1,5 +1,5 @@
 # set this to null to log to STDOUT instead
-log_path: /var/log/ircbot.log
+log_path: /var/log/botologist.log
 # available log levels: debug, info, warn, error
 log_level: debug
 

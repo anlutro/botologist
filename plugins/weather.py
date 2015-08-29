@@ -4,19 +4,19 @@ log = logging.getLogger(__name__)
 import json
 import urllib.error
 
-import ircbot.http
-import ircbot.plugin
+import botologist.http
+import botologist.plugin
 
 
 def get_owm_json(*args, **kwargs):
-	response = ircbot.http.get(*args, **kwargs)
+	response = botologist.http.get(*args, **kwargs)
 	contents = response.read().decode('utf-8')
 	response.close()
 	return contents
 
 
-class WeatherPlugin(ircbot.plugin.Plugin):
-	@ircbot.plugin.command('weather')
+class WeatherPlugin(botologist.plugin.Plugin):
+	@botologist.plugin.command('weather')
 	def weather(self, cmd):
 		if len(cmd.args) < 1:
 			return 'Usage: !weather city'

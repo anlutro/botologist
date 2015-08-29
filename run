@@ -16,12 +16,12 @@ if [ "$arg" = "-t" ] || [ "$arg" = "test" ] || [ "$arg" = "tests" ] || [ "$arg" 
 fi
 
 if [ "$arg" = "-l" ] || [ "$arg" = "lint" ]; then
-	module=${1-ircbot plugins}
+	module=${1-botologist plugins}
 	[ -z $1 ] || shift
 
 	$python -m pylint --rcfile=.pylintrc $@ $module
 	exit $?
 fi
 
-$python -m ircbot
+$python -m botologist
 exit $?

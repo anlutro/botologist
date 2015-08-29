@@ -3,17 +3,17 @@ log = logging.getLogger(__name__)
 
 import collections
 
-import ircbot.plugin
+import botologist.plugin
 
 
-class KothPlugin(ircbot.plugin.Plugin):
+class KothPlugin(botologist.plugin.Plugin):
 	def __init__(self, bot, channel):
 		super().__init__(bot, channel)
 		self.is_active = False
 		self.signups_open = False
 		self.queue = None
 
-	@ircbot.plugin.command('koth')
+	@botologist.plugin.command('koth')
 	def cmd(self, cmd):
 		if not cmd.args or cmd.args[0] == 'list':
 			return self.list()

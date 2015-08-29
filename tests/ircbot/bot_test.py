@@ -1,7 +1,7 @@
 import unittest
 
-import ircbot.irc as irc
-import ircbot.bot as bot
+import botologist.irc as irc
+import botologist.bot as bot
 
 
 class CommandMessageTest(unittest.TestCase):

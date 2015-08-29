@@ -3,7 +3,7 @@ log = logging.getLogger(__name__)
 
 import random
 
-import ircbot.plugin
+import botologist.plugin
 
 
 class Bitcoin:
@@ -48,13 +48,13 @@ def get_random_time():
 	return '{}:{} {}'.format(hour, str(minute).zfill(2), ampm)
 
 
-class RedditeuPlugin(ircbot.plugin.Plugin):
+class RedditeuPlugin(botologist.plugin.Plugin):
 	"""#redditeu plugin."""
-	@ircbot.plugin.command('btc')
+	@botologist.plugin.command('btc')
 	def get_btc_worth(self, cmd):
 		return '1 bitcoin is currently worth ' + Bitcoin.get_worth()
 
-	@ircbot.plugin.command('michael')
+	@botologist.plugin.command('michael')
 	def who_is_michael(self, cmd):
 		channel = self.bot.conn.channels.get(cmd.message.target)
 		if not channel:
@@ -64,23 +64,23 @@ class RedditeuPlugin(ircbot.plugin.Plugin):
 				return 'Michael is ' + nick
 		return 'Michael not found!'
 
-	@ircbot.plugin.command('time')
+	@botologist.plugin.command('time')
 	def the_time(self, cmd):
 		return 'the time is ' + get_random_time()
 
-	@ircbot.plugin.join()
+	@botologist.plugin.join()
 	def welcome(self, user, channel):
 		if 'happy0' in user.nick.lower():
 			return 'ypyotootp hippy 0'
 		if user.nick.lower().startswith('raziel'):
 			return 'hello ' + Raziel.get_random_nick()
 
-	@ircbot.plugin.reply()
+	@botologist.plugin.reply()
 	def no_more_that_are_stupid(self, msg):
 		if 'no more irc binds that are stupid' in msg.message.lower():
 			return 'https://www.youtube.com/watch?v=LGxS-qjViNQ'
 
-	@ircbot.plugin.reply()
+	@botologist.plugin.reply()
 	def garner_masturbation_video(self, msg):
 		if 'garner masturbation video' in msg.message.lower():
 			return 'https://www.youtube.com/watch?v=akTE1n-U0C0'

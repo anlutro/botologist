@@ -4,7 +4,7 @@ log = logging.getLogger(__name__)
 import json
 import urllib.parse
 
-import ircbot.http
+import botologist.http
 import plugins.streams
 
 
@@ -26,7 +26,7 @@ def get_hitbox_data(channels):
 	channels = [urllib.parse.quote(channel) for channel in channels]
 	url = 'http://api.hitbox.tv/media/live/' + ','.join(channels)
 
-	response = ircbot.http.get(url)
+	response = botologist.http.get(url)
 	contents = response.read().decode()
 	response.close()
 

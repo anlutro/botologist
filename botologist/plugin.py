@@ -1,8 +1,8 @@
 import logging
 log = logging.getLogger(__name__)
 
-import ircbot.irc
-import ircbot.bot
+import botologist.irc
+import botologist.bot
 
 
 def command(command, threaded=False):
@@ -96,8 +96,8 @@ class PluginMetaclass(type):
 class Plugin(metaclass=PluginMetaclass):
 	"""Base plugin class."""
 	def __init__(self, bot, channel):
-		assert isinstance(channel, ircbot.irc.Channel)
-		assert isinstance(bot, ircbot.bot.Bot)
+		assert isinstance(channel, botologist.irc.Channel)
+		assert isinstance(bot, botologist.bot.Bot)
 
 		# pylint: disable=no-member
 		self.commands = {}

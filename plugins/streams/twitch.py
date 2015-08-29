@@ -3,7 +3,7 @@ log = logging.getLogger(__name__)
 
 import json
 
-import ircbot.http
+import botologist.http
 import plugins.streams
 
 
@@ -25,7 +25,7 @@ def get_twitch_data(channels):
 	url = 'https://api.twitch.tv/kraken/streams'
 
 	query_params = {'channel': ','.join(channels)}
-	response = ircbot.http.get(url, query_params=query_params)
+	response = botologist.http.get(url, query_params=query_params)
 	contents = response.read().decode()
 	response.close()
 	return json.loads(contents)

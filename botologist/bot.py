@@ -5,11 +5,11 @@ import datetime
 import threading
 import importlib
 
-import ircbot.error
-import ircbot.http
-import ircbot.irc
-import ircbot.plugin
-import ircbot.util
+import botologist.error
+import botologist.http
+import botologist.irc
+import botologist.plugin
+import botologist.util
 
 
 class CommandMessage:
@@ -20,7 +20,7 @@ class CommandMessage:
 	handler to figure out a response.
 	"""
 	def __init__(self, message):
-		assert isinstance(message, ircbot.irc.Message)
+		assert isinstance(message, botologist.irc.Message)
 		self.message = message
 		self.command = message.words[0]
 		self.args = message.words[1:]
@@ -30,7 +30,7 @@ class CommandMessage:
 		return self.message.user
 
 
-class Channel(ircbot.irc.Channel):
+class Channel(botologist.irc.Channel):
 	"""Extended channel class.
 
 	Added functionality for adding various handlers from plugins, as plugins are
@@ -46,7 +46,7 @@ class Channel(ircbot.irc.Channel):
 		self.http_handlers = []
 
 	def register_plugin(self, plugin):
-		assert isinstance(plugin, ircbot.plugin.Plugin)
+		assert isinstance(plugin, botologist.plugin.Plugin)
 		for cmd, callback in plugin.commands.items():
 			self.commands[cmd] = callback
 		for join_callback in plugin.joins:
@@ -59,7 +59,7 @@ class Channel(ircbot.irc.Channel):
 			self.http_handlers.append(http_handler)
 
 
-class Bot(ircbot.irc.Client):
+class Bot(botologist.irc.Client):
 	"""IRC bot."""
 
 	version = None
@@ -105,7 +105,7 @@ class Bot(ircbot.irc.Client):
 		self.http_host = get_config_compat('http_host')
 		self.http_server = None
 
-		self.error_handler = ircbot.error.ErrorHandler(self)
+		self.error_handler = botologist.error.ErrorHandler(self)
 		self.conn.error_handler = self.error_handler.handle_error
 		self.conn.on_welcome.append(self._start_tick_timer)
 		self.conn.on_join.append(self._handle_join)
@@ -114,7 +114,7 @@ class Bot(ircbot.irc.Client):
 		# configure plugins
 		for name, plugin_class in config.get('plugins', {}).items():
 			# convenience compatibility layer for when plugins module was moved
-			plugin_class = plugin_class.replace('ircbot.plugin.', 'plugins.')
+			plugin_class = plugin_class.replace('botologist.plugin.', 'plugins.')
 
 			# dynamically import the plugin module and pass the class
 			parts = plugin_class.split('.')
@@ -145,8 +145,8 @@ class Bot(ircbot.irc.Client):
 		if self.http_port:
 			log.info('Running HTTP server on {}:{}'.format(
 				self.http_host, self.http_port))
-			thread = ircbot.util.ErrorProneThread(
-				target=ircbot.http.run_http_server,
+			thread = botologist.util.ErrorProneThread(
+				target=botologist.http.run_http_server,
 				args=(self, self.http_host, self.http_port),
 				error_handler=self.error_handler.handle_error)
 			thread.start()
@@ -174,7 +174,7 @@ class Bot(ircbot.irc.Client):
 				msg = 'Could not find plugin class: {}'.format(plugin)
 				raise Exception(msg) from exception
 
-		assert issubclass(plugin, ircbot.plugin.Plugin)
+		assert issubclass(plugin, botologist.plugin.Plugin)
 		log.debug('Plugin "{name}" registered'.format(name=name))
 		self.plugins[name] = plugin
 
@@ -230,7 +230,7 @@ class Bot(ircbot.irc.Client):
 
 	def _handle_join(self, channel, user):
 		assert isinstance(channel, Channel)
-		assert isinstance(user, ircbot.irc.User)
+		assert isinstance(user, botologist.irc.User)
 
 		# iterate through join callbacks. the first, if any, to return a
 		# non-empty value, will be sent back to the channel as a response.
@@ -242,7 +242,7 @@ class Bot(ircbot.irc.Client):
 				return
 
 	def _handle_privmsg(self, message):
-		assert isinstance(message, ircbot.irc.Message)
+		assert isinstance(message, botologist.irc.Message)
 
 		if message.user.host in self.bans:
 			return
@@ -283,7 +283,7 @@ class Bot(ircbot.irc.Client):
 
 		if command_func._is_threaded:
 			log.debug('Starting thread for command {}'.format(cmd_string))
-			thread = ircbot.util.ErrorProneThread(
+			thread = botologist.util.ErrorProneThread(
 				target=self._maybe_send_cmd_reply,
 				args=(command_func, message),
 				error_handler=self.error_handler.handle_error)

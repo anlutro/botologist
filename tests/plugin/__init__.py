@@ -1,9 +1,8 @@
 import unittest
 import os.path
 
-import ircbot
-import ircbot.irc as irc
-import ircbot.bot as bot
+import botologist.irc as irc
+import botologist.bot as bot
 
 class PluginTestCase(unittest.TestCase):
 	cfg = {}
@@ -11,7 +10,7 @@ class PluginTestCase(unittest.TestCase):
 	def setUp(self):
 		self.channel = irc.Channel('#test')
 		self.bot = bot.Bot({
-			'storage_dir': '/tmp/ircbot',
+			'storage_dir': '/tmp/botologist',
 			'bot': {
 				'server': 'localhost:6667',
 			},

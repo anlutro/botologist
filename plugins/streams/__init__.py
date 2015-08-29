@@ -8,8 +8,8 @@ import re
 import urllib.error
 import urllib.parse
 
-import ircbot.http
-import ircbot.plugin
+import botologist.http
+import botologist.plugin
 from plugins.streams import twitch, hitbox, error, cache
 
 
@@ -249,14 +249,14 @@ class StreamManager:
 		return diff
 
 
-class StreamsPlugin(ircbot.plugin.Plugin):
+class StreamsPlugin(botologist.plugin.Plugin):
 	def __init__(self, bot, channel):
 		super().__init__(bot, channel)
 		filename = 'streams_' + channel.channel.replace('#', '') + '.json'
 		stor_path = os.path.join(bot.storage_dir, filename)
 		self.streams = StreamManager(stor_path)
 
-	@ircbot.plugin.command('addstream')
+	@botologist.plugin.command('addstream')
 	@error.return_streamerror_message
 	def add_stream_cmd(self, msg):
 		if len(msg.args) < 1:
@@ -268,7 +268,7 @@ class StreamsPlugin(ircbot.plugin.Plugin):
 		else:
 			return 'Stream already added.'
 
-	@ircbot.plugin.command('delstream')
+	@botologist.plugin.command('delstream')
 	@error.return_streamerror_message
 	def del_stream_cmd(self, msg):
 		if len(msg.args) < 1:
@@ -280,7 +280,7 @@ class StreamsPlugin(ircbot.plugin.Plugin):
 
 		return 'Stream deleted: {}'.format(stream)
 
-	@ircbot.plugin.command('sub')
+	@botologist.plugin.command('sub')
 	@error.return_streamerror_message
 	def subscribe_stream_cmd(self, msg):
 		if 'irccloud' in msg.user.host:
@@ -299,7 +299,7 @@ class StreamsPlugin(ircbot.plugin.Plugin):
 			else:
 				return 'You are already subscribed to that stream.'
 
-	@ircbot.plugin.command('unsub')
+	@botologist.plugin.command('unsub')
 	@error.return_streamerror_message
 	def unsubscribe_stream_cmd(self, msg):
 		if len(msg.args) < 1:
@@ -310,7 +310,7 @@ class StreamsPlugin(ircbot.plugin.Plugin):
 		else:
 			return 'You are not subscribed to that stream.'
 
-	@ircbot.plugin.command('streams', threaded=True)
+	@botologist.plugin.command('streams', threaded=True)
 	def list_streams_cmd(self, msg):
 		streams = self.streams.get_online_streams()
 		if not streams:
@@ -325,7 +325,7 @@ class StreamsPlugin(ircbot.plugin.Plugin):
 
 		return ' - '.join(stream_strings)
 
-	@ircbot.plugin.ticker()
+	@botologist.plugin.ticker()
 	def check_new_streams_tick(self):
 		streams = self.streams.get_new_online_streams()
 

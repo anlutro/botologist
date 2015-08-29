@@ -1,10 +1,10 @@
 import random
 import re
 
-import ircbot.plugin
+import botologist.plugin
 
 
-class DefaultPlugin(ircbot.plugin.Plugin):
+class DefaultPlugin(botologist.plugin.Plugin):
 	def __init__(self, bot, channel):
 		super().__init__(bot, channel)
 
@@ -15,7 +15,7 @@ class DefaultPlugin(ircbot.plugin.Plugin):
 			'fuck you too {nick}'),
 		)
 
-	@ircbot.plugin.command('mumble')
+	@botologist.plugin.command('mumble')
 	def mumble(self, msg):
 		mumble_cfg = self.bot.config.get('mumble')
 		if not mumble_cfg:
@@ -25,12 +25,12 @@ class DefaultPlugin(ircbot.plugin.Plugin):
 			retstr += ' - password: {password}'
 		return retstr.format(**mumble_cfg)
 
-	@ircbot.plugin.reply()
+	@botologist.plugin.reply()
 	def tableflip(self, msg):
 		if '(╯°□°)╯︵ ┻━┻' in msg.message:
 			return '┬─┬ ノ( ゜-゜ノ)'
 
-	@ircbot.plugin.reply()
+	@botologist.plugin.reply()
 	def return_insults(self, msg):
 		for expr, reply in self.insults:
 			if expr.match(msg.message):
@@ -38,12 +38,12 @@ class DefaultPlugin(ircbot.plugin.Plugin):
 
 	no_work = re.compile(r".*(__)?bot(__)?\s+(no|not|does ?n.?t)\s+work.*", re.IGNORECASE)
 
-	@ircbot.plugin.reply()
+	@botologist.plugin.reply()
 	def bot_always_works(self, msg):
 		if self.no_work.match(msg.message):
 			return 'I always work'
 
-	@ircbot.plugin.command('coinflip')
+	@botologist.plugin.command('coinflip')
 	def coinflip(self, cmd):
 		if not cmd.user.is_admin:
 			return
@@ -53,10 +53,10 @@ class DefaultPlugin(ircbot.plugin.Plugin):
 			return 'Heads!'
 		return 'Tails!'
 
-	@ircbot.plugin.command('repo')
+	@botologist.plugin.command('repo')
 	def repo(self, msg):
-		return 'https://github.com/anlutro/ircbot'
+		return 'https://github.com/anlutro/botologist'
 
-	@ircbot.plugin.command('version')
+	@botologist.plugin.command('version')
 	def version(self, msg):
 		return self.bot.version

@@ -4,8 +4,8 @@ log = logging.getLogger(__name__)
 import re
 import urllib.error
 
-import ircbot.http
-import ircbot.plugin
+import botologist.http
+import botologist.plugin
 
 
 url_shorteners = r'|'.join((
@@ -25,7 +25,7 @@ def find_shortened_urls(message):
 
 
 def get_location(url):
-	response = ircbot.http.head(url)
+	response = botologist.http.head(url)
 	return response.url
 
 
@@ -43,8 +43,8 @@ def unshorten_url(url):
 	return url
 
 
-class UrlPlugin(ircbot.plugin.Plugin):
-	@ircbot.plugin.reply()
+class UrlPlugin(botologist.plugin.Plugin):
+	@botologist.plugin.reply()
 	def reply(self, msg):
 		urls = find_shortened_urls(msg.message)
 		ret = []

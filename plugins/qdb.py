@@ -4,8 +4,8 @@ log = logging.getLogger(__name__)
 import json
 import urllib.error
 
-import ircbot.http
-import ircbot.plugin
+import botologist.http
+import botologist.plugin
 
 BASE_URL = 'http://qdb.lutro.me'
 
@@ -19,7 +19,7 @@ def _get_qdb_data(*args, **kwargs):
 		kwargs['headers'] = {}
 	kwargs['headers']['Accept'] = 'application/json'
 
-	response = ircbot.http.get(*args, **kwargs)
+	response = botologist.http.get(*args, **kwargs)
 	content = response.read().decode('utf-8')
 	return json.loads(content)
 
@@ -94,8 +94,8 @@ def _search_for_quote(quote):
 	return url + ' - ' + body
 
 
-class QdbPlugin(ircbot.plugin.Plugin):
-	@ircbot.plugin.command('qdb')
+class QdbPlugin(botologist.plugin.Plugin):
+	@botologist.plugin.command('qdb')
 	def search(self, cmd):
 		if len(cmd.args) < 1:
 			return
@@ -110,7 +110,7 @@ class QdbPlugin(ircbot.plugin.Plugin):
 
 		return _search_for_quote(arg)
 
-	@ircbot.plugin.http_handler(method='POST', path='/qdb-update')
+	@botologist.plugin.http_handler(method='POST', path='/qdb-update')
 	def quote_updated(self, body):
 		data = json.loads(body)
 		quote = data['quote']

@@ -6,7 +6,7 @@ import os.path
 import sys
 import yaml
 
-import ircbot.bot
+import botologist.bot
 
 root_dir = os.getcwd()
 config_path = os.path.join(root_dir, 'config.yml')
@@ -54,7 +54,7 @@ root.addHandler(handler)
 # initialize and run the bot
 try:
 	print('Starting IRC bot...')
-	bot = ircbot.bot.Bot(config)
+	bot = botologist.bot.Bot(config)
 
 	# use the git commit hash as version
 	git_dir = os.path.join(root_dir, '.git')

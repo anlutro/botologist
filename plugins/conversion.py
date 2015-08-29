@@ -6,8 +6,8 @@ import json
 import re
 import urllib.error
 
-import ircbot.http
-import ircbot.plugin
+import botologist.http
+import botologist.plugin
 
 
 def get_conversion_result(qs):
@@ -15,7 +15,7 @@ def get_conversion_result(qs):
 	url = 'http://api.duckduckgo.com/?q='+qs+'&format=json&no_html=1'
 
 	try:
-		response = ircbot.http.get(url)
+		response = botologist.http.get(url)
 		content = response.read().decode()
 	except urllib.error.URLError:
 		log.warning('DuckDuckGo request failed', exc_info=True)
@@ -29,7 +29,7 @@ def get_conversion_result(qs):
 def get_currency_data():
 	url = 'http://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml'
 	try:
-		response = ircbot.http.get(url)
+		response = botologist.http.get(url)
 		content = response.read().decode()
 	except urllib.error.URLError:
 		log.warning('ECB exchange data request failed', exc_info=True)
@@ -89,10 +89,10 @@ class Currency:
 			cls.last_fetch = now
 
 
-class ConversionPlugin(ircbot.plugin.Plugin):
+class ConversionPlugin(botologist.plugin.Plugin):
 	pattern = re.compile(r'([\d.,]+) ?([a-zA-Z]+) (into|in|to) ([a-zA-Z]+)')
 
-	@ircbot.plugin.reply()
+	@botologist.plugin.reply()
 	def convert(self, msg):
 		match = self.pattern.search(msg.message)
 		if not match:

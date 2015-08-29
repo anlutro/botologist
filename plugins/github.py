@@ -5,15 +5,15 @@ import hmac
 import hashlib
 import json
 
-import ircbot.plugin
+import botologist.plugin
 
 
-class GithubPlugin(ircbot.plugin.Plugin):
+class GithubPlugin(botologist.plugin.Plugin):
 	def __init__(self, bot, channel):
 		super().__init__(bot, channel)
 		self.secret = bot.config['github_secret'].encode('ascii')
 
-	@ircbot.plugin.http_handler(method='POST', path='/github')
+	@botologist.plugin.http_handler(method='POST', path='/github')
 	def handle_github_hook(self, body, headers):
 		event = headers['X-GitHub-Event']
 		guid = headers['X-GitHub-Delivery']

@@ -4,13 +4,13 @@ log = logging.getLogger(__name__)
 import json
 import urllib.error
 
-import ircbot.http
-import ircbot.plugin
+import botologist.http
+import botologist.plugin
 
 
 def _get_qlr_data(nick):
 	url = 'http://www.qlranks.com/api.aspx'
-	response = ircbot.http.get(url, query_params={'nick': nick}, timeout=4)
+	response = botologist.http.get(url, query_params={'nick': nick}, timeout=4)
 	data = response.read().decode()
 	response.close()
 	return json.loads(data)['players'][0]
@@ -53,9 +53,9 @@ def _get_qlr_elo(nick, modes=None):
 	return retval
 
 
-class QlranksPlugin(ircbot.plugin.Plugin):
+class QlranksPlugin(botologist.plugin.Plugin):
 	"""QLRanks plugin."""
-	@ircbot.plugin.command('elo', threaded=True)
+	@botologist.plugin.command('elo', threaded=True)
 	def get_elo(self, msg):
 		if len(msg.args) < 1:
 			return

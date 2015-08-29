@@ -6,7 +6,7 @@ This document will describe **breaking changes only** and how to fix issues as y
 
 ### Plugin system refactored
 
-Due to [#11](https://github.com/anlutro/ircbot/issues/11), your config will probably lead to a few error messages about plugins. To fix this:
+Due to [#11](https://github.com/anlutro/botologist/issues/11), your config will probably lead to a few error messages about plugins. To fix this:
 
 1. Remove the "plugins" map in your config.yml
 2. Replace "urls" with "url" in global_plugins/channel plugins
