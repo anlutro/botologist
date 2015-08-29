@@ -51,7 +51,7 @@ class GithubPlugin(botologist.plugin.Plugin):
 			return None
 
 		repository = data['repository']['full_name']
-		user = data['issue']['user']['login']
+		user = data['sender']['login']
 		title = data['issue']['title']
 		url = data['issue']['html_url']
 
@@ -68,7 +68,7 @@ class GithubPlugin(botologist.plugin.Plugin):
 			return None
 
 		repository = data['repository']['full_name']
-		user = data['pull_request']['user']['login']
+		user = data['sender']['login']
 		title = data['pull_request']['title']
 		url = data['pull_request']['html_url']
 
