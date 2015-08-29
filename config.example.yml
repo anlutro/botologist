@@ -7,13 +7,13 @@ log_level: debug
 server: irc.quakenet.org:6667
 
 # the nick to use
-nick: pyircbot
+nick: botologist
 
 # the username (ident)
-username: pyircbot
+username: botologist
 
 # the real name - shows up in /whois
-realname: pyircbot
+realname: botologist
 
 # hosts of global admin users
 admins:

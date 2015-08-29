@@ -19,13 +19,13 @@ class DefaultPluginTest(PluginTestCase):
 
 	def test_insults(self):
 		expected = 'fuck you too test'
-		self.assertEqual(expected, self.reply('fuck you pyircbot'))
-		self.assertEqual(expected, self.reply('fuck you, pyircbot'))
-		self.assertEqual(expected, self.reply('fuck you, pyircbot!'))
-		self.assertEqual(expected, self.reply('pyircbot fuck you'))
-		self.assertEqual(expected, self.reply('pyircbot, fuck you'))
-		self.assertEqual(expected, self.reply('pyircbot: fuck you'))
-		self.assertEqual(expected, self.reply('pyircbot: fuck you!'))
+		self.assertEqual(expected, self.reply('fuck you botologist'))
+		self.assertEqual(expected, self.reply('fuck you, botologist'))
+		self.assertEqual(expected, self.reply('fuck you, botologist!'))
+		self.assertEqual(expected, self.reply('botologist fuck you'))
+		self.assertEqual(expected, self.reply('botologist, fuck you'))
+		self.assertEqual(expected, self.reply('botologist: fuck you'))
+		self.assertEqual(expected, self.reply('botologist: fuck you!'))
 
 	def test_works(self):
 		expected = 'I always work'

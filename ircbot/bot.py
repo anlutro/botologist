@@ -80,7 +80,7 @@ class Bot(ircbot.irc.Client):
 		def get_config_compat(key, default=None):
 			return bot_config.get(key) or config.get(key, default)
 
-		nick = get_config_compat('nick', 'pyircbot')
+		nick = get_config_compat('nick', 'botologist')
 		super().__init__(
 			server=get_config_compat('server'),
 			nick=nick,

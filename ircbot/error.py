@@ -31,7 +31,7 @@ class ErrorHandler:
 		user = pwd.getpwuid(os.getuid())[0]
 		email['From'] = user
 		email['To'] = user
-		email['Subject'] = '[pyircbot] ' + short_msg
+		email['Subject'] = '[botologist] ' + short_msg
 
 		p = subprocess.Popen(['/usr/sbin/sendmail', '-t', '-oi'],
 			stdin=subprocess.PIPE)
