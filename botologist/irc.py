@@ -70,6 +70,7 @@ class Channel:
 		self.channel = channel
 		self.host_map = {}
 		self.nick_map = {}
+		self.allow_colors = True
 
 	def add_user(self, user):
 		assert isinstance(user, User)
@@ -254,8 +255,8 @@ class Connection:
 			elif words[1] == 'JOIN':
 				user = User.from_ircformat(words[0])
 				channel = words[2]
-				log.debug('User {user} ({ident} @ {host}) joined channel {channel}'.format(
-					user=user.nick, ident=user.ident, host=user.host, channel=channel))
+				log.debug('User %s (%s @ %s) joined channel %s',
+					user.nick, user.ident, user.host, channel)
 				if user.nick == self.nick:
 					self.send('WHO '+channel)
 				else:
@@ -304,14 +305,17 @@ class Connection:
 				message = Message.from_privmsg(msg)
 				if not message.is_private:
 					message.channel = self.channels[message.target]
-				if not message.is_private and message.user.host not in self.channels[message.target].host_map:
-					log.debug('Unknown user {user} ({host}) added to channel {channel}'.format(
-						user=message.user.nick, host=message.user.host, channel=message.target))
-					self.channels[message.target].add_user(User.from_ircformat(words[0]))
+					if message.user.host not in self.channels[message.target].host_map:
+						log.debug('Unknown user %s (%s) added to channel %s',
+							message.user.nick, message.user.host, message.target)
+						self.channels[message.target].add_user(message.user)
 				for callback in self.on_privmsg:
 					callback(message)
 
 	def send_msg(self, target, message):
+		if target in self.channels:
+			if not self.channels[target].allow_colors:
+				message = util.strip_irc_formatting(message)
 		if not isinstance(message, list):
 			message = message.split('\n')
 		for privmsg in message:

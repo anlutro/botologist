@@ -6,7 +6,6 @@ output-format = colorized
 disable =
   bad-continuation,
   invalid-name,
-  logging-format-interpolation,
   missing-docstring,
   no-self-use,
   protected-access,

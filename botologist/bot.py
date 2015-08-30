@@ -126,9 +126,7 @@ class Bot(botologist.irc.Client):
 
 		# configure channels
 		for name, channel in config.get('channels', {}).items():
-			self.add_channel(name,
-				channel.get('plugins', []),
-				channel.get('admins', []))
+			self.add_channel(name, **channel)
 
 	@property
 	def channels(self):
@@ -180,7 +178,7 @@ class Bot(botologist.irc.Client):
 		log.debug('Plugin "{name}" registered'.format(name=name))
 		self.plugins[name] = plugin
 
-	def add_channel(self, channel, plugins=None, admins=None):
+	def add_channel(self, channel, plugins=None, admins=None, allow_colors=True):
 		def guess_plugin_class(plugin):
 			plugin_class = ''.join(part.title() for part in plugin.split('_'))
 			return 'plugins.{}.{}Plugin'.format(plugin, plugin_class)
@@ -213,6 +211,8 @@ class Bot(botologist.irc.Client):
 		if admins:
 			assert isinstance(admins, list)
 			channel.admins = admins
+
+		channel.allow_colors = allow_colors
 
 		self.server.channels[channel.channel] = channel
 
