@@ -1,5 +1,5 @@
 import unittest.mock as mock
-from tests.plugin import PluginTestCase
+from tests.plugins import PluginTestCase
 
 class UrlPluginTest(PluginTestCase):
 	def create_plugin(self):

@@ -1,5 +1,5 @@
 import unittest.mock as mock
-from tests.plugin import PluginTestCase
+from tests.plugins import PluginTestCase
 
 f = 'plugins.qlranks._get_qlr_data'
 

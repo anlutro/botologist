@@ -1,15 +1,26 @@
 import logging
 log = logging.getLogger(__name__)
 
+import re
 import threading
-
 import html
+
 try:
 	unescape_html = html.unescape # pylint: disable=no-member
 except AttributeError:
 	import html.parser
 	html = html.parser.HTMLParser()
 	unescape_html = html.unescape
+
+
+irc_format_pattern = re.compile(r'(\x03\d{1,2}(,\d{1,2})?)|[\x02\x03\x0F\x16\x1D\x1F]')
+def strip_irc_formatting(string):
+	"""Remove IRC formatting characters from a string.
+
+	https://github.com/myano/jenni/wiki/IRC-String-Formatting
+	"""
+	return irc_format_pattern.sub('', string)
+
 
 
 def decode(bytestring):

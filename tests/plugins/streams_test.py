@@ -2,7 +2,7 @@ import unittest
 import unittest.mock as mock
 import os.path
 
-from tests.plugin import PluginTestCase
+from tests.plugins import PluginTestCase
 import plugins.streams as streams
 
 twitch_f = 'plugins.streams.twitch.get_twitch_data'

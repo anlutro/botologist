@@ -11,7 +11,7 @@ else
 fi
 
 if [ "$arg" = "-t" ] || [ "$arg" = "test" ] || [ "$arg" = "tests" ] || [ "$arg" = "tests/" ]; then
-	$python -m unittest discover -s ./tests/ -p '*_test.py'
+	$python -m unittest discover -s . -p '*_test.py'
 	exit $?
 fi
 

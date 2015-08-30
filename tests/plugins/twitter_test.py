@@ -1,5 +1,5 @@
 import unittest.mock as mock
-from tests.plugin import PluginTestCase
+from tests.plugins import PluginTestCase
 
 class TwitterPluginTest(PluginTestCase):
 	cfg = {'twitter_api': True}

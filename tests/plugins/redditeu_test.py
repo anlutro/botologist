@@ -1,4 +1,4 @@
-from tests.plugin import PluginTestCase
+from tests.plugins import PluginTestCase
 
 class RedditeuPluginTest(PluginTestCase):
 	def create_plugin(self):

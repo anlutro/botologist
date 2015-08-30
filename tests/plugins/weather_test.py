@@ -1,7 +1,7 @@
 import os.path
 import unittest.mock as mock
 
-from tests.plugin import PluginTestCase
+from tests.plugins import PluginTestCase
 import plugins.weather
 
 

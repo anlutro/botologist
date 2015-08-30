@@ -2,7 +2,7 @@ import hmac
 import hashlib
 import os.path
 
-from tests.plugin import PluginTestCase
+from tests.plugins import PluginTestCase
 import plugins.github
 
 class GithubPluginTest(PluginTestCase):
