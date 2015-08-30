@@ -239,8 +239,10 @@ class Connection:
 		if words[0] == 'PING':
 			self.send('PONG ' + words[1])
 		elif words[0] == 'ERROR':
-			log.warning('Received error message: ' + msg)
+			log.warning('Received error: %s', msg)
 			self.reconnect(10)
+		elif words[0] > '400' and words[0] < '600':
+			log.warning('Received error reply: %s', msg)
 		elif len(words) > 1:
 			if words[1] == '001':
 				# welcome message, lets us know that we're connected
