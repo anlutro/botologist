@@ -50,7 +50,7 @@ class DefaultPlugin(botologist.plugin.Plugin):
 			return 'Heads!'
 		return 'Tails!'
 
-	roll_pattern = re.compile(r'(\d+)d(\d+)')
+	roll_pattern = re.compile(r'^(\d+)(d(\d+))?$')
 
 	@botologist.plugin.command('roll')
 	def roll(self, cmd):
@@ -59,13 +59,19 @@ class DefaultPlugin(botologist.plugin.Plugin):
 		if not cmd.args or not match:
 			return 'Usage: \x02!roll 6\x0F or \x02!roll 2d10'
 
-		num_die = int(match.group(1))
+		if match.group(2):
+			num_die = int(match.group(1))
+			die_sides = int(match.group(3))
+		else:
+			num_die = 1
+			die_sides = int(match.group(1))
+
 		if num_die < 1:
 			return 'Cannot roll less than 1 die!'
-
-		die_sides = int(match.group(2))
 		if die_sides < 2:
 			return 'Cannot roll die with less than 2 sides!'
+		if num_die > 10 or die_sides > 20:
+			return 'Maximum 10d20!'
 
 		return 'Rolling {} die with {} sides: {}'.format(num_die, die_sides,
 			sum([random.randint(1, die_sides) for i in range(0, num_die)]))
