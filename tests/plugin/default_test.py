@@ -33,6 +33,10 @@ class DefaultPluginTest(PluginTestCase):
 		self.assertEqual(expected, self.reply('__bot__ no work'))
 
 	def test_roll(self):
+		usage_msg = 'Usage: \x02!roll 6\x0F or \x02!roll 2d10'
+		self.assertEqual(usage_msg, self.cmd('roll'))
+		self.assertEqual(usage_msg, self.cmd('roll 2'))
+		self.assertEqual(usage_msg, self.cmd('roll asdf'))
 		self.assertIn('Rolling 2 die with 6 sides:', self.cmd('roll 2d6'))
 		self.assertIn('Rolling 12 die with 34 sides:', self.cmd('roll 12d34'))
 		self.assertEqual('Cannot roll less than 1 die!', self.cmd('roll 0d9'))

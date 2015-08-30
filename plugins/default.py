@@ -57,7 +57,7 @@ class DefaultPlugin(botologist.plugin.Plugin):
 		if cmd.args:
 			match = self.roll_pattern.match(cmd.args[0])
 		if not cmd.args or not match:
-			return 'Usage: \x02!roll 6\x0F or \x02!roll 2d10\x0F'
+			return 'Usage: \x02!roll 6\x0F or \x02!roll 2d10'
 
 		num_die = int(match.group(1))
 		if num_die < 1:
