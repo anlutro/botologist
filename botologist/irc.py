@@ -215,17 +215,19 @@ class Connection:
 			text = botologist.util.decode(data)
 
 			for msg in text.split('\r\n'):
-				if msg:
-					log.debug(repr(msg))
-					try:
-						self.handle_msg(msg)
-					except Exception as exception:
-						# if an error handler is defined, call it and continue
-						# the loop. if not, re-raise the exception
-						if self.error_handler:
-							self.error_handler(exception)
-						else:
-							raise
+				if not msg:
+					continue
+
+				log.debug(repr(msg))
+				try:
+					self.handle_msg(msg)
+				except Exception as exception:
+					# if an error handler is defined, call it and continue
+					# the loop. if not, re-raise the exception
+					if self.error_handler:
+						self.error_handler(exception)
+					else:
+						raise
 
 	def join_channel(self, channel):
 		assert isinstance(channel, Channel)
