@@ -4,8 +4,7 @@ arg=$1
 [ -z $1 ] || shift
 
 if [ -z $VIRTUAL_ENV ]; then
-	dir=$(dirname $(readlink -f $0))
-	python=$dir/.virtualenv/bin/python
+	python=$(dirname $(readlink -f $0))/.virtualenv/bin/python
 else
 	python=python
 fi
