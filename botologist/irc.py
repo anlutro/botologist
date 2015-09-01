@@ -115,6 +115,58 @@ class Channel:
 		self.host_map[user.host] = new_nick
 
 
+class IRCSocket:
+	def __init__(self, server):
+		self.server = server
+		self.socket = None
+
+	def connect(self):
+		addrinfo = socket.getaddrinfo(
+			self.server.host, self.server.port,
+			socket.AF_UNSPEC, socket.SOCK_STREAM
+		)
+
+		for res in addrinfo:
+			af, socktype, proto, canonname, sa = res
+
+			try:
+				self.socket = socket.socket(af, socktype, proto)
+			except OSError:
+				self.socket = None
+				continue
+
+			try:
+				self.socket.connect(sa)
+			except OSError:
+				self.socket.close()
+				self.socket = None
+				continue
+
+			# if we reach this point, the socket has been successfully created,
+			# so break out of the loop
+			break
+
+		if self.socket is None:
+			raise OSError('Could not open socket')
+
+	def recv(self, bufsize=4096):
+		data = self.socket.recv(bufsize)
+
+		# 13 = \r -- 10 = \n
+		while data != b'' and (data[-1] != 10 and data[-2] != 13):
+			data += self.socket.recv(bufsize)
+
+		return botologist.util.decode(data)
+
+	def send(self, data):
+		if isinstance(data, str):
+			data = data.encode('utf-8')
+		self.socket.send(data)
+
+	def close(self):
+		self.socket.close()
+
+
 class Connection:
 	MAX_MSG_CHARS = 500
 
@@ -122,7 +174,7 @@ class Connection:
 		self.nick = nick
 		self.username = username or nick
 		self.realname = realname or nick
-		self.sock = None
+		self.irc_socket = None
 		self.server = None
 		self.channels = {}
 		self.on_welcome = []
@@ -133,20 +185,20 @@ class Connection:
 
 	def connect(self, server):
 		assert isinstance(server, Server)
-		if self.sock is not None:
+		if self.irc_socket is not None:
 			self.disconnect()
 		self.server = server
 		self._connect()
 
 	def disconnect(self):
-		self.sock.close()
-		self.sock = None
+		self.irc_socket.close()
+		self.irc_socket = None
 
 	def reconnect(self, time=None):
-		if self.sock:
+		if self.irc_socket:
 			self.disconnect()
 		if time:
-			log.info('Reconnecting in {} seconds'.format(time))
+			log.info('Reconnecting in %d seconds', time)
 			timer = threading.Timer(time, self._connect)
 			timer.start()
 		else:
@@ -154,72 +206,32 @@ class Connection:
 
 	def _connect(self):
 		log.info('Connecting to %s:%s', self.server.host, self.server.port)
-
-		addrinfo = socket.getaddrinfo(
-			self.server.host, self.server.port,
-			socket.AF_UNSPEC, socket.SOCK_STREAM
-		)
-
-		for res in addrinfo:
-			af, socktype, proto, canonname, sa = res
-
-			try:
-				self.sock = socket.socket(af, socktype, proto)
-			except OSError:
-				self.sock = None
-				continue
-
-			try:
-				self.sock.connect(sa)
-			except OSError:
-				self.sock.close()
-				self.sock = None
-				continue
-
-			# if we reach this point, the socket has been successfully created,
-			# so break out of the loop
-			break
-
-		if self.sock is None:
-			raise OSError('Could not open socket')
-
+		self.irc_socket = IRCSocket(self.server)
+		self.irc_socket.connect()
 		log.info('Successfully connected to server!')
+
 		self.send('NICK ' + self.nick)
 		self.send('USER ' + self.username + ' 0 * :' + self.realname)
 		self.loop()
 
 	def loop(self):
 		while True:
-			data = b''
-
-			# 13 = \r -- 10 = \n
-			while data == b'' or (data[-1] != 10 and data[-2] != 13):
-				try:
-					data += self.sock.recv(4096)
-				except OSError:
-					if self.quitting:
-						log.info('sock.recv threw an exception, but the client '
-							'is quitting, so exiting loop', exc_info=True)
-						return
-					log.exception('sock.recv threw an exception')
+			try:
+				data = self.irc_socket.recv()
+			except OSError:
+				if self.quitting:
+					log.info('socket.recv threw an exception, but the client '
+						'is quitting, so exiting loop', exc_info=True)
+				else:
+					log.exception('socket.recv threw an exception')
 					self.reconnect(5)
-					continue
-				if data == b'':
-					if self.quitting:
-						log.info('sock.recv returned empty binary string, but '
-							'the client is quitting, so exiting loop')
-						return
-					log.warning('sock.recv returned empty binary string')
-					self.reconnect(5)
-					continue
+				return
 
-			text = botologist.util.decode(data)
-
-			for msg in text.split('\r\n'):
+			for msg in data.split('\r\n'):
 				if not msg:
 					continue
 
-				log.debug(repr(msg))
+				log.debug('RECEIVED: %s', repr(msg))
 				try:
 					self.handle_msg(msg)
 				except Exception as exception:
@@ -276,30 +288,26 @@ class Connection:
 			elif words[1] == 'NICK':
 				user = User.from_ircformat(words[0])
 				new_nick = words[2][1:]
-				log.debug('User {user} changing nick: {nick}'.format(
-					user=user.host, nick=new_nick))
+				log.debug('User %s changing nick: %s', user.host, new_nick)
 				for channel in self.channels.values():
 					if channel.find_nick_from_host(user.host):
-						log.debug('Updating nick for user in Channel {channel}'.format(
-							channel=channel.channel))
+						log.debug('Updating nick for user in channel %s',
+							channel.channel)
 						channel.update_nick(user, new_nick)
 
 			elif words[1] == 'PART':
 				user = User.from_ircformat(words[0])
 				channel = words[2]
 				self.channels[channel].remove_user(host=user.host)
-				log.debug('User {user} parted from channel {channel}'.format(
-					user=user.host, channel=channel))
+				log.debug('User %s parted from channel %s', user.host, channel)
 
 			elif words[1] == 'QUIT':
 				user = User.from_ircformat(words[0])
-				log.debug('User {user} quit'.format(user=user.host))
+				log.debug('User %s quit', user.host)
 				for channel in self.channels.values():
-					log.debug('Checking if user was in ' + channel.channel)
 					if channel.find_nick_from_host(user.host):
 						channel.remove_user(host=user.host)
-						log.debug('Removing user from channel {channel}'.format(
-							channel=channel.channel))
+						log.debug('Removing user from channel %s', channel.channel)
 
 			elif words[1] == 'PRIVMSG':
 				message = Message.from_privmsg(msg)
@@ -315,7 +323,7 @@ class Connection:
 	def send_msg(self, target, message):
 		if target in self.channels:
 			if not self.channels[target].allow_colors:
-				message = util.strip_irc_formatting(message)
+				message = botologist.util.strip_irc_formatting(message)
 		if not isinstance(message, list):
 			message = message.split('\n')
 		for privmsg in message:
@@ -323,9 +331,12 @@ class Connection:
 
 	def send(self, msg):
 		if len(msg) > self.MAX_MSG_CHARS:
+			log.warning('Message too long (%d characters), upper limit %d',
+				len(msg), self.MAX_MSG_CHARS)
 			msg = msg[:(self.MAX_MSG_CHARS - 3)] + '...'
 
-		self.sock.send(str.encode(msg + '\r\n'))
+		log.debug('SENDING: %s', repr(msg))
+		self.irc_socket.send(msg + '\r\n')
 
 	def quit(self, reason='Leaving'):
 		log.info('Quitting, reason: '+reason)
