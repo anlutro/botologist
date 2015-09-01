@@ -111,7 +111,7 @@ class QdbPlugin(botologist.plugin.Plugin):
 		return _search_for_quote(arg)
 
 	@botologist.plugin.http_handler(method='POST', path='/qdb-update')
-	def quote_updated(self, body):
+	def quote_updated(self, body, headers):
 		data = json.loads(body)
 		quote = data['quote']
 		if quote['approved']:
