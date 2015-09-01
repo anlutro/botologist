@@ -14,12 +14,25 @@ def send_email(email):
 	p.communicate(email.as_string().encode('utf-8'))
 
 
+def format_error(message=None):
+	long_msg = traceback.format_exc().strip()
+	# should get the exception type and message
+	medium_msg = long_msg.split('\n')[-1]
+	short_msg = 'Uncaught exception'
+
+	if isinstance(message, str):
+		short_msg = message.split('\n')[0]
+	medium_msg = '{} - {}'.format(short_msg, medium_msg)
+
+	return short_msg, medium_msg, long_msg
+
+
 class ErrorHandler:
 	def __init__(self, bot):
 		self.bot = bot
 
 	def handle_error(self, message=None):
-		short_msg, medium_msg, long_msg = self.format_error(message)
+		short_msg, medium_msg, long_msg = format_error(message)
 
 		log.exception(medium_msg)
 
@@ -33,15 +46,4 @@ class ErrorHandler:
 		send_email(email)
 
 		log.info('Sent email with exception information to {}'.format(user))
-
-	def format_error(self, message=None):
-		long_msg = traceback.format_exc().strip()
-		# should get the exception type and message
-		medium_msg = long_msg.split('\n')[-1]
-		short_msg = 'Uncaught exception'
-
-		if isinstance(message, str):
-			short_msg = message.split('\n')[0]
-		medium_msg = '{} - {}'.format(short_msg, medium_msg)
-
-		return short_msg, medium_msg, long_msg
+		
