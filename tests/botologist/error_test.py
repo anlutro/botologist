@@ -13,8 +13,7 @@ class ErrorHandlerTest(unittest.TestCase):
 		self.assertEqual('Uncaught exception', short_msg)
 		self.assertEqual('Uncaught exception - RuntimeError: test', medium_msg)
 		self.assertEqual('Traceback (most recent call last):\n'
-			'  File "'+__file__+'"'
-			', line 9, in test_exception_is_formatted_correctly\n'
+			'  File "'+__file__+'", line 9, in test_exception_is_formatted_correctly\n'
 			'    raise RuntimeError(\'test\')\nRuntimeError: test', long_msg)
 
 	def test_error_message_is_formatted_correctly(self):
@@ -27,6 +26,5 @@ class ErrorHandlerTest(unittest.TestCase):
 		self.assertEqual('doing stuff', short_msg)
 		self.assertEqual('doing stuff - RuntimeError: test', medium_msg)
 		self.assertEqual('Traceback (most recent call last):\n'
-			'  File "'+__file__+'"'
-			', line 23, in test_error_message_is_formatted_correctly\n'
+			'  File "'+__file__+'", line 22, in test_error_message_is_formatted_correctly\n'
 			'    raise RuntimeError(\'test\')\nRuntimeError: test', long_msg)
