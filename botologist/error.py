@@ -12,26 +12,29 @@ class ErrorHandler:
 	def __init__(self, bot):
 		self.bot = bot
 
-	def handle_error(self, exception=None):
+	def handle_error(self, error=None):
+		short_msg = 'Uncaught exception'
 		long_msg = traceback.format_exc()
 
-		if isinstance(exception, str):
-			short_msg = exception.split('\n')[0]
-		elif isinstance(exception, Exception):
-			short_msg = 'Uncaught exception - {}: {}'.format(
-				type(exception).__name__, str(exception))
+		if isinstance(error, Exception):
+			medium_msg = 'Uncaught exception - {}: {}'.format(
+				type(error).__name__, str(error))
 		else:
-			short_msg = long_msg.split('\n')[-1]
+			# should get the exception type and message
+			medium_msg = long_msg.split('\n')[-1]
+			if isinstance(error, str):
+				short_msg = error.split('\n')[0]
+				medium_msg = '{} - {}'.format(short_msg, medium_msg)
 
-		log.exception(short_msg)
+		log.exception(medium_msg)
 
-		self.bot._send_msg(short_msg, self.bot.get_admin_nicks())
+		self.bot._send_msg(medium_msg, self.bot.get_admin_nicks())
 
 		email = MIMEText(long_msg)
 		user = pwd.getpwuid(os.getuid())[0]
 		email['From'] = user
 		email['To'] = user
-		email['Subject'] = '[botologist] ' + short_msg
+		email['Subject'] = '[botologist] ' + medium_msg
 
 		p = subprocess.Popen(['/usr/sbin/sendmail', '-t', '-oi'],
 			stdin=subprocess.PIPE)
