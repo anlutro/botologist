@@ -49,30 +49,43 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
 		return self.server.bot
 
 	def do_GET(self):
-		self.send_response(200)
-		self.send_header('Content-type', 'text/plain')
-		self.end_headers()
-
-		for channel in self.bot.channels.values():
-			for handler in channel.http_handlers:
-				if handler._http_method == 'GET':
-					ret = handler()
-					if ret:
-						self.bot._send_msg(ret, channel.channel)
-
-		self.wfile.write(b'OK\n')
+		try:
+			self.trigger_handlers('GET')
+			self.send_200()
+		except:
+			self.send_500()
+			raise
 
 	def do_POST(self):
+		content_length = self.headers['Content-Length']
+		if not content_length:
+			log.warning('POST request with no Content-Length received')
+			self.send_response(400)
+			self.wfile.write(b'Content-Length header missing\n')
+			return
+		length = int(self.headers['Content-Length'])
+		body = self.rfile.read(length).decode()
+
+		try:
+			self.trigger_handlers('POST', body)
+			self.send_200()
+		except:
+			self.send_500()
+			raise
+
+	def send_500(self):
+		self.send_response(500)
+		self.send_header('Content-type', 'text/plain')
+		self.end_headers()
+		self.wfile.write(b'An internal error occured.\n')
+
+	def send_200(self):
 		self.send_response(200)
 		self.send_header('Content-type', 'text/plain')
 		self.end_headers()
-
-		length = int(self.headers['Content-Length'])
-		body = self.rfile.read(length).decode()
-		self.send_msg('POST', body)
 		self.wfile.write(b'OK\n')
 
-	def send_msg(self, method, body=None):
+	def trigger_handlers(self, method, body=None):
 		kwargs = {
 			'body': body,
 			'headers': self.headers,
@@ -90,7 +103,7 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
 							ret = handler(**kwargs)
 
 					if ret:
-						self.bot._send_msg(ret, channel.channel)
+						self.bot._trigger_handlers(ret, channel.channel)
 
 	def log_message(self, string, *args):
 		log.info(string, *args)
