@@ -103,7 +103,7 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
 							ret = handler(**kwargs)
 
 					if ret:
-						self.bot._trigger_handlers(ret, channel.channel)
+						self.bot._send_msg(ret, channel.channel)
 
 	def log_message(self, string, *args):
 		log.info(string, *args)
