@@ -21,9 +21,9 @@ class ErrorHandler:
 				type(error).__name__, str(error))
 		else:
 			# should get the exception type and message
-			medium_msg = long_msg.split('\n')[-1]
+			medium_msg = long_msg.strip().split('\n')[-1]
 			if isinstance(error, str):
-				short_msg = error.split('\n')[0]
+				short_msg = error.strip().split('\n')[0]
 				medium_msg = '{} - {}'.format(short_msg, medium_msg)
 
 		log.exception(medium_msg)
