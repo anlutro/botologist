@@ -10,21 +10,25 @@ import botologist.http
 import botologist.plugin
 
 
-def get_conversion_result(qs):
-	qs = urllib.parse.quote(qs)
-	url = 'http://api.duckduckgo.com/?q='+qs+'&format=json&no_html=1'
+def get_duckduckgo_data(url):
+	response = botologist.http.get(url)
+	content = response.read().decode()
+	return json.loads(content)
+
+
+def get_conversion_result(query):
+	qs = urllib.parse.urlencode({'q': query, 'format': 'json', 'no_html': 1})
+	url = 'http://api.duckduckgo.com/?' + qs
 
 	try:
-		response = botologist.http.get(url)
-		content = response.read().decode()
+		data = get_duckduckgo_data(url)
 	except urllib.error.URLError:
 		log.warning('DuckDuckGo request failed', exc_info=True)
 		return False
 
-	data = json.loads(content)
-
 	if data['AnswerType'] == 'conversions' and data['Answer']:
 		return data['Answer']
+
 
 def get_currency_data():
 	url = 'http://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml'
@@ -108,7 +112,6 @@ class ConversionPlugin(botologist.plugin.Plugin):
 				amount = '{:.2f}'.format(float(amount))
 			return '{} {} = {:.2f} {}'.format(amount, conv_from, result, conv_to)
 
-		qs = '+'.join(match.groups())
-		result = get_conversion_result(qs)
+		result = get_conversion_result(' '.join(match.groups()))
 		if result:
 			return result

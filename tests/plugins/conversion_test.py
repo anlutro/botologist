@@ -1,11 +1,13 @@
 import unittest.mock as mock
 from tests.plugins import PluginTestCase
 
+@mock.patch('plugins.conversion.get_duckduckgo_data', return_value={ 'AnswerType': 'conversions', 'Answer': 'TEST' })
 @mock.patch('plugins.conversion.get_currency_data', return_value={ 'NOK': 8.00, 'DKK': 6.00 })
-@mock.patch('plugins.conversion.get_conversion_result', return_value='TEST')
 class ConversionPluginTest(PluginTestCase):
 	def create_plugin(self):
-		from plugins.conversion import ConversionPlugin
+		from plugins.conversion import ConversionPlugin, Currency
+		Currency.last_fetch = None
+		Currency.currency_data = None
 		return ConversionPlugin(self.bot, self.channel)
 
 	def test_converts_currencies(self, currency_mock, convert_mock):
