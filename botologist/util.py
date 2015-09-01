@@ -47,8 +47,8 @@ class ErrorProneThread(threading.Thread):
 	def run(self):
 		try:
 			super().run()
-		except Exception as exception:
+		except:
 			if self.error_handler:
-				self.error_handler(exception)
+				self.error_handler()
 			else:
 				raise

@@ -234,11 +234,11 @@ class Connection:
 				log.debug('RECEIVED: %s', repr(msg))
 				try:
 					self.handle_msg(msg)
-				except Exception as exception:
+				except:
 					# if an error handler is defined, call it and continue
 					# the loop. if not, re-raise the exception
 					if self.error_handler:
-						self.error_handler(exception)
+						self.error_handler()
 					else:
 						raise
 

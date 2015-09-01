@@ -8,23 +8,18 @@ import subprocess
 import traceback
 
 
+def send_email(email):
+	p = subprocess.Popen(['/usr/sbin/sendmail', '-t', '-oi'],
+		stdin=subprocess.PIPE)
+	p.communicate(email.as_string().encode('utf-8'))
+
+
 class ErrorHandler:
 	def __init__(self, bot):
 		self.bot = bot
 
-	def handle_error(self, error=None):
-		short_msg = 'Uncaught exception'
-		long_msg = traceback.format_exc()
-
-		if isinstance(error, Exception):
-			medium_msg = 'Uncaught exception - {}: {}'.format(
-				type(error).__name__, str(error))
-		else:
-			# should get the exception type and message
-			medium_msg = long_msg.strip().split('\n')[-1]
-			if isinstance(error, str):
-				short_msg = error.strip().split('\n')[0]
-				medium_msg = '{} - {}'.format(short_msg, medium_msg)
+	def handle_error(self, message=None):
+		short_msg, medium_msg, long_msg = self.format_error(message)
 
 		log.exception(medium_msg)
 
@@ -35,8 +30,18 @@ class ErrorHandler:
 		email['From'] = user
 		email['To'] = user
 		email['Subject'] = '[botologist] ' + medium_msg
+		send_email(email)
 
-		p = subprocess.Popen(['/usr/sbin/sendmail', '-t', '-oi'],
-			stdin=subprocess.PIPE)
-		p.communicate(email.as_string().encode('utf-8'))
 		log.info('Sent email with exception information to {}'.format(user))
+
+	def format_error(self, message=None):
+		long_msg = traceback.format_exc().strip()
+		# should get the exception type and message
+		medium_msg = long_msg.split('\n')[-1]
+		short_msg = 'Uncaught exception'
+
+		if isinstance(message, str):
+			short_msg = message.split('\n')[0]
+		medium_msg = '{} - {}'.format(short_msg, medium_msg)
+
+		return short_msg, medium_msg, long_msg
