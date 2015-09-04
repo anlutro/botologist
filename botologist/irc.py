@@ -269,7 +269,7 @@ class Connection:
 			self.send('PONG ' + words[1])
 		elif words[0] == 'ERROR':
 			if ':Your host is trying to (re)connect too fast -- throttled' in msg:
-				log.warning('Throttled for (re)connecting too fast', msg)
+				log.warning('Throttled for (re)connecting too fast')
 				self.reconnect(60)
 			else:
 				log.warning('Received error: %s', msg)
