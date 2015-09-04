@@ -13,6 +13,17 @@ import botologist.plugin
 from plugins.streams import twitch, hitbox, error, cache
 
 
+def filter_urls(urls, service):
+	def extract_channel(url):
+		parts = url.split('/')
+
+		for (key, part) in enumerate(parts):
+			if service in part:
+				return parts[key + 1].lower()
+
+	return [extract_channel(url) for url in urls if url is not None]
+
+
 class Stream:
 	rerun_searches = ('[re]', 'rebroadcast', 'rerun')
 	empty_title_rebroadcast = ('twitch.tv/gsl', 'twitch.tv/wcs', 'twitch.tv/esl_sc2')
@@ -48,7 +59,7 @@ class Stream:
 		return hash(self.url)
 
 	def __repr__(self):
-		return '<plugins.streams.Stream object \'{}\'>'.format(self.url)
+		return "<plugins.streams.Stream object '{}'>".format(self.url)
 
 	@staticmethod
 	def normalize_url(url, validate=True):
@@ -240,8 +251,8 @@ class StreamManager:
 			diff = [stream for stream in streams
 				if stream.url not in cached_stream_urls
 				and not stream.is_rebroadcast]
-			log.debug('Cached streams: {} - Online streams: {} - Diff: {}'.format(
-				len(cached_stream_urls), len(streams), len(diff)))
+			log.debug('Cached streams: %d - Online streams: %d - Diff: %d',
+				len(cached_stream_urls), len(streams), len(diff))
 
 		self._cached_streams.push(streams)
 		self._last_fetch = datetime.datetime.now()

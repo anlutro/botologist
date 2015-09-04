@@ -143,8 +143,7 @@ class Bot(botologist.irc.Client):
 
 	def run_forever(self):
 		if self.http_port:
-			log.info('Running HTTP server on {}:{}'.format(
-				self.http_host, self.http_port))
+			log.info('Running HTTP server on %s:%s', self.http_host, self.http_port)
 			thread = botologist.util.ErrorProneThread(
 				target=botologist.http.run_http_server,
 				args=(self, self.http_host, self.http_port),
@@ -175,7 +174,7 @@ class Bot(botologist.irc.Client):
 				raise Exception(msg) from exception
 
 		assert issubclass(plugin, botologist.plugin.Plugin)
-		log.debug('Plugin "{name}" registered'.format(name=name))
+		log.debug('Plugin "%s" registered', name)
 		self.plugins[name] = plugin
 
 	def add_channel(self, channel, plugins=None, admins=None, allow_colors=True):
@@ -194,8 +193,7 @@ class Bot(botologist.irc.Client):
 				if not plugin in self.plugins:
 					plugin_class = guess_plugin_class(plugin)
 					self.register_plugin(plugin, plugin_class)
-				log.debug('Adding plugin {plugin} to channel {channel}'.format(
-					plugin=plugin, channel=channel.channel))
+				log.debug('Adding plugin %s to channel %s', plugin, channel.channel)
 				channel.register_plugin(self.plugins[plugin](self, channel))
 
 		# global plugins
@@ -204,8 +202,7 @@ class Bot(botologist.irc.Client):
 			if not plugin in self.plugins:
 				plugin_class = guess_plugin_class(plugin)
 				self.register_plugin(plugin, plugin_class)
-			log.debug('Adding plugin {plugin} to channel {channel}'.format(
-				plugin=plugin, channel=channel.channel))
+			log.debug('Adding plugin %s to channel %s', plugin, channel.channel)
 			channel.register_plugin(self.plugins[plugin](self, channel))
 
 		if admins:
@@ -276,14 +273,13 @@ class Bot(botologist.irc.Client):
 		cmd_string = message.words[0][1:].lower()
 
 		if not cmd_string in channel.commands:
-			log.debug('Command {} not found in channel {}'.format(
-				cmd_string, channel.channel))
+			log.debug('Command %s not found in channel %s', cmd_string, channel.channel)
 			return
 
 		command_func = channel.commands[cmd_string]
 
 		if command_func._is_threaded:
-			log.debug('Starting thread for command {}'.format(cmd_string))
+			log.debug('Starting thread for command %s', cmd_string)
 			thread = botologist.util.ErrorProneThread(
 				target=self._maybe_send_cmd_reply,
 				args=(command_func, message),
@@ -310,7 +306,7 @@ class Bot(botologist.irc.Client):
 			else:
 				threshold = self.SPAM_THROTTLE
 			if diff.seconds < threshold:
-				log.info('Command {cmd} throttled'.format(cmd=command.command))
+				log.info('Command throttled: %s', command.command)
 				return None
 
 		# log the command call for spam throttling
@@ -333,7 +329,7 @@ class Bot(botologist.irc.Client):
 			if reply in self._reply_log and not message.user.is_admin:
 				diff = now - self._reply_log[reply]
 				if diff.seconds < self.SPAM_THROTTLE:
-					log.info('Reply throttled: "{reply}"'.format(reply=reply))
+					log.info('Reply throttled: "%s"', reply=reply)
 					continue
 
 			# log the reply for spam throttling

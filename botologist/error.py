@@ -24,7 +24,7 @@ def format_error(message=None):
 		short_msg = message.split('\n')[0]
 	medium_msg = '{} - {}'.format(short_msg, medium_msg)
 
-	return short_msg, medium_msg, long_msg
+	return medium_msg, long_msg
 
 
 class ErrorHandler:
@@ -32,7 +32,7 @@ class ErrorHandler:
 		self.bot = bot
 
 	def handle_error(self, message=None):
-		short_msg, medium_msg, long_msg = format_error(message)
+		medium_msg, long_msg = format_error(message)
 
 		log.exception(medium_msg)
 
@@ -45,5 +45,4 @@ class ErrorHandler:
 		email['Subject'] = '[botologist] ' + medium_msg
 		send_email(email)
 
-		log.info('Sent email with exception information to {}'.format(user))
-		
+		log.info('Sent email with exception information to %s', user)

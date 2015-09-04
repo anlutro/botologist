@@ -7,9 +7,8 @@ class ErrorHandlerTest(unittest.TestCase):
 		try:
 			raise RuntimeError('test')
 		except:
-			short_msg, medium_msg, long_msg = error.format_error()
+			medium_msg, long_msg = error.format_error()
 
-		self.assertEqual('Uncaught exception', short_msg)
 		self.assertEqual('Uncaught exception - RuntimeError: test', medium_msg)
 		self.assertEqual('Traceback (most recent call last):\n'
 			'  File "'+__file__+'", line 8, in test_exception_is_formatted_correctly\n'
@@ -19,10 +18,9 @@ class ErrorHandlerTest(unittest.TestCase):
 		try:
 			raise RuntimeError('test')
 		except:
-			short_msg, medium_msg, long_msg = error.format_error('doing stuff')
+			medium_msg, long_msg = error.format_error('doing stuff')
 
-		self.assertEqual('doing stuff', short_msg)
 		self.assertEqual('doing stuff - RuntimeError: test', medium_msg)
 		self.assertEqual('Traceback (most recent call last):\n'
-			'  File "'+__file__+'", line 20, in test_error_message_is_formatted_correctly\n'
+			'  File "'+__file__+'", line 19, in test_error_message_is_formatted_correctly\n'
 			'    raise RuntimeError(\'test\')\nRuntimeError: test', long_msg)

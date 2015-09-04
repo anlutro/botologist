@@ -14,14 +14,6 @@ def make_hitbox_stream(data):
 	return plugins.streams.Stream(channel, 'hitbox.tv/' + channel, title)
 
 
-def extract_channel(url):
-	parts = url.split('/')
-
-	for (key, part) in enumerate(parts):
-		if 'hitbox.tv' in part:
-			return parts[key + 1].lower()
-
-
 def get_hitbox_data(channels):
 	channels = [urllib.parse.quote(channel) for channel in channels]
 	url = 'http://api.hitbox.tv/media/live/' + ','.join(channels)
@@ -38,10 +30,7 @@ def get_hitbox_data(channels):
 
 def get_online_streams(urls):
 	"""From a collection of URLs, get the ones that are live on hitbox.tv."""
-	channels = [
-		extract_channel(url)
-		for url in urls if url is not None
-	]
+	channels = plugins.streams.filter_urls(urls, 'hitbox.tv')
 
 	if not channels:
 		return []
@@ -57,6 +46,6 @@ def get_online_streams(urls):
 		if stream['media_is_live'] == '1'
 	]
 
-	log.debug('{streams} online hitbox.tv streams'.format(streams=len(streams)))
+	log.debug('%s online hitbox.tv streams', len(streams))
 
 	return streams
