@@ -1,7 +1,6 @@
 import logging
 log = logging.getLogger(__name__)
 
-import json
 import http.server
 import socket
 import urllib.error
@@ -9,7 +8,7 @@ import urllib.request
 import urllib.parse
 
 
-def request(method, url, body, headers=None, timeout=2, is_json=False):
+def request(method, url, body, headers=None, timeout=2):
 	if headers is None:
 		headers = {}
 
