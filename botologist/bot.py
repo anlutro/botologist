@@ -155,6 +155,7 @@ class Bot(botologist.irc.Client):
 		if self.http_server:
 			log.info('Shutting down HTTP server')
 			self.http_server.shutdown()
+			self.http_server = None
 
 		if self.timer:
 			log.info('Ticker stopped')

@@ -115,6 +115,10 @@ class Channel:
 		self.host_map[user.host] = new_nick
 
 
+class IRCSocketError(OSError):
+	pass
+
+
 class IRCSocket:
 	def __init__(self, server):
 		self.server = server
@@ -147,7 +151,7 @@ class IRCSocket:
 			break
 
 		if self.socket is None:
-			raise OSError('Could not open socket')
+			raise IRCSocketError('Could not open socket')
 
 	def recv(self, bufsize=4096):
 		data = self.socket.recv(bufsize)
@@ -155,6 +159,9 @@ class IRCSocket:
 		# 13 = \r -- 10 = \n
 		while data != b'' and (data[-1] != 10 and data[-2] != 13):
 			data += self.socket.recv(bufsize)
+
+		if data == b'':
+			raise IRCSocketError('Received empty binary data')
 
 		return botologist.util.decode(data)
 
@@ -182,13 +189,15 @@ class Connection:
 		self.on_privmsg = []
 		self.error_handler = None
 		self.quitting = False
+		self.reconnect_timer = False
 
 	def connect(self, server):
 		assert isinstance(server, Server)
 		if self.irc_socket is not None:
 			self.disconnect()
 		self.server = server
-		self._connect()
+		thread = threading.Thread(target=self._connect)
+		thread.start()
 
 	def disconnect(self):
 		self.irc_socket.close()
@@ -197,14 +206,19 @@ class Connection:
 	def reconnect(self, time=None):
 		if self.irc_socket:
 			self.disconnect()
+
 		if time:
 			log.info('Reconnecting in %d seconds', time)
-			timer = threading.Timer(time, self._connect)
-			timer.start()
+			thread = self.reconnect_timer = threading.Timer(time, self._connect)
 		else:
-			self._connect()
+			thread = threading.Thread(target=self._connect)
+
+		thread.start()
 
 	def _connect(self):
+		if self.reconnect_timer:
+			self.reconnect_timer = None
+
 		log.info('Connecting to %s:%s', self.server.host, self.server.port)
 		self.irc_socket = IRCSocket(self.server)
 		self.irc_socket.connect()
@@ -215,7 +229,7 @@ class Connection:
 		self.loop()
 
 	def loop(self):
-		while True:
+		while self.irc_socket:
 			try:
 				data = self.irc_socket.recv()
 			except OSError:
@@ -254,8 +268,12 @@ class Connection:
 		if words[0] == 'PING':
 			self.send('PONG ' + words[1])
 		elif words[0] == 'ERROR':
-			log.warning('Received error: %s', msg)
-			self.reconnect(10)
+			if ':Your host is trying to (re)connect too fast -- throttled' in msg:
+				log.warning('Throttled for (re)connecting too fast', msg)
+				self.reconnect(60)
+			else:
+				log.warning('Received error: %s', msg)
+				self.reconnect(10)
 		elif words[0] > '400' and words[0] < '600':
 			log.warning('Received error reply: %s', msg)
 		elif len(words) > 1:
@@ -339,6 +357,16 @@ class Connection:
 		self.irc_socket.send(msg + '\r\n')
 
 	def quit(self, reason='Leaving'):
+		if self.reconnect_timer:
+			log.info('Aborting reconnect timer')
+			self.reconnect_timer.cancel()
+			self.reconnect_timer = None
+			return
+
+		if not self.irc_socket:
+			log.warning('Tried to quit, but irc_socket is None')
+			return
+
 		log.info('Quitting, reason: '+reason)
 		self.quitting = True
 		self.send('QUIT :' + reason)
