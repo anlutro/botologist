@@ -8,6 +8,12 @@ import json
 import botologist.plugin
 
 
+def shorten_commit_url(url):
+	parts = url.split('/')
+	parts[-1] = parts[-1][:10]
+	return '/'.join(parts)
+
+
 class GithubPlugin(botologist.plugin.Plugin):
 	def __init__(self, bot, channel):
 		super().__init__(bot, channel)
@@ -77,11 +83,6 @@ class GithubPlugin(botologist.plugin.Plugin):
 
 	# https://developer.github.com/v3/activity/events/types/#pushevent
 	def handle_push(self, data):
-		def shorten_commit_url(url):
-			parts = url.split('/')
-			parts[-1] = parts[-1][:10]
-			return '/'.join(parts)
-
 		if len(data['commits']) > 2:
 			return self.handle_push_many(data)
 
@@ -100,7 +101,9 @@ class GithubPlugin(botologist.plugin.Plugin):
 
 	def handle_push_many(self, data):
 		repository = data['repository']['full_name']
-		ret = '[{}] {} new commits'.format(repository, len(data['commits']))
+		branch = data['ref'].split('/')[-1]
+		ret = '[{}] {} new commits to {}'.format(
+			repository, len(data['commits']), branch)
 
 		# check if there's more than 1 author of the commits
 		author = None
