@@ -106,8 +106,8 @@ class GithubPlugin(botologist.plugin.Plugin):
 		author = None
 		for commit in data['commits']:
 			if author is None:
-				author = commit['author']
-			elif commit['author'] != author:
+				author = commit['author']['username']
+			elif commit['author']['username'] != author:
 				author = False
 				break
 		if author:
