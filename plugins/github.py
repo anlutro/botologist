@@ -100,7 +100,7 @@ class GithubPlugin(botologist.plugin.Plugin):
 
 	def handle_push_many(self, data):
 		repository = data['repository']['full_name']
-		ret = '[{}] {} new commits'.format(repository, data['size'])
+		ret = '[{}] {} new commits'.format(repository, len(data['commits']))
 
 		# check if there's more than 1 author of the commits
 		author = None
