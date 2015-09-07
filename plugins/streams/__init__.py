@@ -239,7 +239,7 @@ class StreamManager:
 		try:
 			streams = self._fetch_streams()
 		except urllib.error.URLError:
-			log.warning('Could not fetch new online streams!', exc=True)
+			log.warning('Could not fetch new online streams!', exc_info=True)
 			return False
 
 		diff = []
