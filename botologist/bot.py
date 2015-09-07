@@ -125,8 +125,18 @@ class Bot(botologist.irc.Client):
 			self.register_plugin(name, plugin_class)
 
 		# configure channels
-		for name, channel in config.get('channels', {}).items():
-			self.add_channel(name, **channel)
+		channels = config.get('channels')
+		if isinstance(channels, dict):
+			for name, channel in channels.items():
+				self.add_channel(name, **channel)
+		elif isinstance(channels, list):
+			for channel in channels:
+				if isinstance(channel, dict):
+					name = channel.pop('channel')
+				else:
+					name = channel
+					channel = {}
+				self.add_channel(name, **channel)
 
 	@property
 	def channels(self):

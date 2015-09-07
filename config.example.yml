@@ -32,16 +32,14 @@ global_plugins:
 # YAML, wrap the channel name in quotes or leave out the #. each channel can
 # have their own set of admins and plugins which only apply to that channel.
 channels:
-  mychannel:
+  - channel: '#mychannel'
     admins:
       - some.other.host.com
     plugins:
       - streams
-  '##otherchannel':
+  - channel: '##otherchannel'
     plugins:
       - conversion
-  # if you want to add a channel with no specific admins or plugins:
-  genericchannel: {}
 
 # uncomment these lines to enable the !mumble command
 # mumble:
