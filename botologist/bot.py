@@ -330,7 +330,7 @@ class Bot(botologist.irc.Client):
 			if reply in self._reply_log and not message.user.is_admin:
 				diff = now - self._reply_log[reply]
 				if diff.seconds < self.SPAM_THROTTLE:
-					log.info('Reply throttled: "%s"', reply=reply)
+					log.info('Reply throttled: "%s"', reply)
 					continue
 
 			# log the reply for spam throttling
