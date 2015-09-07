@@ -10,26 +10,6 @@ import botologist.http
 import botologist.plugin
 
 
-def get_duckduckgo_data(url):
-	response = botologist.http.get(url)
-	content = response.read().decode()
-	return json.loads(content)
-
-
-def get_conversion_result(query):
-	qs = urllib.parse.urlencode({'q': query, 'format': 'json', 'no_html': 1})
-	url = 'http://api.duckduckgo.com/?' + qs
-
-	try:
-		data = get_duckduckgo_data(url)
-	except urllib.error.URLError:
-		log.warning('DuckDuckGo request failed', exc_info=True)
-		return False
-
-	if data['AnswerType'] == 'conversions' and data['Answer']:
-		return data['Answer']
-
-
 def get_currency_data():
 	url = 'http://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml'
 	try:
