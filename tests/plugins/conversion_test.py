@@ -1,7 +1,6 @@
 import unittest.mock as mock
 from tests.plugins import PluginTestCase
 
-@mock.patch('plugins.conversion.get_duckduckgo_data', return_value={ 'AnswerType': 'conversions', 'Answer': 'TEST' })
 @mock.patch('plugins.conversion.get_currency_data', return_value={ 'NOK': 8.00, 'DKK': 6.00 })
 class ConversionPluginTest(PluginTestCase):
 	def create_plugin(self):
