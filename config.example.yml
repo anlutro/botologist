@@ -57,3 +57,7 @@ channels:
 # if you want to run a HTTP server for webhooks, uncomment these lines
 # http_host: localhost
 # http_port: 9123
+
+# if you want error reports sent via real email, uncomment these lines
+# admin_email: myname@mydomain.com
+# mail_from: ircbot@mydomain.com

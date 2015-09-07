@@ -39,10 +39,12 @@ class ErrorHandler:
 		self.bot._send_msg(medium_msg, self.bot.get_admin_nicks())
 
 		email = MIMEText(long_msg)
-		user = pwd.getpwuid(os.getuid())[0]
-		email['From'] = user
-		email['To'] = user
 		email['Subject'] = '[botologist] ' + medium_msg
+
+		user = pwd.getpwuid(os.getuid())[0]
+		email['To'] = self.bot.config.get('admin_email', user)
+		email['From'] = self.bot.config.get('email_from', 'botologist')
+
 		send_email(email)
 
 		log.info('Sent email with exception information to %s', user)
