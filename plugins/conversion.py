@@ -94,7 +94,7 @@ class Currency:
 
 
 class ConversionPlugin(botologist.plugin.Plugin):
-	pattern = re.compile(r'([\d.,]+)? ([a-zA-Z\sa-zA-Z]+) (into|in|to) ([a-zA-Z\s]+)')
+	pattern = re.compile(r'([\d.,]+) ?([a-zA-Z\s]+) (into|in|to) ([a-zA-Z\s]+)')
 
 	@botologist.plugin.reply()
 	def convert(self, msg):
