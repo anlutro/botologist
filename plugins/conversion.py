@@ -1,6 +1,7 @@
 import logging
 log = logging.getLogger(__name__)
 
+import collections
 import datetime
 import json
 import re
@@ -17,8 +18,11 @@ def get_duckduckgo_data(url):
 
 
 def get_conversion_result(query):
-	qs = urllib.parse.urlencode({'q': query, 'format': 'json', 'no_html': 1})
-	url = 'http://api.duckduckgo.com/?' + qs
+	params = collections.OrderedDict([
+		('q', query), ('format', 'json'), ('no_html', 1)
+	])
+	qs = urllib.parse.urlencode(params)
+	url = 'http://api.duckduckgo.com/?' + qs.lower()
 
 	try:
 		data = get_duckduckgo_data(url)
@@ -94,7 +98,7 @@ class Currency:
 
 
 class ConversionPlugin(botologist.plugin.Plugin):
-	pattern = re.compile(r'([\d.,]+) ?([a-zA-Z]+) (into|in|to) ([a-zA-Z]+)')
+	pattern = re.compile(r'([\d.,]+) ?([a-z]+) (into|in|to) ([a-z]+)', re.I)
 
 	@botologist.plugin.reply()
 	def convert(self, msg):
