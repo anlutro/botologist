@@ -25,10 +25,12 @@ class ConversionPluginTest(PluginTestCase):
 		self.assertEqual('TEST', self.reply('10 eur into cny'))
 		self.assertEqual('TEST', self.reply('10 usd into cny'))
 
-	def check_convert_reply(self, message, expected_qs):
-		return_value={'AnswerType': 'conversions', 'Answer': message+' reply'}
+	def check_convert_reply(self, message, expected_qs, response='DEFAULT'):
+		if response == 'DEFAULT':
+			response = message + ' reply'
+		return_value={'AnswerType': 'conversions', 'Answer': response}
 		with mock.patch(ddg_f, return_value=return_value) as mf:
-			self.assertEqual(message+' reply', self.reply(message))
+			self.assertEqual(response, self.reply(message))
 		expected_args = ['http://api.duckduckgo.com/?q='+expected_qs+'&format=json&no_html=1']
 		mf.assert_called_with(*expected_args)
 
@@ -40,3 +42,6 @@ class ConversionPluginTest(PluginTestCase):
 		self.check_convert_reply('100 KG IN STONES', '100+kg+in+stones')
 		self.check_convert_reply('asdf 100 kg in stones asdf', '100+kg+in+stones')
 		self.check_convert_reply('what is 100 kg in stones?', '100+kg+in+stones')
+		self.check_convert_reply('100 square metres in acres', '100+square+metres+in+acres')
+		self.check_convert_reply('100 cubic metres in litres', '100+cubic+metres+in+litres')
+		self.check_convert_reply('100 fl.oz in litres', '100+fl.oz+in+litres')

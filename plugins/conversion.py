@@ -98,7 +98,8 @@ class Currency:
 
 
 class ConversionPlugin(botologist.plugin.Plugin):
-	pattern = re.compile(r'([\d.,]+) ?([a-z]+) (into|in|to) ([a-z]+)', re.I)
+	unit_pattern = r'((?:(?:square|cubic) )?[a-z.]+)'
+	pattern = re.compile(r'([\d.,]+) ?'+unit_pattern+r' (into|in|to) '+unit_pattern+'', re.I)
 
 	@botologist.plugin.reply()
 	def convert(self, msg):
