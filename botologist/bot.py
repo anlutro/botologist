@@ -29,6 +29,10 @@ class CommandMessage:
 	def user(self):
 		return self.message.user
 
+	@property
+	def target(self):
+		return self.message.target
+
 
 class Channel(botologist.irc.Channel):
 	"""Extended channel class.
@@ -295,30 +299,30 @@ class Bot(botologist.irc.Client):
 					cmd_string)
 			return
 
+		# turn the Message into a CommandMessage
+		command = CommandMessage(message)
+		command.command = self.CMD_PREFIX + matching_commands[0]
 		command_func = channel.commands[matching_commands[0]]
 
 		if command_func._is_threaded:
 			log.debug('Starting thread for command %s', cmd_string)
 			thread = botologist.util.ErrorProneThread(
 				target=self._maybe_send_cmd_reply,
-				args=(command_func, message),
+				args=(command_func, command),
 				error_handler=self.error_handler.handle_error)
 			thread.start()
 		else:
-			self._maybe_send_cmd_reply(command_func, message)
+			self._maybe_send_cmd_reply(command_func, command)
 
 	def _maybe_send_cmd_reply(self, command_func, message):
 		response = self._call_command(command_func, message)
 		if response:
 			self._send_msg(response, message.target)
 
-	def _call_command(self, command_func, message):
-		# turn the Message into a CommandMessage
-		command = CommandMessage(message)
-
+	def _call_command(self, command_func, command):
 		# check for spam
 		now = datetime.datetime.now()
-		if command.command in self._command_log and not message.user.is_admin:
+		if command.command in self._command_log and not command.user.is_admin:
 			diff = now - self._command_log[command.command]
 			if self._last_command == (command.user.host, command.command, command.args):
 				threshold = self.SPAM_THROTTLE * 3

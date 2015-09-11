@@ -19,18 +19,19 @@ class BotTest(unittest.TestCase):
 			return 'test: '+command.command
 		dummy_command_func._is_threaded = False
 		channel.commands['asdf'] = dummy_command_func
-		b = bot.Bot({'server': 'localhost:6667', 'storage_dir': '/tmp/botologist'})
+		b = bot.Bot({'server': 'localhost:6667', 'storage_dir': '/tmp/botologist', 'admins': ['baz']})
+		b.conn.channels['#chan'] = channel
 		b._send_msg = mock.MagicMock()
 
-		b._handle_command(irc.Message('foo!bar@baz', '#chan', '!b'), channel)
+		b._handle_privmsg(irc.Message('foo!bar@baz', '#chan', '!b'))
 		b._send_msg.assert_not_called()
-		b._handle_command(irc.Message('foo!bar@baz', '#chan', '!a'), channel)
-		b._send_msg.assert_called_with('test: !a', '#chan')
-		b._handle_command(irc.Message('foo!bar@baz', '#chan', '!as'), channel)
-		b._send_msg.assert_called_with('test: !as', '#chan')
-		b._handle_command(irc.Message('foo!bar@baz', '#chan', '!asd'), channel)
-		b._send_msg.assert_called_with('test: !asd', '#chan')
-		b._handle_command(irc.Message('foo!bar@baz', '#chan', '!asdf'), channel)
+		b._handle_privmsg(irc.Message('foo!bar@baz', '#chan', '!a'))
 		b._send_msg.assert_called_with('test: !asdf', '#chan')
-		b._handle_command(irc.Message('foo!bar@baz', '#chan', '!asdfg'), channel)
+		b._handle_privmsg(irc.Message('foo!bar@baz', '#chan', '!as'))
+		b._send_msg.assert_called_with('test: !asdf', '#chan')
+		b._handle_privmsg(irc.Message('foo!bar@baz', '#chan', '!asd'))
+		b._send_msg.assert_called_with('test: !asdf', '#chan')
+		b._handle_privmsg(irc.Message('foo!bar@baz', '#chan', '!asdf'))
+		b._send_msg.assert_called_with('test: !asdf', '#chan')
+		b._handle_privmsg(irc.Message('foo!bar@baz', '#chan', '!asdfg'))
 		b._send_msg.assert_not_called()
