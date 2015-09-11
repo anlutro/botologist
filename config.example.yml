@@ -61,7 +61,7 @@ channels:
 # if you want error reports sent via real email, uncomment these lines.
 # usually, if you have an exim instance running on your server, setting this to
 # a username on the server instead of an actual e-mail address will send it to
-# /var/mail/$USER. if you want to send from the user running the bot process,
+# /var/mail/$USER. if you want to send to the user running the bot process,
 # set admin_email: null
 #admin_email: myname@mydomain.com
 #mail_from: ircbot@mydomain.com
