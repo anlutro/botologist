@@ -54,6 +54,7 @@ def get_currency_data():
 class Currency:
 	last_fetch = None
 	currency_data = None
+	aliases = {'NIS': 'ILS'}
 
 	@classmethod
 	def currencies(cls):
@@ -71,6 +72,11 @@ class Currency:
 
 		from_cur = from_cur.upper()
 		to_cur = to_cur.upper()
+
+		if from_cur in cls.aliases:
+			from_cur = cls.aliases[from_cur]
+		if to_cur in cls.aliases:
+			to_cur = cls.aliases[to_cur]
 
 		if from_cur == 'EUR':
 			if to_cur not in cls.currency_data:
