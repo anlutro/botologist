@@ -15,7 +15,7 @@ class DefaultPlugin(botologist.plugin.Plugin):
 			'fuck you too {nick}'),
 		)
 
-	@botologist.plugin.command('mumble', alias='m')
+	@botologist.plugin.command('mumble')
 	def mumble(self, msg):
 		mumble_cfg = self.bot.config.get('mumble')
 		if not mumble_cfg:
@@ -80,6 +80,6 @@ class DefaultPlugin(botologist.plugin.Plugin):
 	def repo(self, msg):
 		return 'https://github.com/anlutro/botologist'
 
-	@botologist.plugin.command('version', alias='v')
+	@botologist.plugin.command('version')
 	def version(self, msg):
 		return self.bot.version
