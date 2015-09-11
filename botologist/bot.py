@@ -378,5 +378,3 @@ class Bot(botologist.irc.Client):
 						self._send_msg(result, channel.channel)
 		finally:
 			self._start_tick_timer()
-
-# vim: set tabstop=8, noexpandtab, shiftwidth=8
