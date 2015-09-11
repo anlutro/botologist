@@ -283,11 +283,19 @@ class Bot(botologist.irc.Client):
 		# command and fire its callback
 		cmd_string = message.words[0][1:].lower()
 
-		if not cmd_string in channel.commands:
+		matching_commands = []
+		for viable_command in channel.commands:
+			if viable_command.startswith(cmd_string):
+				matching_commands.append(viable_command)
+		if len(matching_commands) == 0:
 			log.debug('Command %s not found in channel %s', cmd_string, channel.channel)
 			return
+		elif len(matching_commands) != 1:
+			log.debug('Command %s did not match any viable command.',
+					cmd_string)
+			return
 
-		command_func = channel.commands[cmd_string]
+		command_func = channel.commands[matching_commands[0]]
 
 		if command_func._is_threaded:
 			log.debug('Starting thread for command %s', cmd_string)
@@ -370,3 +378,5 @@ class Bot(botologist.irc.Client):
 						self._send_msg(result, channel.channel)
 		finally:
 			self._start_tick_timer()
+
+# vim: set tabstop=8, noexpandtab, shiftwidth=8
