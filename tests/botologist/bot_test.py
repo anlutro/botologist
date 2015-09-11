@@ -21,6 +21,15 @@ class BotTest(unittest.TestCase):
 			'storage_dir': os.path.join(os.path.dirname(__file__), 'tmp'),
 		})
 
+	def test_only_returns_online_admins(self):
+		bot = self.make_bot()
+		bot.admins = ['admin1.com']
+		chan = botologist.bot.Channel('#chan')
+		bot.add_channel(chan)
+		self.assertEqual(set(), bot.get_admin_nicks())
+		chan.add_user(botologist.irc.User('admin1', 'admin1.com'))
+		self.assertEqual({'admin1'}, bot.get_admin_nicks())
+
 	def test_matches_command_shorthand(self):
 		channel = botologist.bot.Channel('#chan')
 		def dummy_command_func(command):
