@@ -9,6 +9,11 @@ class IrcServerTest(unittest.TestCase):
 		self.assertEqual('irc.host.com', srv.host)
 		self.assertEqual(6667, srv.port)
 
+	def test_init_without_port(self):
+		srv = Server('irc.host.com')
+		self.assertEqual('irc.host.com', srv.host)
+		self.assertEqual(6667, srv.port)
+
 	def test_add_channel(self):
 		srv = Server('irc.host.com:6667')
 		chan = Channel('#foobar')

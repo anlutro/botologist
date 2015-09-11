@@ -55,7 +55,10 @@ class Server:
 	def __init__(self, address):
 		parts = address.split(':')
 		self.host = parts[0]
-		self.port = int(parts[1])
+		if len(parts) > 1:
+			self.port = int(parts[1])
+		else:
+			self.port = 6667
 		self.channels = {}
 
 	def add_channel(self, channel):
