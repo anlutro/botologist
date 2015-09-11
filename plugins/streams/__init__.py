@@ -321,7 +321,7 @@ class StreamsPlugin(botologist.plugin.Plugin):
 		else:
 			return 'You are not subscribed to that stream.'
 
-	@botologist.plugin.command('streams', alias='s', threaded=True)
+	@botologist.plugin.command('streams', threaded=True)
 	def list_streams_cmd(self, msg):
 		streams = self.streams.get_online_streams()
 		if not streams:
