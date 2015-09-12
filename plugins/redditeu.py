@@ -69,6 +69,10 @@ class RedditeuPlugin(botologist.plugin.Plugin):
 	def the_time(self, cmd):
 		return 'the time is ' + get_random_time()
 
+	@botologist.plugin.command('speedtest')
+	def speedtest(self, cmd):
+		return 'Pretty fast, thank you.'
+
 	@botologist.plugin.join()
 	def welcome(self, user, channel):
 		if 'happy0' in user.nick.lower():
