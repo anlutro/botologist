@@ -1,3 +1,4 @@
+import inspect
 import random
 import re
 
@@ -16,7 +17,20 @@ class DefaultPlugin(botologist.plugin.Plugin):
 		)
 
 	@botologist.plugin.command('commands', alias=['cmd', 'help'])
-	def show_commands(self, msg):
+	def show_help(self, msg):
+		'''Show all commands, or show information about a specific command.
+
+		Examples: !commands - !help !commands
+		'''
+		if msg.args:
+			command = msg.args[0].lstrip(self.bot.CMD_PREFIX)
+			if command not in self.channel.commands:
+				return 'That command does not exist or has not been registered with this channel!'
+			command_func = self.channel.commands[command]
+			docstring = inspect.getdoc(command_func)
+			if not docstring:
+				return 'No documentation available for that command.'
+			return re.sub('\s{2,}', ' ', docstring).strip()
 		commands = [self.bot.CMD_PREFIX + key for key in self.channel.commands.keys()]
 		commands.sort()
 		return ' '.join(commands)
