@@ -5,10 +5,16 @@ import botologist.irc
 import botologist.bot
 
 
-def command(command, threaded=False):
+def command(command, alias=None, threaded=False):
+	if alias is None:
+		alias = []
+	elif isinstance(alias, str):
+		alias = [alias]
+
 	"""Plugin command decorator."""
 	def wrapper(func):
 		func._command = command
+		func._command_aliases = alias
 		func._is_threaded = threaded
 		return func
 	return wrapper
@@ -70,6 +76,10 @@ class PluginMetaclass(type):
 			if hasattr(f, '_command'):
 				log_msg = '%s.%s is a command'
 				cls._commands[f._command] = fname
+				if f._command_aliases:
+					log_msg += ' - aliases: ' + ', '.join(f._command_aliases)
+				for alias in f._command_aliases:
+					cls._commands[alias] = fname
 
 			if hasattr(f, '_is_join'):
 				log_msg = '%s.%s is a join reply'
