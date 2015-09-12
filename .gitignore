@@ -1,5 +1,4 @@
 /.virtualenv/
-/.idea/
 /config.yml
 *.pyc
 __pycache__
