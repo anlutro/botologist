@@ -291,12 +291,10 @@ class Bot(botologist.irc.Client):
 			command = CommandMessage(message)
 			command_func = channel.commands[cmd_string]
 		else:
-			matching_commands = []
-			for viable_command in channel.commands:
-				if viable_command.startswith(cmd_string):
-					matching_commands.append(viable_command)
+			matching_commands = [cmd for cmd in channel.commands
+				if cmd.startswith(cmd_string)]
 			if len(matching_commands) == 0:
-				log.debug('Command %s not found in channel %s',
+				log.debug('"%s" did not match any commands in channel %s',
 					cmd_string, channel.channel)
 				return
 			elif len(matching_commands) != 1:
