@@ -8,7 +8,7 @@ class PluginTestCase(unittest.TestCase):
 	cfg = {}
 
 	def setUp(self):
-		self.channel = irc.Channel('#test')
+		self.channel = bot.Channel('#test')
 		self.bot = bot.Bot({
 			'storage_dir': '/tmp/botologist',
 			'bot': {
