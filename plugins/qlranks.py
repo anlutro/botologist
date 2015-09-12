@@ -57,6 +57,7 @@ class QlranksPlugin(botologist.plugin.Plugin):
 	"""QLRanks plugin."""
 	@botologist.plugin.command('elo', threaded=True)
 	def get_elo(self, msg):
+		'''Get a player's ELO from qlranks.'''
 		if len(msg.args) < 1:
 			return
 

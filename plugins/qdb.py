@@ -97,6 +97,10 @@ def _search_for_quote(quote):
 class QdbPlugin(botologist.plugin.Plugin):
 	@botologist.plugin.command('qdb')
 	def search(self, cmd):
+		'''Search for a quote, or show a specific quote.
+
+		Examples: !qdb search for this - !qdb #220
+		'''
 		if len(cmd.args) < 1:
 			return
 

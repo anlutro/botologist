@@ -270,6 +270,7 @@ class StreamsPlugin(botologist.plugin.Plugin):
 	@botologist.plugin.command('addstream')
 	@error.return_streamerror_message
 	def add_stream_cmd(self, msg):
+		'''Add a stream. Admins only.'''
 		if len(msg.args) < 1:
 			return None
 		if not msg.user.is_admin:
@@ -282,6 +283,7 @@ class StreamsPlugin(botologist.plugin.Plugin):
 	@botologist.plugin.command('delstream')
 	@error.return_streamerror_message
 	def del_stream_cmd(self, msg):
+		'''Delete a stream. Admins only.'''
 		if len(msg.args) < 1:
 			return None
 		if not msg.user.is_admin:
@@ -294,6 +296,7 @@ class StreamsPlugin(botologist.plugin.Plugin):
 	@botologist.plugin.command('sub')
 	@error.return_streamerror_message
 	def subscribe_stream_cmd(self, msg):
+		'''Add yourself as a subscriber for a stream.'''
 		if 'irccloud' in msg.user.host:
 			return 'irccloud users cannot subscribe! try /mode {} +x'.format(
 				msg.user.nick)
@@ -313,6 +316,7 @@ class StreamsPlugin(botologist.plugin.Plugin):
 	@botologist.plugin.command('unsub')
 	@error.return_streamerror_message
 	def unsubscribe_stream_cmd(self, msg):
+		'''Remove yourself as a subscriber for a stream.'''
 		if len(msg.args) < 1:
 			return None
 		result = self.streams.del_subscriber(msg.user.host, msg.args[0])
@@ -323,6 +327,7 @@ class StreamsPlugin(botologist.plugin.Plugin):
 
 	@botologist.plugin.command('streams', threaded=True)
 	def list_streams_cmd(self, msg):
+		'''Show currently online streams.'''
 		streams = self.streams.get_online_streams()
 		if not streams:
 			return 'No streams online!'

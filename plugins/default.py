@@ -37,6 +37,7 @@ class DefaultPlugin(botologist.plugin.Plugin):
 
 	@botologist.plugin.command('mumble')
 	def mumble(self, msg):
+		'''If a mumble server has been added to the bot's config, show the details.'''
 		mumble_cfg = self.bot.config.get('mumble')
 		if not mumble_cfg:
 			return None
@@ -65,6 +66,7 @@ class DefaultPlugin(botologist.plugin.Plugin):
 
 	@botologist.plugin.command('coinflip')
 	def coinflip(self, cmd):
+		'''Flip a coin!'''
 		value = random.randint(0, 1)
 		if value == 1:
 			return 'Heads!'
@@ -74,6 +76,10 @@ class DefaultPlugin(botologist.plugin.Plugin):
 
 	@botologist.plugin.command('roll')
 	def roll(self, cmd):
+		'''Roll one or more die.
+
+		Examples: !roll 6 - !roll 2d12
+		'''
 		if cmd.args:
 			match = self.roll_pattern.match(cmd.args[0])
 		if not cmd.args or not match:
@@ -98,8 +104,10 @@ class DefaultPlugin(botologist.plugin.Plugin):
 
 	@botologist.plugin.command('repo')
 	def repo(self, msg):
+		'''Show the URL of the bot's source code.'''
 		return 'https://github.com/anlutro/botologist'
 
 	@botologist.plugin.command('version')
 	def version(self, msg):
+		'''Show the version of the bot.''' 
 		return self.bot.version

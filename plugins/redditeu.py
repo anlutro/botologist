@@ -57,6 +57,7 @@ class RedditeuPlugin(botologist.plugin.Plugin):
 
 	@botologist.plugin.command('michael')
 	def who_is_michael(self, cmd):
+		'''Find out what nick Michael is hiding under.'''
 		channel = self.bot.conn.channels.get(cmd.message.target)
 		if not channel:
 			return
@@ -67,6 +68,7 @@ class RedditeuPlugin(botologist.plugin.Plugin):
 
 	@botologist.plugin.command('time')
 	def the_time(self, cmd):
+		'''If you need to know what the time really is. For really reals.'''
 		return 'the time is ' + get_random_time()
 
 	@botologist.plugin.join()

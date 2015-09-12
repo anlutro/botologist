@@ -18,6 +18,10 @@ def get_owm_json(*args, **kwargs):
 class WeatherPlugin(botologist.plugin.Plugin):
 	@botologist.plugin.command('weather')
 	def weather(self, cmd):
+		'''Find out what the weather is somewhere.
+
+		Example: !weather amsterdam
+		'''
 		if len(cmd.args) < 1:
 			return 'Usage: !weather city'
 
