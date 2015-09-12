@@ -15,6 +15,12 @@ class DefaultPlugin(botologist.plugin.Plugin):
 			'fuck you too {nick}'),
 		)
 
+	@botologist.plugin.command('commands', alias=['cmd', 'help'])
+	def show_commands(self, msg):
+		commands = [self.bot.CMD_PREFIX + key for key in self.channel.commands.keys()]
+		commands.sort()
+		return ' '.join(commands)
+
 	@botologist.plugin.command('mumble')
 	def mumble(self, msg):
 		mumble_cfg = self.bot.config.get('mumble')
