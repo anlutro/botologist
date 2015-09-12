@@ -16,6 +16,10 @@ class DefaultPlugin(botologist.plugin.Plugin):
 			'fuck you too {nick}'),
 		)
 
+	@botologist.plugin.command('plugins', alias=['listplugins'])
+	def show_plugins(self, msg):
+		return ', '.join(self.channel.plugins)
+
 	@botologist.plugin.command('commands', alias=['cmd', 'help'])
 	def show_help(self, msg):
 		'''Show all commands, or show information about a specific command.

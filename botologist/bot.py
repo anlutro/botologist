@@ -48,9 +48,11 @@ class Channel(botologist.irc.Channel):
 		self.tickers = []
 		self.admins = []
 		self.http_handlers = []
+		self.plugins = []
 
 	def register_plugin(self, plugin):
 		assert isinstance(plugin, botologist.plugin.Plugin)
+		self.plugins.append(plugin.__class__.__name__)
 		for cmd, callback in plugin.commands.items():
 			self.commands[cmd] = callback
 		for join_callback in plugin.joins:
