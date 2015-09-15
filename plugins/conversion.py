@@ -11,13 +11,31 @@ import botologist.http
 import botologist.plugin
 
 
+def format_number(number):
+	if not isinstance(number, int):
+		number = float(number)
+		if number % 1 == 0.0:
+			number = int(number)
+
+	if isinstance(number, int):
+		f_number = '{:,}'.format(number)
+	else:
+		f_number = '{:,.2f}'.format(float(number))
+
+	if len(f_number) > 9:
+		f_number = '{:.2}'.format(number)
+
+	return f_number
+
+
 def get_duckduckgo_data(url):
 	response = botologist.http.get(url)
 	content = response.read().decode()
 	return json.loads(content)
 
 
-def get_conversion_result(query):
+def get_conversion_result(*args):
+	query = ' '.join([str(arg) for arg in args])
 	params = collections.OrderedDict([
 		('q', query), ('format', 'json'), ('no_html', 1)
 	])
@@ -104,8 +122,9 @@ class Currency:
 
 
 class ConversionPlugin(botologist.plugin.Plugin):
+	amount_pattern = r'([\d][\d,. ]*?[km]??)'
 	unit_pattern = r'((?:(?:square|cubic) )?[a-z.]+)'
-	pattern = re.compile(r'([\d.,]+) ?'+unit_pattern+r' (into|in|to) '+unit_pattern, re.I)
+	pattern = re.compile(amount_pattern + r' ?' + unit_pattern + r' (into|in|to) ' + unit_pattern, re.I)
 
 	@botologist.plugin.reply()
 	def convert(self, msg):
@@ -113,16 +132,26 @@ class ConversionPlugin(botologist.plugin.Plugin):
 		if not match:
 			return
 
-		amount = match.group(1)
+		amount = match.group(1).lower()
+		if amount.endswith('k'):
+			real_amount = float(amount[:-1]) * 1000
+		elif amount.endswith('m'):
+			real_amount = float(amount[:-1]) * 1000000
+		else:
+			real_amount = float(amount)
+
+		if real_amount % 1 == 0.0:
+			real_amount = int(real_amount)
+
 		conv_from = match.group(2)
 		conv_to = match.group(4)
 
-		result = Currency.convert(amount, conv_from, conv_to)
+		result = Currency.convert(real_amount, conv_from, conv_to)
 		if result:
-			if len(amount) > 8:
-				amount = '{:.2f}'.format(float(amount))
-			return '{} {} = {:.2f} {}'.format(amount, conv_from, result, conv_to)
+			format_amount = format_number(real_amount)
+			format_result = format_number(result)
+			return '{} {} = {} {}'.format(format_amount, conv_from, format_result, conv_to)
 
-		result = get_conversion_result(' '.join(match.groups()))
+		result = get_conversion_result(real_amount, conv_from, match.group(3), conv_to)
 		if result:
 			return result
