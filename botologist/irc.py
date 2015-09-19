@@ -193,6 +193,8 @@ class Connection:
 		self.error_handler = None
 		self.quitting = False
 		self.reconnect_timer = False
+		self.ping_timer = None
+		self.ping_response_timer = None
 
 	def connect(self, server):
 		assert isinstance(server, Server)
@@ -392,7 +394,7 @@ class Connection:
 			return
 
 		self.send('PING ' + self.server.host)
-		self.ping_response_timer = threading.timer(10, self.handle_ping_timeout)
+		self.ping_response_timer = threading.Timer(10, self.handle_ping_timeout)
 		self.ping_response_timer.start()
 
 	def handle_ping_timeout(self):
