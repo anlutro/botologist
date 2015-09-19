@@ -133,12 +133,16 @@ class ConversionPlugin(botologist.plugin.Plugin):
 			return
 
 		amount = match.group(1).lower()
-		if amount.endswith('k'):
-			real_amount = float(amount[:-1]) * 1000
-		elif amount.endswith('m'):
-			real_amount = float(amount[:-1]) * 1000000
-		else:
-			real_amount = float(amount)
+
+		try:
+			if amount.endswith('k'):
+				real_amount = float(amount[:-1]) * 1000
+			elif amount.endswith('m'):
+				real_amount = float(amount[:-1]) * 1000000
+			else:
+				real_amount = float(amount)
+		except ValueError:
+			return
 
 		if real_amount % 1 == 0.0:
 			real_amount = int(real_amount)
