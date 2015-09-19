@@ -269,7 +269,11 @@ class Connection:
 		words = msg.split()
 
 		if words[0] == 'PING':
+			self.reset_ping_timer()
 			self.send('PONG ' + words[1])
+		elif words[0] == 'PONG':
+			if self.ping_response_timer:
+				self.ping_response_timer.cancel()
 		elif words[0] == 'ERROR':
 			if ':Your host is trying to (re)connect too fast -- throttled' in msg:
 				log.warning('Throttled for (re)connecting too fast')
@@ -373,6 +377,26 @@ class Connection:
 		log.info('Quitting, reason: '+reason)
 		self.quitting = True
 		self.send('QUIT :' + reason)
+
+	def reset_ping_timer(self):
+		if self.ping_timer:
+			self.ping_timer.cancel()
+			self.ping_timer = None
+		self.ping_timer = threading.Timer(5*60, self.send_ping)
+		self.ping_timer.start()
+
+	def send_ping(self):
+		if self.ping_response_timer:
+			log.warning('Already waiting for PONG, cannot send another PING')
+			return
+
+		self.send('PING ' + self.server.host)
+		self.ping_response_timer = threading.timer(10, self.handle_ping_timeout)
+		self.ping_response_timer.start()
+
+	def handle_ping_timeout(self):
+		log.warning('Ping timeout')
+		self.reconnect()
 
 
 class Client:
