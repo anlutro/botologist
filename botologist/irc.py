@@ -399,6 +399,7 @@ class Connection:
 
 	def handle_ping_timeout(self):
 		log.warning('Ping timeout')
+		self.ping_response_timer = None
 		self.reconnect()
 
 
