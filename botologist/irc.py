@@ -274,9 +274,6 @@ class Connection:
 			self.reset_ping_timer()
 			self.send('PONG ' + words[1])
 		elif words[0] == 'PONG':
-			if self.ping_response_timer:
-				self.ping_response_timer.cancel()
-				self.ping_response_timer = None
 			self.reset_ping_timer()
 		elif words[0] == 'ERROR':
 			if ':Your host is trying to (re)connect too fast -- throttled' in msg:
@@ -383,6 +380,9 @@ class Connection:
 		self.send('QUIT :' + reason)
 
 	def reset_ping_timer(self):
+		if self.ping_response_timer:
+			self.ping_response_timer.cancel()
+			self.ping_response_timer = None
 		if self.ping_timer:
 			self.ping_timer.cancel()
 			self.ping_timer = None
