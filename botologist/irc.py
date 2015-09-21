@@ -273,8 +273,6 @@ class Connection:
 		if words[0] == 'PING':
 			self.reset_ping_timer()
 			self.send('PONG ' + words[1])
-		elif words[0] == 'PONG':
-			self.reset_ping_timer()
 		elif words[0] == 'ERROR':
 			if ':Your host is trying to (re)connect too fast -- throttled' in msg:
 				log.warning('Throttled for (re)connecting too fast')
@@ -289,6 +287,9 @@ class Connection:
 				# welcome message, lets us know that we're connected
 				for callback in self.on_welcome:
 					callback()
+
+			elif words[1] == 'PONG':
+				self.reset_ping_timer()
 
 			elif words[1] == 'JOIN':
 				user = User.from_ircformat(words[0])
