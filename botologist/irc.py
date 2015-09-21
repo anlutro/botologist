@@ -205,6 +205,7 @@ class Connection:
 		thread.start()
 
 	def disconnect(self):
+		log.info('Disconnecting')
 		self.irc_socket.close()
 		self.irc_socket = None
 
