@@ -276,6 +276,7 @@ class Connection:
 		elif words[0] == 'PONG':
 			if self.ping_response_timer:
 				self.ping_response_timer.cancel()
+				self.ping_response_timer = None
 			self.reset_ping_timer()
 		elif words[0] == 'ERROR':
 			if ':Your host is trying to (re)connect too fast -- throttled' in msg:
