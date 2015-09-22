@@ -388,7 +388,7 @@ class Connection:
 		if self.ping_timer:
 			self.ping_timer.cancel()
 			self.ping_timer = None
-		self.ping_timer = threading.Timer(5*60, self.send_ping)
+		self.ping_timer = threading.Timer(10*60, self.send_ping)
 		self.ping_timer.start()
 
 	def send_ping(self):
