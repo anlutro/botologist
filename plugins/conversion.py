@@ -122,7 +122,7 @@ class Currency:
 
 
 class ConversionPlugin(botologist.plugin.Plugin):
-	amount_pattern = r'([\d][\d,. ]*?[km]??)'
+	amount_pattern = r'((?:[\d][\d,. ]*?|[\.][\d]*?)[km]??)'
 	unit_pattern = r'((?:(?:square|cubic) )?[a-z.]+)'
 	pattern = re.compile(amount_pattern + r' ?' + unit_pattern + r' (into|in|to) ' + unit_pattern, re.I)
 
@@ -132,7 +132,7 @@ class ConversionPlugin(botologist.plugin.Plugin):
 		if not match:
 			return
 
-		amount = match.group(1).lower()
+		amount = match.group(1).lower().replace(' ', '').replace(',', '')
 
 		try:
 			if amount.endswith('k'):
