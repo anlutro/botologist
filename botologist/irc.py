@@ -142,9 +142,8 @@ class IRCSocket:
 				self.socket = None
 				continue
 
-			self.socket.settimeout(10)
-
 			try:
+				self.socket.settimeout(10)
 				self.socket.connect(sa)
 			except OSError:
 				self.socket.close()
@@ -157,6 +156,8 @@ class IRCSocket:
 
 		if self.socket is None:
 			raise IRCSocketError('Could not open socket')
+
+		self.socket.settimeout(None)
 
 	def recv(self, bufsize=4096):
 		data = self.socket.recv(bufsize)
