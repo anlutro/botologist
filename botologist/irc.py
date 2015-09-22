@@ -142,6 +142,8 @@ class IRCSocket:
 				self.socket = None
 				continue
 
+			self.socket.settimeout(10)
+
 			try:
 				self.socket.connect(sa)
 			except OSError:
