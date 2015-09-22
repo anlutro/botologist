@@ -113,5 +113,5 @@ class DefaultPlugin(botologist.plugin.Plugin):
 
 	@botologist.plugin.command('version')
 	def version(self, msg):
-		'''Show the version of the bot.''' 
+		'''Show the version of the bot.'''
 		return self.bot.version
