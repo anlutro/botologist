@@ -351,17 +351,25 @@ class Bot(botologist.irc.Client):
 			if not reply:
 				continue
 
-			# throttle spam - prevents the same reply from being sent more than
-			# once in a row within the throttle threshold
-			if reply in self._reply_log and not message.user.is_admin:
-				diff = now - self._reply_log[reply]
-				if diff.seconds < self.SPAM_THROTTLE:
-					log.info('Reply throttled: "%s"', reply)
-					continue
+			if isinstance(reply, list):
+				replies = reply
+			else:
+				replies = [reply]
 
-			# log the reply for spam throttling
-			self._reply_log[reply] = now
-			return reply
+			if not message.user.is_admin:
+				for reply in replies:
+					# throttle spam - prevents the same reply from being sent
+					# more than once in a row within the throttle threshold
+					if reply in self._reply_log:
+						diff = now - self._reply_log[reply]
+						if diff.seconds < self.SPAM_THROTTLE:
+							log.info('Reply throttled: "%s"', reply)
+							replies.remove(reply)
+
+					# log the reply for spam throttling
+					self._reply_log[reply] = now
+
+			return replies
 
 		return None
 
