@@ -376,6 +376,14 @@ class Connection:
 			self.reconnect_timer = None
 			return
 
+		if self.ping_timer:
+			self.ping_timer.cancel()
+			self.ping_timer = None
+
+		if self.ping_response_timer:
+			self.ping_response_timer.cancel()
+			self.ping_response_timer = None
+
 		if not self.irc_socket:
 			log.warning('Tried to quit, but irc_socket is None')
 			return
