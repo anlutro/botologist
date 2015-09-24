@@ -209,7 +209,11 @@ class StreamManager:
 		return url
 
 	def get_subscriptions(self, host):
-		return self.subs.get(host, None)
+		subs = self.subs.get(host)
+		if not host in self.subs:
+			return None
+
+		return [stream for stream in self.subs[host] if stream in self.streams]
 
 	def get_online_streams(self):
 		if not self.streams:
