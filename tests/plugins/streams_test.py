@@ -132,7 +132,7 @@ class StreamManagerTest(unittest.TestCase):
 		sm.add_stream('twitch.tv/asdf')
 		sm.add_subscriber('host.com', 'asdf')
 		sm.del_stream('asdf')
-		self.assertEqual(['twitch.tv/asdf'], sm._subs['host.com'])
+		self.assertEqual(['twitch.tv/asdf'], sm.subs['host.com'])
 		self.assertEqual([], sm.get_subscriptions('host.com'))
 
 	def test_all_online_streams(self):
