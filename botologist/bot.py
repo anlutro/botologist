@@ -279,7 +279,7 @@ class Bot(botologist.irc.Client):
 			return self._handle_command(message, channel)
 
 		# otherwise, call the channel's repliers
-		response = self._call_repliers(channel.replies, message)
+		response = self._call_repliers(channel, message)
 
 		if response:
 			self._send_msg(response, message.target)
@@ -342,36 +342,33 @@ class Bot(botologist.irc.Client):
 
 		return command_func(command)
 
-	def _call_repliers(self, replies, message):
+	def _call_repliers(self, channel, message):
 		now = datetime.datetime.now()
+		final_replies = []
 
 		# iterate through reply callbacks
-		for reply_func in replies:
-			reply = reply_func(message)
-			if not reply:
+		for reply_func in channel.replies:
+			replies = reply_func(message)
+
+			if not replies:
 				continue
 
-			if isinstance(reply, list):
-				replies = reply
-			else:
-				replies = [reply]
+			final_replies = final_replies + replies
 
-			if not message.user.is_admin:
-				for reply in replies:
-					# throttle spam - prevents the same reply from being sent
-					# more than once in a row within the throttle threshold
-					if reply in self._reply_log:
-						diff = now - self._reply_log[reply]
-						if diff.seconds < self.SPAM_THROTTLE:
-							log.info('Reply throttled: "%s"', reply)
-							replies.remove(reply)
+		if not message.user.is_admin:
+			for reply in final_replies:
+				# throttle spam - prevents the same reply from being sent
+				# more than once in a row within the throttle threshold
+				if reply in self._reply_log[channel.channel]:
+					diff = now - self._reply_log[channel.channel][reply]
+					if diff.seconds < self.SPAM_THROTTLE:
+						log.info('Reply throttled: "%s"', reply)
+						final_replies.remove(reply)
 
-					# log the reply for spam throttling
-					self._reply_log[reply] = now
+				# log the reply for spam throttling
+				self._reply_log[channel.channel][reply] = now
 
-			return replies
-
-		return None
+		return final_replies
 
 	def _start_tick_timer(self):
 		self.timer = threading.Timer(self.TICK_INTERVAL, self._tick)
@@ -384,7 +381,8 @@ class Bot(botologist.irc.Client):
 		# reset the spam throttle to prevent the log dictionaries from becoming
 		# too large
 		self._command_log = {}
-		self._reply_log = {}
+		for channel in self._reply_log:
+			self._reply_log[channel] = {}
 
 		try:
 			for channel in self.server.channels.values():
