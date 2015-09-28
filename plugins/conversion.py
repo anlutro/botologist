@@ -72,7 +72,7 @@ def get_currency_data():
 class Currency:
 	last_fetch = None
 	currency_data = None
-	aliases = {'NIS': 'ILS'}
+	aliases = {'NIS': 'ILS', 'EURO': 'EUR'}
 
 	@classmethod
 	def currencies(cls):
