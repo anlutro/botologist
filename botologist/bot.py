@@ -353,7 +353,10 @@ class Bot(botologist.irc.Client):
 			if not replies:
 				continue
 
-			final_replies = final_replies + replies
+			if isinstance(final_replies, list):
+				final_replies = final_replies + replies
+			else:
+				final_replies.append(replies)
 
 		if not message.user.is_admin:
 			for reply in final_replies:
