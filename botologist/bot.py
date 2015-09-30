@@ -353,7 +353,7 @@ class Bot(botologist.irc.Client):
 			if not replies:
 				continue
 
-			if isinstance(final_replies, list):
+			if isinstance(replies, list):
 				final_replies = final_replies + replies
 			else:
 				final_replies.append(replies)
