@@ -362,6 +362,9 @@ class Bot(botologist.irc.Client):
 			for reply in final_replies:
 				# throttle spam - prevents the same reply from being sent
 				# more than once in a row within the throttle threshold
+				if channel.channel not in self._reply_log:
+					self._reply_log[channel.channel] = {}
+
 				if reply in self._reply_log[channel.channel]:
 					diff = now - self._reply_log[channel.channel][reply]
 					if diff.seconds < self.SPAM_THROTTLE:
