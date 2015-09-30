@@ -8,7 +8,7 @@ import subprocess
 import traceback
 
 
-def send_email(email, sendmail_bin='/usr/bin/sendmail', sendmail_args=None):
+def send_email(email, sendmail_bin, sendmail_args=None):
 	if sendmail_args is None:
 		sendmail_args = ['-t', '-oi']
 	elif isinstance(sendmail_args, str):
@@ -47,12 +47,11 @@ class ErrorHandler:
 			email['From'] = self.bot.config.get('email_from', 'botologist')
 
 			if self.bot.config['admin_email'] is None:
-				user = pwd.getpwuid(os.getuid())[0]
-				email['To'] = self.bot.config.get(user)
+				email['To'] = pwd.getpwuid(os.getuid())[0]
 			else:
 				email['To'] = self.bot.config['admin_email']
 
-			sendmail_bin = self.bot.config.get('sendmail_bin', '/usr/bin/sendmail')
+			sendmail_bin = self.bot.config.get('sendmail_bin', '/usr/sbin/sendmail')
 			sendmail_args = self.bot.config.get('sendmail_args', None)
 			send_email(email, sendmail_bin, sendmail_args)
-			log.info('Sent email with exception information to %s', user)
+			log.info('Sent email with exception information to %s', email['To'])

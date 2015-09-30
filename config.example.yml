@@ -67,5 +67,5 @@ channels:
 #mail_from: ircbot@mydomain.com
 
 # mail is sent via sendmail. customize the bin path and args here:
-#sendmail_bin: /usr/bin/sendmail
+#sendmail_bin: /usr/sbin/sendmail
 #sendmail_args: -t -oi
