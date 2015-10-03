@@ -132,6 +132,11 @@ class ConversionPlugin(botologist.plugin.Plugin):
 		if not match:
 			return
 
+		conv_from = match.group(2)
+		conv_to = match.group(4)
+		if conv_from == conv_to:
+			return
+
 		amount = match.group(1).lower().replace(' ', '').replace(',', '')
 
 		try:
@@ -146,9 +151,6 @@ class ConversionPlugin(botologist.plugin.Plugin):
 
 		if real_amount % 1 == 0.0:
 			real_amount = int(real_amount)
-
-		conv_from = match.group(2)
-		conv_to = match.group(4)
 
 		result = Currency.convert(real_amount, conv_from, conv_to)
 		if result:
