@@ -96,6 +96,9 @@ class Currency:
 		if to_cur in cls.aliases:
 			to_cur = cls.aliases[to_cur]
 
+		if from_cur == to_cur:
+			return None
+
 		if from_cur == 'EUR':
 			if to_cur not in cls.currency_data:
 				return None
