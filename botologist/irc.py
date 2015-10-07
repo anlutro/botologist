@@ -332,6 +332,13 @@ class Connection:
 				self.channels[channel].remove_user(host=user.host)
 				log.debug('User %s parted from channel %s', user.host, channel)
 
+			elif words[1] == 'KICK':
+				user = User.from_ircformat(words[0])
+				kicked_nick = words[3]
+				self.channels[channel].remove_user(nick=kicked_nick)
+				log.debug('User %s was kicked by %s from channel %s',
+					kicked_nick, user.nick, channel)
+
 			elif words[1] == 'QUIT':
 				user = User.from_ircformat(words[0])
 				log.debug('User %s quit', user.host)
