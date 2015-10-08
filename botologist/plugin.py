@@ -6,12 +6,12 @@ import botologist.bot
 
 
 def command(command, alias=None, threaded=False):
+	"""Plugin command decorator."""
 	if alias is None:
 		alias = []
 	elif isinstance(alias, str):
 		alias = [alias]
 
-	"""Plugin command decorator."""
 	def wrapper(func):
 		func._command = command
 		func._command_aliases = alias
