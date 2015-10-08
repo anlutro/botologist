@@ -34,7 +34,7 @@ class DefaultPlugin(botologist.plugin.Plugin):
 			docstring = inspect.getdoc(command_func)
 			if not docstring:
 				return 'No documentation available for that command.'
-			return re.sub('\s{2,}', ' ', docstring).strip()
+			return re.sub(r'\s{2,}', ' ', docstring).strip()
 		commands = [self.bot.CMD_PREFIX + key for key in self.channel.commands.keys()]
 		commands.sort()
 		return ' '.join(commands)
