@@ -16,6 +16,10 @@ def get_owm_json(*args, **kwargs):
 
 
 class WeatherPlugin(botologist.plugin.Plugin):
+	def __init__(self, bot, channel):
+		super().__init__(bot, channel)
+		self.api_key = self.bot.config.get('openweathermap_apikey')
+
 	@botologist.plugin.command('weather')
 	def weather(self, cmd):
 		'''Find out what the weather is somewhere.
@@ -27,7 +31,7 @@ class WeatherPlugin(botologist.plugin.Plugin):
 
 		city = '-'.join(cmd.args)
 		url = 'http://api.openweathermap.org/data/2.5/weather'
-		query_params = {'q': city, 'units': 'metric'}
+		query_params = {'q': city, 'units': 'metric', 'APPID': self.api_key}
 
 		try:
 			response = get_owm_json(url, query_params=query_params)

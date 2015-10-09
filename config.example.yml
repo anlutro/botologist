@@ -69,3 +69,6 @@ channels:
 # mail is sent via sendmail. customize the bin path and args here:
 #sendmail_bin: /usr/sbin/sendmail
 #sendmail_args: -t -oi
+
+# openweathermap is used for the !weather command
+# openweathermap_apikey: ...
