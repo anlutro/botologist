@@ -34,14 +34,16 @@ class CommandMessage:
 		return self.message.target
 
 
-class Channel(botologist.irc.Channel):
-	"""Extended channel class.
+class Channel:
+	"""Channel proxy class.
 
 	Added functionality for adding various handlers from plugins, as plugins are
 	registered on a per-channel basis.
 	"""
 	def __init__(self, channel):
-		super().__init__(channel)
+		if not isinstance(channel, botologist.irc.Channel):
+			channel = botologist.irc.Channel(channel)
+		self._channel = channel
 		self.commands = {}
 		self.joins = []
 		self.replies = []
@@ -49,6 +51,41 @@ class Channel(botologist.irc.Channel):
 		self.admins = []
 		self.http_handlers = []
 		self.plugins = []
+
+	@property
+	def channel(self):
+		return self._channel.channel
+
+	@property
+	def host_map(self):
+		return self._channel.host_map
+
+	@property
+	def nick_map(self):
+		return self._channel.nick_map
+
+	@property
+	def allow_colors(self):
+		return self._channel.allow_colors
+
+	@allow_colors.setter
+	def allow_colors(self, value):
+		self._channel.allow_colors = value
+
+	def add_user(self, user):
+		return self._channel.add_user(user)
+
+	def find_nick_from_host(self, host):
+		return self._channel.find_nick_from_host(host)
+
+	def find_host_from_nick(self, nick):
+		return self._channel.find_host_from_nick(nick)
+
+	def remove_user(self, nick=None, host=None):
+		return self._channel.remove_user(nick=nick, host=host)
+
+	def update_nick(self, user, new_nick):
+		return self._channel.update_nick(user, new_nick)
 
 	def register_plugin(self, plugin):
 		assert isinstance(plugin, botologist.plugin.Plugin)
