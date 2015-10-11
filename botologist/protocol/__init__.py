@@ -42,5 +42,12 @@ class User:
 
 
 class Message:
-	def __init__(self, ):
-		pass
+	def __init__(self, body, user):
+		self.body = body
+		self.words = body.strip().split()
+		assert isinstance(user, User)
+		self.user = user
+
+	@property
+	def message(self):
+		return self.body

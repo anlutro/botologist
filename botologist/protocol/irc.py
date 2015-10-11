@@ -35,11 +35,10 @@ class User(botologist.protocol.User):
 
 
 class Message(botologist.protocol.Message):
-	def __init__(self, source, target, message=None):
-		self.user = User.from_ircformat(source)
+	def __init__(self, source, target, message):
+		user = User.from_ircformat(source)
+		super().__init__(message, user)
 		self.target = target
-		self.message = message
-		self.words = message.strip().split()
 		self.channel = None
 
 	@classmethod
