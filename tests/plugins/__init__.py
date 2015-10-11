@@ -1,8 +1,8 @@
 import unittest
 import os.path
 
-import botologist.irc as irc
 import botologist.bot as bot
+import botologist.protocol.irc as irc
 
 class PluginTestCase(unittest.TestCase):
 	cfg = {}

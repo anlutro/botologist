@@ -7,7 +7,7 @@ import importlib
 
 import botologist.error
 import botologist.http
-import botologist.irc
+import botologist.protocol.irc
 import botologist.plugin
 import botologist.util
 
@@ -20,7 +20,7 @@ class CommandMessage:
 	handler to figure out a response.
 	"""
 	def __init__(self, message):
-		assert isinstance(message, botologist.irc.Message)
+		assert isinstance(message, botologist.protocol.Message)
 		self.message = message
 		self.command = message.words[0]
 		self.args = message.words[1:]
@@ -41,7 +41,7 @@ class Channel:
 	registered on a per-channel basis.
 	"""
 	def __init__(self, channel):
-		assert isinstance(channel, botologist.irc.Channel)
+		assert isinstance(channel, botologist.protocol.Channel)
 		self._channel = channel
 		self.commands = {}
 		self.joins = []
@@ -125,7 +125,7 @@ class Bot():
 			return config.get(key, default)
 
 		nick = get_config_compat('nick', 'botologist')
-		self.client = botologist.irc.Client(
+		self.client = botologist.protocol.irc.Client(
 			server=get_config_compat('server'),
 			nick=nick,
 			username=get_config_compat('username', nick),
@@ -293,7 +293,7 @@ class Bot():
 
 	def _handle_join(self, channel, user):
 		assert isinstance(channel, Channel)
-		assert isinstance(user, botologist.irc.User)
+		assert isinstance(user, botologist.protocol.User)
 
 		# iterate through join callbacks. the first, if any, to return a
 		# non-empty value, will be sent back to the channel as a response.
@@ -305,7 +305,7 @@ class Bot():
 				return
 
 	def _handle_privmsg(self, message):
-		assert isinstance(message, botologist.irc.Message)
+		assert isinstance(message, botologist.protocol.Message)
 
 		if message.user.host in self.bans:
 			return

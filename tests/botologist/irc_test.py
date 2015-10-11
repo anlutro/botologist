@@ -1,6 +1,6 @@
 import unittest
 
-from botologist.irc import Server, Channel, User, Message
+from botologist.protocol.irc import Server, Channel, User, Message
 
 
 class IrcServerTest(unittest.TestCase):

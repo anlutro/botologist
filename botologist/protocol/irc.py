@@ -6,9 +6,10 @@ import socket
 import threading
 
 import botologist.util
+import botologist.protocol
 
 
-class User:
+class User(botologist.protocol.User):
 	def __init__(self, nick, host=None, ident=None):
 		self.nick = nick
 		if host and '@' in host:
@@ -33,7 +34,7 @@ class User:
 		return other.host == self.host
 
 
-class Message:
+class Message(botologist.protocol.Message):
 	def __init__(self, source, target, message=None):
 		self.user = User.from_ircformat(source)
 		self.target = target
@@ -66,7 +67,7 @@ class Server:
 		self.channels[channel.channel] = channel
 
 
-class Channel:
+class Channel(botologist.protocol.Channel):
 	def __init__(self, channel):
 		if channel[0] != '#':
 			channel = '#' + channel
@@ -425,7 +426,7 @@ class Connection:
 		self.reconnect()
 
 
-class Client:
+class Client(botologist.protocol.Client):
 	def __init__(self, server, nick='__bot__', username=None, realname=None):
 		self.conn = Connection(nick, username, realname)
 		self.server = Server(server)

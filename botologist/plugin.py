@@ -1,7 +1,6 @@
 import logging
 log = logging.getLogger(__name__)
 
-import botologist.irc
 import botologist.bot
 
 
