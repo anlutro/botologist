@@ -102,7 +102,7 @@ class Channel:
 			self.http_handlers.append(http_handler)
 
 
-class Bot(botologist.irc.Client):
+class Bot():
 	"""IRC bot."""
 
 	version = None
@@ -126,7 +126,7 @@ class Bot(botologist.irc.Client):
 			return config.get(key, default)
 
 		nick = get_config_compat('nick', 'botologist')
-		super().__init__(
+		self.client = botologist.irc.Client(
 			server=get_config_compat('server'),
 			nick=nick,
 			username=get_config_compat('username', nick),
@@ -180,6 +180,18 @@ class Bot(botologist.irc.Client):
 					name = channel
 					channel = {}
 				self.add_channel(name, **channel)
+
+	@property
+	def conn(self):
+		return self.client.conn
+
+	@property
+	def nick(self):
+		return self.client.nick
+
+	@property
+	def server(self):
+		return self.client.server
 
 	@property
 	def channels(self):
