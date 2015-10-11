@@ -6,6 +6,11 @@ import botologist.irc
 import botologist.bot
 
 
+def make_channel(channel):
+	channel = botologist.irc.Channel(channel)
+	return botologist.bot.Channel(channel)
+
+
 class CommandMessageTest(unittest.TestCase):
 	def test_commands_and_args_are_parsed(self):
 		msg = botologist.irc.Message('nick!ident@host.com', '#channel', '!foo bar baz')
@@ -24,14 +29,14 @@ class BotTest(unittest.TestCase):
 	def test_only_returns_online_admins(self):
 		bot = self.make_bot()
 		bot.admins = ['admin1.com']
-		chan = botologist.bot.Channel('#chan')
+		chan = make_channel('#chan')
 		bot.add_channel(chan)
 		self.assertEqual(set(), bot.get_admin_nicks())
 		chan.add_user(botologist.irc.User('admin1', 'admin1.com'))
 		self.assertEqual({'admin1'}, bot.get_admin_nicks())
 
 	def test_matches_command_shorthand(self):
-		channel = botologist.bot.Channel('#chan')
+		channel = make_channel('#chan')
 		def dummy_command_func(command):
 			return 'test: '+command.command
 		dummy_command_func._is_threaded = False

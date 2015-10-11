@@ -41,8 +41,7 @@ class Channel:
 	registered on a per-channel basis.
 	"""
 	def __init__(self, channel):
-		if not isinstance(channel, botologist.irc.Channel):
-			channel = botologist.irc.Channel(channel)
+		assert isinstance(channel, botologist.irc.Channel)
 		self._channel = channel
 		self.commands = {}
 		self.joins = []
