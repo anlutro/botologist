@@ -9,6 +9,7 @@ class LocalProtocol(protocol.Protocol):
 
 class LocalClient(protocol.Client):
 	def __init__(self):
+		self.on_welcome = []
 		self.on_privmsg = []
 
 	def add_channel(self, channel):
