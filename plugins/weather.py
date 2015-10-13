@@ -48,8 +48,10 @@ class WeatherPlugin(botologist.plugin.Plugin):
 			return data['message']
 
 		location = '{}, {}'.format(data['name'], data['sys']['country'])
-		weather = data['weather'][0]['main']
-		temperature = data['main']['temp']
+		weather = data['weather'][0]['description']
 
-		return 'Weather in {}: {} - the temperature is {}°C'.format(
-			location, weather, temperature)
+		retval = 'Weather in {}: {}'.format(location, weather)
+		if 'temp' in data['main']:
+			retval += ' - temperature: {}°C'.format(data['main']['temp'])
+
+		return retval
