@@ -17,20 +17,39 @@ class Protocol:
 
 
 class Client:
+	def __init__(self, nick):
+		self.nick = nick
+		self.channels = {}
+
+		self.error_handler = None
+		self.on_connect = []
+		self.on_disconnect = []
+		self.on_join = []
+		self.on_privmsg = []
+
 	def add_channel(self, channel):
-		raise NotImplementedError('method add_channel must be defined')
+		self.channels[channel.name] = channel
+
+	def send_msg(self, target, message):
+		raise NotImplementedError('method send_msg must be defined')
 
 	def run_forever(self, channel):
 		raise NotImplementedError('method run_forever must be defined')
 
 
 class Channel:
-	pass
+	def __init__(self, name):
+		self.name = name
+
+	@property
+	def channel(self):
+		return self.name
 
 
 class User:
-	def get_identifier(self):
-		raise NotImplementedError('method get_identifier must be defined')
+	@property
+	def identifier(self):
+		raise NotImplementedError('property method identifier must be defined')
 
 	def __eq__(self, other):
 		if not isinstance(other, self.__class__):
@@ -42,11 +61,14 @@ class User:
 
 
 class Message:
-	def __init__(self, body, user):
+	def __init__(self, body, user, target):
 		self.body = body
 		self.words = body.strip().split()
 		assert isinstance(user, User)
 		self.user = user
+		self.target = target
+		self.channel = None
+		self.is_private = False
 
 	@property
 	def message(self):

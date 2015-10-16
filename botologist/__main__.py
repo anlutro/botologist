@@ -61,7 +61,7 @@ handler.setFormatter(formatter)
 # add the logging handler for all loggers
 root.addHandler(handler)
 
-print('Starting IRC bot...')
+print('Starting chat bot...')
 
 # initialize and run the bot
 try:

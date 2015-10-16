@@ -4,40 +4,50 @@ log = logging.getLogger(__name__)
 import sys
 from botologist import protocol
 
-class LocalProtocol(protocol.Protocol):
-	pass
 
-class LocalClient(protocol.Client):
-	def __init__(self):
-		self.on_welcome = []
-		self.on_privmsg = []
+def get_client(config):
+	return Client(config.get('nick', 'botologist'))
 
-	def add_channel(self, channel):
-		raise RuntimeError('local protocol does not use channels')
 
+class Client(protocol.Client):
 	def run_forever(self):
 		log.info('Starting local server')
 
-		for callback in self.on_welcome():
+		for callback in self.on_connect:
 			callback()
 
 		# the messages are always from the same user
-		user = LocalUser()
-		in_str = input('> ')
-		while in_str != 'exit':
-			message = LocalMessage(in_str, user)
-			for callback in self.on_privmsg:
-				callback(message)
+		user = User()
+		channel = next(iter(self.channels.values()))
+
+		print('Running locally. Hit ^C, ^D or type "/exit" or "/quit" to quit.')
+		try:
+			in_str = input('>> ')
+			while in_str != '/exit' and in_str != '/quit':
+				message = Message(in_str, user, channel.name)
+				for callback in self.on_privmsg:
+					callback(message)
+				in_str = input('>> ')
+		except (KeyboardInterrupt, EOFError):
+			print()
 
 		log.info('Quitting local server')
-		
+		for callback in self.on_disconnect:
+			callback()
 
-class LocalChannel(protocol.Channel):
+	def send_msg(self, target, msg):
+		print('<< {}'.format(msg))
+
+
+class Channel(protocol.Channel):
 	pass
 
-class LocalUser(protocol.User):
-	def get_identifier(self):
+
+class User(protocol.User):
+	@property
+	def identifier(self):
 		return 'user@localhost'
 
-class LocalMessage(protocol.Message):
-	pass		
+
+class Message(protocol.Message):
+	pass

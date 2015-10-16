@@ -9,6 +9,60 @@ import botologist.util
 import botologist.protocol
 
 
+def get_client(config):
+	nick = config.get('nick', 'botologist')
+	return Client(
+		config['server'],
+		nick=nick,
+		username=config.get('username', nick),
+		realname=config.get('realname', nick),
+	)
+
+
+class Client(botologist.protocol.Client):
+	def __init__(self, server, nick='__bot__', username=None, realname=None):
+		super().__init__(nick)
+		self.server = Server(server)
+		self.server.channels = self.channels
+		self.conn = Connection(nick, username, realname)
+		self.conn.on_connect = self.on_connect
+		self.conn.on_disconnect = self.on_disconnect
+		self.conn.on_join = self.on_join
+		self.conn.on_privmsg = self.on_privmsg
+
+		self.on_connect.append(self._join_channels)
+
+	def add_channel(self, channel):
+		self.server.add_channel(channel)
+
+	def _join_channels(self):
+		for channel in self.server.channels.values():
+			self.conn.join_channel(channel)
+
+	def run_forever(self):
+		log.info('Starting client!')
+
+		def sigterm_handler(signo, stack_frame): # pylint: disable=unused-argument
+			self.stop('Terminating, probably back soon!')
+		signal.signal(signal.SIGQUIT, sigterm_handler)
+		signal.signal(signal.SIGTERM, sigterm_handler)
+		signal.signal(signal.SIGINT, sigterm_handler)
+
+		try:
+			self.conn.connect(self.server)
+		except (InterruptedError, SystemExit, KeyboardInterrupt):
+			self.stop('Terminating, probably back soon!')
+		except:
+			self.stop('An error occured!')
+			raise
+
+	def send_msg(self, target, message):
+		return self.conn.send_msg(target, message)
+
+	def stop(self, msg='Leaving'):
+		self.conn.quit(msg)
+
+
 class User(botologist.protocol.User):
 	def __init__(self, nick, host=None, ident=None):
 		self.nick = nick
@@ -18,6 +72,10 @@ class User(botologist.protocol.User):
 		if ident and ident[0] == '~':
 			ident = ident[1:]
 		self.ident = ident
+
+	@property
+	def identifier(self):
+		return self.host
 
 	@classmethod
 	def from_ircformat(cls, string):
@@ -37,18 +95,13 @@ class User(botologist.protocol.User):
 class Message(botologist.protocol.Message):
 	def __init__(self, source, target, message):
 		user = User.from_ircformat(source)
-		super().__init__(message, user)
-		self.target = target
-		self.channel = None
+		super().__init__(message, user, target)
+		self.is_private = self.target[0] != '#'
 
 	@classmethod
 	def from_privmsg(cls, msg):
 		words = msg.split()
 		return cls(words[0][1:], words[2], ' '.join(words[3:])[1:])
-
-	@property
-	def is_private(self):
-		return self.target[0] != '#'
 
 
 class Server:
@@ -62,15 +115,14 @@ class Server:
 		self.channels = {}
 
 	def add_channel(self, channel):
-		assert isinstance(channel, Channel)
-		self.channels[channel.channel] = channel
+		self.channels[channel.name] = channel
 
 
 class Channel(botologist.protocol.Channel):
-	def __init__(self, channel):
-		if channel[0] != '#':
-			channel = '#' + channel
-		self.channel = channel
+	def __init__(self, name):
+		if name[0] != '#':
+			name = '#' + name
+		super().__init__(name)
 		self.host_map = {}
 		self.nick_map = {}
 		self.allow_colors = True
@@ -190,7 +242,8 @@ class Connection:
 		self.irc_socket = None
 		self.server = None
 		self.channels = {}
-		self.on_welcome = []
+		self.on_connect = []
+		self.on_disconnect = []
 		self.on_join = []
 		self.on_privmsg = []
 		self.error_handler = None
@@ -266,10 +319,9 @@ class Connection:
 						raise
 
 	def join_channel(self, channel):
-		assert isinstance(channel, Channel)
-		log.info('Joining channel: %s', channel.channel)
-		self.channels[channel.channel] = channel
-		self.send('JOIN ' + channel.channel)
+		log.info('Joining channel: %s', channel.name)
+		self.channels[channel.name] = channel
+		self.send('JOIN ' + channel.name)
 
 	def handle_msg(self, msg):
 		words = msg.split()
@@ -289,7 +341,7 @@ class Connection:
 		elif len(words) > 1:
 			if words[1] == '001':
 				# welcome message, lets us know that we're connected
-				for callback in self.on_welcome:
+				for callback in self.on_connect:
 					callback()
 
 			elif words[1] == 'PONG':
@@ -323,7 +375,7 @@ class Connection:
 				for channel in self.channels.values():
 					if channel.find_nick_from_host(user.host):
 						log.debug('Updating nick for user in channel %s',
-							channel.channel)
+							channel.name)
 						channel.update_nick(user, new_nick)
 
 			elif words[1] == 'PART':
@@ -346,7 +398,7 @@ class Connection:
 				for channel in self.channels.values():
 					if channel.find_nick_from_host(user.host):
 						channel.remove_user(host=user.host)
-						log.debug('Removing user from channel %s', channel.channel)
+						log.debug('Removing user from channel %s', channel.name)
 
 			elif words[1] == 'PRIVMSG':
 				message = Message.from_privmsg(msg)
@@ -378,6 +430,9 @@ class Connection:
 		self.irc_socket.send(msg + '\r\n')
 
 	def quit(self, reason='Leaving'):
+		for callback in self.on_disconnect:
+			callback()
+
 		if self.reconnect_timer:
 			log.info('Aborting reconnect timer')
 			self.reconnect_timer.cancel()
@@ -423,42 +478,3 @@ class Connection:
 		log.warning('Ping timeout')
 		self.ping_response_timer = None
 		self.reconnect()
-
-
-class Client(botologist.protocol.Client):
-	def __init__(self, server, nick='__bot__', username=None, realname=None):
-		self.conn = Connection(nick, username, realname)
-		self.server = Server(server)
-		self.conn.on_welcome.append(self._join_channels)
-
-	@property
-	def nick(self):
-		return self.conn.nick
-
-	def add_channel(self, channel):
-		channel = Channel(channel)
-		self.server.add_channel(channel)
-
-	def _join_channels(self):
-		for channel in self.server.channels.values():
-			self.conn.join_channel(channel)
-
-	def run_forever(self):
-		log.info('Starting client!')
-
-		def sigterm_handler(signo, stack_frame): # pylint: disable=unused-argument
-			self.stop('Terminating, probably back soon!')
-		signal.signal(signal.SIGQUIT, sigterm_handler)
-		signal.signal(signal.SIGTERM, sigterm_handler)
-		signal.signal(signal.SIGINT, sigterm_handler)
-
-		try:
-			self.conn.connect(self.server)
-		except (InterruptedError, SystemExit, KeyboardInterrupt):
-			self.stop('Terminating, probably back soon!')
-		except:
-			self.stop('An error occured!')
-			raise
-
-	def stop(self, msg='Leaving'):
-		self.conn.quit(msg)

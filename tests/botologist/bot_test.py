@@ -43,7 +43,7 @@ class BotTest(unittest.TestCase):
 		channel.commands['asdf'] = dummy_command_func
 		bot = self.make_bot()
 		bot.admins = ['baz']
-		bot.conn.channels['#chan'] = channel
+		bot.client.channels['#chan'] = channel
 		bot._send_msg = mock.MagicMock()
 
 		bot._handle_privmsg(irc.Message('foo!bar@baz', '#chan', '!b'))

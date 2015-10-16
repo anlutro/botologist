@@ -7,7 +7,7 @@ import importlib
 
 import botologist.error
 import botologist.http
-import botologist.protocol.irc
+import botologist.protocol
 import botologist.plugin
 import botologist.util
 
@@ -54,6 +54,10 @@ class Channel:
 	@property
 	def channel(self):
 		return self._channel.channel
+
+	@property
+	def name(self):
+		return self._channel.name
 
 	@property
 	def host_map(self):
@@ -116,27 +120,15 @@ class Bot():
 	SPAM_THROTTLE = 2
 
 	def __init__(self, config):
-		bot_config = config.get('bot', {})
-
-		# some config options will be moved from "bot" to the root of the config
-		def get_config_compat(key, default=None):
-			if key in bot_config:
-				return bot_config.get(key)
-			return config.get(key, default)
-
-		nick = get_config_compat('nick', 'botologist')
-		self.client = botologist.protocol.irc.Client(
-			server=get_config_compat('server'),
-			nick=nick,
-			username=get_config_compat('username', nick),
-			realname=get_config_compat('realname', nick),
-		)
+		protocol_module = 'botologist.protocol.{}'.format(config.get('protocol', 'local'))
+		self.protocol = importlib.import_module(protocol_module)
+		self.client = self.protocol.get_client(config)
 
 		self.config = config
 		self.storage_dir = config['storage_dir']
 
-		self.admins = get_config_compat('admins', [])
-		self.bans = get_config_compat('bans', [])
+		self.admins = config.get('admins', [])
+		self.bans = config.get('bans', [])
 		self.global_plugins = config.get('global_plugins', [])
 
 		self.plugins = {}
@@ -145,15 +137,16 @@ class Bot():
 		self._reply_log = {}
 		self.timer = None
 
-		self.http_port = get_config_compat('http_port')
-		self.http_host = get_config_compat('http_host')
+		self.http_port = config.get('http_port')
+		self.http_host = config.get('http_host')
 		self.http_server = None
 
 		self.error_handler = botologist.error.ErrorHandler(self)
-		self.conn.error_handler = self.error_handler.handle_error
-		self.conn.on_welcome.append(self._start_tick_timer)
-		self.conn.on_join.append(self._handle_join)
-		self.conn.on_privmsg.append(self._handle_privmsg)
+		self.client.error_handler = self.error_handler.handle_error
+		self.client.on_connect.append(self._start_tick_timer)
+		self.client.on_disconnect.append(self._stop_timers)
+		self.client.on_join.append(self._handle_join)
+		self.client.on_privmsg.append(self._handle_privmsg)
 
 		# configure plugins
 		for name, plugin_class in config.get('plugins', {}).items():
@@ -181,10 +174,6 @@ class Bot():
 				self.add_channel(name, **channel)
 
 	@property
-	def conn(self):
-		return self.client.conn
-
-	@property
 	def nick(self):
 		return self.client.nick
 
@@ -194,11 +183,11 @@ class Bot():
 
 	@property
 	def channels(self):
-		return self.server.channels
+		return self.client.channels
 
 	def get_admin_nicks(self):
 		admin_nicks = set()
-		for channel in self.server.channels.values():
+		for channel in self.client.channels.values():
 			for admin_host in self.admins:
 				nick = channel.find_nick_from_host(admin_host)
 				if nick:
@@ -213,20 +202,7 @@ class Bot():
 				args=(self, self.http_host, self.http_port),
 				error_handler=self.error_handler.handle_error)
 			thread.start()
-		super().run_forever()
-
-	def stop(self, msg=None):
-		if self.http_server:
-			log.info('Shutting down HTTP server')
-			self.http_server.shutdown()
-			self.http_server = None
-
-		if self.timer:
-			log.info('Ticker stopped')
-			self.timer.cancel()
-			self.timer = None
-
-		super().stop(msg)
+		self.client.run_forever()
 
 	def register_plugin(self, name, plugin):
 		if isinstance(plugin, str):
@@ -248,6 +224,8 @@ class Bot():
 			return 'plugins.{}.{}Plugin'.format(plugin, plugin_class)
 
 		if not isinstance(channel, Channel):
+			if not isinstance(channel, botologist.protocol.Channel):
+				channel = self.protocol.Channel(channel)
 			channel = Channel(channel)
 
 		# channel-specific plugins
@@ -275,8 +253,7 @@ class Bot():
 			channel.admins = admins
 
 		channel.allow_colors = allow_colors
-
-		self.server.channels[channel.channel] = channel
+		self.client.add_channel(channel)
 
 	def _send_msg(self, msgs, targets):
 		if targets == '*':
@@ -289,7 +266,7 @@ class Bot():
 
 		for msg in msgs:
 			for target in targets:
-				self.conn.send_msg(target, msg)
+				self.client.send_msg(target, msg)
 
 	def _handle_join(self, channel, user):
 		assert isinstance(channel, Channel)
@@ -307,7 +284,7 @@ class Bot():
 	def _handle_privmsg(self, message):
 		assert isinstance(message, botologist.protocol.Message)
 
-		if message.user.host in self.bans:
+		if message.user.identifier in self.bans:
 			return
 
 		# self-explanatory...
@@ -317,10 +294,13 @@ class Bot():
 
 		# check if the user is an admin - add it to the message.user object for
 		# later re-use
-		message.user.is_admin = (message.user.host in self.admins or
-			message.user.host in message.channel.admins)
+		message.user.is_admin = (
+			message.user.identifier in self.admins or (
+				message.channel and
+				message.user.identifier in message.channel.admins
+			))
 
-		channel = self.conn.channels[message.target]
+		channel = self.client.channels[message.target]
 		assert isinstance(channel, Channel)
 
 		if message.message.startswith(self.CMD_PREFIX):
@@ -376,7 +356,7 @@ class Bot():
 		now = datetime.datetime.now()
 		if command.command in self._command_log and not command.user.is_admin:
 			diff = now - self._command_log[command.command]
-			if self._last_command == (command.user.host, command.command, command.args):
+			if self._last_command == (command.user.identifier, command.command, command.args):
 				threshold = self.SPAM_THROTTLE * 3
 			else:
 				threshold = self.SPAM_THROTTLE
@@ -385,7 +365,7 @@ class Bot():
 				return None
 
 		# log the command call for spam throttling
-		self._last_command = (command.user.host, command.command, command.args)
+		self._last_command = (command.user.identifier, command.command, command.args)
 		self._command_log[command.command] = now
 
 		return command_func(command)
@@ -428,6 +408,17 @@ class Bot():
 		self.timer = threading.Timer(self.TICK_INTERVAL, self._tick)
 		self.timer.start()
 		log.debug('Ticker started')
+
+	def _stop_timers(self):
+		if self.http_server:
+			log.info('Shutting down HTTP server')
+			self.http_server.shutdown()
+			self.http_server = None
+
+		if self.timer:
+			log.info('Ticker stopped')
+			self.timer.cancel()
+			self.timer = None
 
 	def _tick(self):
 		log.debug('Tick!')
