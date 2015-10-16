@@ -54,10 +54,10 @@ class User:
 	def __eq__(self, other):
 		if not isinstance(other, self.__class__):
 			return False
-		return other.get_identifier() == self.get_identifier()
+		return other.identifier == self.identifier
 
 	def __hash__(self):
-		return hash(self.get_identifier())
+		return hash(self.identifier)
 
 
 class Message:
