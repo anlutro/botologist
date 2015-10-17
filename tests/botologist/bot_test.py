@@ -7,8 +7,7 @@ import botologist.bot
 
 
 def make_channel(channel):
-	channel = irc.Channel(channel)
-	return botologist.bot.Channel(channel)
+	return irc.Channel(channel)
 
 
 class CommandMessageTest(unittest.TestCase):

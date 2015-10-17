@@ -34,78 +34,7 @@ class CommandMessage:
 		return self.message.target
 
 
-class Channel:
-	"""Channel proxy class.
-
-	Added functionality for adding various handlers from plugins, as plugins are
-	registered on a per-channel basis.
-	"""
-	def __init__(self, channel):
-		assert isinstance(channel, botologist.protocol.Channel)
-		self._channel = channel
-		self.commands = {}
-		self.joins = []
-		self.replies = []
-		self.tickers = []
-		self.admins = []
-		self.http_handlers = []
-		self.plugins = []
-
-	@property
-	def channel(self):
-		return self._channel.channel
-
-	@property
-	def name(self):
-		return self._channel.name
-
-	@property
-	def host_map(self):
-		return self._channel.host_map
-
-	@property
-	def nick_map(self):
-		return self._channel.nick_map
-
-	@property
-	def allow_colors(self):
-		return self._channel.allow_colors
-
-	@allow_colors.setter
-	def allow_colors(self, value):
-		self._channel.allow_colors = value
-
-	def add_user(self, user):
-		return self._channel.add_user(user)
-
-	def find_nick_from_host(self, host):
-		return self._channel.find_nick_from_host(host)
-
-	def find_host_from_nick(self, nick):
-		return self._channel.find_host_from_nick(nick)
-
-	def remove_user(self, nick=None, host=None):
-		return self._channel.remove_user(nick=nick, host=host)
-
-	def update_nick(self, user, new_nick):
-		return self._channel.update_nick(user, new_nick)
-
-	def register_plugin(self, plugin):
-		assert isinstance(plugin, botologist.plugin.Plugin)
-		self.plugins.append(plugin.__class__.__name__)
-		for cmd, callback in plugin.commands.items():
-			self.commands[cmd] = callback
-		for join_callback in plugin.joins:
-			self.joins.append(join_callback)
-		for reply_callback in plugin.replies:
-			self.replies.append(reply_callback)
-		for tick_callback in plugin.tickers:
-			self.tickers.append(tick_callback)
-		for http_handler in plugin.http_handlers:
-			self.http_handlers.append(http_handler)
-
-
-class Bot():
+class Bot:
 	"""IRC bot."""
 
 	version = None
@@ -223,10 +152,8 @@ class Bot():
 			plugin_class = ''.join(part.title() for part in plugin.split('_'))
 			return 'plugins.{}.{}Plugin'.format(plugin, plugin_class)
 
-		if not isinstance(channel, Channel):
-			if not isinstance(channel, botologist.protocol.Channel):
-				channel = self.protocol.Channel(channel)
-			channel = Channel(channel)
+		if not isinstance(channel, botologist.protocol.Channel):
+			channel = self.protocol.Channel(channel)
 
 		# channel-specific plugins
 		if plugins:
@@ -269,7 +196,7 @@ class Bot():
 				self.client.send_msg(target, msg)
 
 	def _handle_join(self, channel, user):
-		assert isinstance(channel, Channel)
+		assert isinstance(channel, botologist.protocol.Channel)
 		assert isinstance(user, botologist.protocol.User)
 
 		# iterate through join callbacks. the first, if any, to return a
@@ -301,7 +228,7 @@ class Bot():
 			))
 
 		channel = self.client.channels[message.target]
-		assert isinstance(channel, Channel)
+		assert isinstance(channel, botologist.protocol.Channel)
 
 		if message.message.startswith(self.CMD_PREFIX):
 			return self._handle_command(message, channel)

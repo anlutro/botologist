@@ -1,6 +1,8 @@
 import logging
 log = logging.getLogger(__name__)
 
+import botologist.plugin
+
 
 class Protocol:
 	def new_client(self, config):
@@ -40,10 +42,31 @@ class Client:
 class Channel:
 	def __init__(self, name):
 		self.name = name
+		self.commands = {}
+		self.joins = []
+		self.replies = []
+		self.tickers = []
+		self.admins = []
+		self.http_handlers = []
+		self.plugins = []
 
 	@property
 	def channel(self):
 		return self.name
+
+	def register_plugin(self, plugin):
+		assert isinstance(plugin, botologist.plugin.Plugin)
+		self.plugins.append(plugin.__class__.__name__)
+		for cmd, callback in plugin.commands.items():
+			self.commands[cmd] = callback
+		for join_callback in plugin.joins:
+			self.joins.append(join_callback)
+		for reply_callback in plugin.replies:
+			self.replies.append(reply_callback)
+		for tick_callback in plugin.tickers:
+			self.tickers.append(tick_callback)
+		for http_handler in plugin.http_handlers:
+			self.http_handlers.append(http_handler)
 
 
 class User:

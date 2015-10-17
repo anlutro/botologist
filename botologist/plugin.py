@@ -105,7 +105,7 @@ class PluginMetaclass(type):
 class Plugin(metaclass=PluginMetaclass):
 	"""Base plugin class."""
 	def __init__(self, bot, channel):
-		assert isinstance(channel, botologist.bot.Channel)
+		assert isinstance(channel, botologist.protocol.Channel)
 		assert isinstance(bot, botologist.bot.Bot)
 
 		# pylint: disable=no-member
