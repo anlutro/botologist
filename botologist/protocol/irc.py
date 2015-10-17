@@ -314,7 +314,7 @@ class Connection:
 					# if an error handler is defined, call it and continue
 					# the loop. if not, re-raise the exception
 					if self.error_handler:
-						self.error_handler()
+						self.error_handler() # pylint: disable=not-callable
 					else:
 						raise
 

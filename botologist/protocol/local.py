@@ -1,7 +1,6 @@
 import logging
 log = logging.getLogger(__name__)
 
-import sys
 from botologist import protocol
 
 
