@@ -43,9 +43,8 @@ class Channel(protocol.Channel):
 
 
 class User(protocol.User):
-	@property
-	def identifier(self):
-		return 'user@localhost'
+	def __init__(self):
+		super().__init__('user', 'user@localhost')
 
 
 class Message(protocol.Message):

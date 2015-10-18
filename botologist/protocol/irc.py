@@ -283,17 +283,13 @@ class Client(botologist.protocol.Client):
 
 class User(botologist.protocol.User):
 	def __init__(self, nick, host=None, ident=None):
-		self.nick = nick
 		if host and '@' in host:
 			host = host[host.index('@')+1:]
 		self.host = host
 		if ident and ident[0] == '~':
 			ident = ident[1:]
 		self.ident = ident
-
-	@property
-	def identifier(self):
-		return self.host
+		super().__init__(nick, host)
 
 	@classmethod
 	def from_ircformat(cls, string):
@@ -303,11 +299,6 @@ class User(botologist.protocol.User):
 		nick = parts[0]
 		ident, host = parts[1].split('@')
 		return cls(nick, host, ident)
-
-	def __eq__(self, other):
-		if not isinstance(other, self.__class__):
-			return False
-		return other.host == self.host
 
 
 class Message(botologist.protocol.Message):

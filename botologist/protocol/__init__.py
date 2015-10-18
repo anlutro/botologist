@@ -70,9 +70,9 @@ class Channel:
 
 
 class User:
-	@property
-	def identifier(self):
-		raise NotImplementedError('property method identifier must be defined')
+	def __init__(self, nick, identifier):
+		self.nick = nick
+		self.identifier = identifier
 
 	def __eq__(self, other):
 		if not isinstance(other, self.__class__):
