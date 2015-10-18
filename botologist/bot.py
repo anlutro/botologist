@@ -107,10 +107,6 @@ class Bot:
 		return self.client.nick
 
 	@property
-	def server(self):
-		return self.client.server
-
-	@property
 	def channels(self):
 		return self.client.channels
 
@@ -184,7 +180,7 @@ class Bot:
 
 	def _send_msg(self, msgs, targets):
 		if targets == '*':
-			targets = (channel for channel in self.server.channels)
+			targets = (channel for channel in self.client.channels)
 		elif not isinstance(targets, list) and not isinstance(targets, set):
 			targets = set([targets])
 
@@ -357,7 +353,7 @@ class Bot:
 			self._reply_log[channel] = {}
 
 		try:
-			for channel in self.server.channels.values():
+			for channel in self.client.channels.values():
 				for ticker in channel.tickers:
 					result = ticker()
 					if result:
