@@ -174,15 +174,16 @@ class Client(botologist.protocol.Client):
 				new_nick = words[2][1:]
 				log.debug('User %s changing nick: %s', user.host, new_nick)
 				for channel in self.channels.values():
-					if channel.find_nick_from_host(user.host):
+					user = channel.find_user(user)
+					if user:
 						log.debug('Updating nick for user in channel %s',
 							channel.name)
-						channel.update_nick(user, new_nick)
+						user.nick = new_nick
 
 			elif words[1] == 'PART':
 				user = User.from_ircformat(words[0])
 				channel = words[2]
-				self.channels[channel].remove_user(host=user.host)
+				self.channels[channel].remove_user(user)
 				log.debug('User %s parted from channel %s', user.host, channel)
 
 			elif words[1] == 'KICK':
@@ -197,9 +198,11 @@ class Client(botologist.protocol.Client):
 				user = User.from_ircformat(words[0])
 				log.debug('User %s quit', user.host)
 				for channel in self.channels.values():
-					if channel.find_nick_from_host(user.host):
-						channel.remove_user(host=user.host)
-						log.debug('Removing user from channel %s', channel.name)
+					user = channel.find_user(user)
+					if user:
+						channel.remove_user(user)
+						log.debug('Removing user %s from channel %s',
+							user.host, channel.name)
 
 			elif words[1] == 'PRIVMSG':
 				message = Message.from_privmsg(msg)
@@ -328,51 +331,26 @@ class Channel(botologist.protocol.Channel):
 		if name[0] != '#':
 			name = '#' + name
 		super().__init__(name)
-		self.host_map = {}
-		self.nick_map = {}
 		self.allow_colors = True
-
-	def add_user(self, user):
-		assert isinstance(user, User)
-		self.host_map[user.host] = user.nick
-		self.nick_map[user.nick] = user.host
 
 	def find_nick_from_host(self, host):
 		if '@' in host:
 			host = host[host.index('@')+1:]
-		if host in self.host_map:
-			return self.host_map[host]
-		return False
+
+		user = self.find_user(identifier=host)
+		if user:
+			return user.name
 
 	def find_host_from_nick(self, nick):
-		if nick in self.nick_map:
-			return self.nick_map[nick]
-		return False
+		user = self.find_user(name=nick)
+		if user:
+			return user.host
 
-	def remove_user(self, nick=None, host=None):
-		assert nick or host
-
-		if host and '@' in host:
+	def remove_user(self, user=None, nick=None, host=None):
+		if not user and host and '@' in host:
 			host = host[host.index('@')+1:]
 
-		if nick is not None and nick in self.nick_map:
-			host = self.nick_map[nick]
-		if host is not None and host in self.host_map:
-			nick = self.host_map[host]
-		if nick is not None and nick in self.nick_map:
-			del self.nick_map[nick]
-		if host is not None and host in self.host_map:
-			del self.host_map[host]
-
-	def update_nick(self, user, new_nick):
-		assert isinstance(user, User)
-
-		old_nick = user.nick
-		if old_nick in self.nick_map:
-			del self.nick_map[old_nick]
-
-		self.nick_map[new_nick] = user.host
-		self.host_map[user.host] = new_nick
+		return super().remove_user(user=user, name=nick, identifier=host)
 
 
 class IRCSocketError(OSError):

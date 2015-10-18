@@ -26,12 +26,10 @@ class IrcChannelTest(unittest.TestCase):
 		chan = Channel('#foobar')
 		user = User('nick', 'ident@host.com')
 		chan.add_user(user)
-		self.assertEqual(user.nick, chan.host_map[user.host])
-		self.assertEqual(user.host, chan.nick_map[user.nick])
 		self.assertEqual(user.nick, chan.find_nick_from_host(user.host))
-		self.assertEqual(False, chan.find_nick_from_host('asdsaff'))
+		self.assertEqual(None, chan.find_nick_from_host('asdsaff'))
 		self.assertEqual(user.host, chan.find_host_from_nick(user.nick))
-		self.assertEqual(False, chan.find_host_from_nick('asdsaff'))
+		self.assertEqual(None, chan.find_host_from_nick('asdsaff'))
 
 	def test_remove_user(self):
 		chan = Channel('#foobar')
@@ -39,11 +37,11 @@ class IrcChannelTest(unittest.TestCase):
 		chan.add_user(user)
 		self.assertEqual(user.nick, chan.find_nick_from_host(user.host))
 		chan.remove_user(host=user.host)
-		self.assertEqual(False, chan.find_nick_from_host(user.host))
+		self.assertEqual(None, chan.find_nick_from_host(user.host))
 		chan.add_user(user)
 		self.assertEqual(user.nick, chan.find_nick_from_host(user.host))
 		chan.remove_user(nick=user.nick)
-		self.assertEqual(False, chan.find_nick_from_host(user.host))
+		self.assertEqual(None, chan.find_nick_from_host(user.host))
 
 	def test_update_nick(self):
 		chan = Channel('#foobar')
@@ -51,8 +49,8 @@ class IrcChannelTest(unittest.TestCase):
 		chan.add_user(user)
 		self.assertEqual(user.nick, chan.find_nick_from_host(user.host))
 		self.assertEqual(user.host, chan.find_host_from_nick('oldnick'))
-		chan.update_nick(user, 'newnick')
-		self.assertEqual(False, chan.find_host_from_nick('oldnick'))
+		user.name = 'newnick'
+		self.assertEqual(None, chan.find_host_from_nick('oldnick'))
 		self.assertEqual('newnick', chan.find_nick_from_host(user.host))
 		self.assertEqual(user.host, chan.find_host_from_nick('newnick'))
 

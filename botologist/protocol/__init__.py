@@ -19,8 +19,8 @@ class Protocol:
 
 
 class Client:
-	def __init__(self, nick):
-		self.nick = nick
+	def __init__(self, name):
+		self.name = name
 		self.channels = {}
 
 		self.error_handler = None
@@ -28,6 +28,10 @@ class Client:
 		self.on_disconnect = []
 		self.on_join = []
 		self.on_privmsg = []
+
+	@property
+	def nick(self):
+		return self.name
 
 	def add_channel(self, channel):
 		self.channels[channel.name] = channel
@@ -42,6 +46,8 @@ class Client:
 class Channel:
 	def __init__(self, name):
 		self.name = name
+		self.users = set()
+
 		self.commands = {}
 		self.joins = []
 		self.replies = []
@@ -68,11 +74,39 @@ class Channel:
 		for http_handler in plugin.http_handlers:
 			self.http_handlers.append(http_handler)
 
+	def add_user(self, user):
+		assert isinstance(user, User)
+		self.users.add(user)
+
+	def find_user(self, user=None, name=None, identifier=None):
+		assert user or name or identifier
+
+		if user:
+			identifier = user.identifier
+			name = user.name
+
+		for user in self.users:
+			if (identifier and user.identifier == identifier) or \
+					(name and user.name == name):
+				return user
+		return None
+
+	def remove_user(self, user=None, name=None, identifier=None):
+		assert user or name or identifier
+
+		user = self.find_user(user, name, identifier)
+		if user:
+			self.users.remove(user)
+
 
 class User:
-	def __init__(self, nick, identifier):
-		self.nick = nick
+	def __init__(self, name, identifier):
+		self.name = name
 		self.identifier = identifier
+
+	@property
+	def nick(self):
+		return self.name
 
 	def __eq__(self, other):
 		if not isinstance(other, self.__class__):
