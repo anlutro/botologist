@@ -35,7 +35,7 @@ class Client:
 	def send_msg(self, target, message):
 		raise NotImplementedError('method send_msg must be defined')
 
-	def run_forever(self, channel):
+	def run_forever(self):
 		raise NotImplementedError('method run_forever must be defined')
 
 

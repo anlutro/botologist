@@ -20,27 +20,26 @@ def get_client(config):
 
 
 class Client(botologist.protocol.Client):
+	MAX_MSG_CHARS = 500
+
 	def __init__(self, server, nick='__bot__', username=None, realname=None):
 		super().__init__(nick)
 		self.server = Server(server)
-		self.server.channels = self.channels
-		self.conn = Connection(nick, username, realname)
-		self.conn.on_connect = self.on_connect
-		self.conn.on_disconnect = self.on_disconnect
-		self.conn.on_join = self.on_join
-		self.conn.on_privmsg = self.on_privmsg
+		self.username = username or nick
+		self.realname = realname or nick
+		self.irc_socket = None
+		self.quitting = False
+		self.reconnect_timer = False
+		self.ping_timer = None
+		self.ping_response_timer = None
 
-		self.on_connect.append(self._join_channels)
-
-	def add_channel(self, channel):
-		self.server.add_channel(channel)
-
-	def _join_channels(self):
-		for channel in self.server.channels.values():
-			self.conn.join_channel(channel)
+		def join_channels():
+			for channel in self.channels.values():
+				self.join_channel(channel)
+		self.on_connect.append(join_channels)
 
 	def run_forever(self):
-		log.info('Starting client!')
+		log.info('Starting IRC client')
 
 		def sigterm_handler(signo, stack_frame): # pylint: disable=unused-argument
 			self.stop('Terminating, probably back soon!')
@@ -49,214 +48,16 @@ class Client(botologist.protocol.Client):
 		signal.signal(signal.SIGINT, sigterm_handler)
 
 		try:
-			self.conn.connect(self.server)
+			self.connect()
 		except (InterruptedError, SystemExit, KeyboardInterrupt):
 			self.stop('Terminating, probably back soon!')
 		except:
 			self.stop('An error occured!')
 			raise
 
-	def send_msg(self, target, message):
-		return self.conn.send_msg(target, message)
-
-	def stop(self, msg='Leaving'):
-		self.conn.quit(msg)
-
-
-class User(botologist.protocol.User):
-	def __init__(self, nick, host=None, ident=None):
-		self.nick = nick
-		if host and '@' in host:
-			host = host[host.index('@')+1:]
-		self.host = host
-		if ident and ident[0] == '~':
-			ident = ident[1:]
-		self.ident = ident
-
-	@property
-	def identifier(self):
-		return self.host
-
-	@classmethod
-	def from_ircformat(cls, string):
-		if string[0] == ':':
-			string = string[1:]
-		parts = string.split('!')
-		nick = parts[0]
-		ident, host = parts[1].split('@')
-		return cls(nick, host, ident)
-
-	def __eq__(self, other):
-		if not isinstance(other, self.__class__):
-			return False
-		return other.host == self.host
-
-
-class Message(botologist.protocol.Message):
-	def __init__(self, source, target, message):
-		user = User.from_ircformat(source)
-		super().__init__(message, user, target)
-		self.is_private = self.target[0] != '#'
-
-	@classmethod
-	def from_privmsg(cls, msg):
-		words = msg.split()
-		return cls(words[0][1:], words[2], ' '.join(words[3:])[1:])
-
-
-class Server:
-	def __init__(self, address):
-		parts = address.split(':')
-		self.host = parts[0]
-		if len(parts) > 1:
-			self.port = int(parts[1])
-		else:
-			self.port = 6667
-		self.channels = {}
-
-	def add_channel(self, channel):
-		self.channels[channel.name] = channel
-
-
-class Channel(botologist.protocol.Channel):
-	def __init__(self, name):
-		if name[0] != '#':
-			name = '#' + name
-		super().__init__(name)
-		self.host_map = {}
-		self.nick_map = {}
-		self.allow_colors = True
-
-	def add_user(self, user):
-		assert isinstance(user, User)
-		self.host_map[user.host] = user.nick
-		self.nick_map[user.nick] = user.host
-
-	def find_nick_from_host(self, host):
-		if '@' in host:
-			host = host[host.index('@')+1:]
-		if host in self.host_map:
-			return self.host_map[host]
-		return False
-
-	def find_host_from_nick(self, nick):
-		if nick in self.nick_map:
-			return self.nick_map[nick]
-		return False
-
-	def remove_user(self, nick=None, host=None):
-		assert nick or host
-
-		if host and '@' in host:
-			host = host[host.index('@')+1:]
-
-		if nick is not None and nick in self.nick_map:
-			host = self.nick_map[nick]
-		if host is not None and host in self.host_map:
-			nick = self.host_map[host]
-		if nick is not None and nick in self.nick_map:
-			del self.nick_map[nick]
-		if host is not None and host in self.host_map:
-			del self.host_map[host]
-
-	def update_nick(self, user, new_nick):
-		assert isinstance(user, User)
-
-		old_nick = user.nick
-		if old_nick in self.nick_map:
-			del self.nick_map[old_nick]
-
-		self.nick_map[new_nick] = user.host
-		self.host_map[user.host] = new_nick
-
-
-class IRCSocketError(OSError):
-	pass
-
-
-class IRCSocket:
-	def __init__(self, server):
-		self.server = server
-		self.socket = None
-
 	def connect(self):
-		addrinfo = socket.getaddrinfo(
-			self.server.host, self.server.port,
-			socket.AF_UNSPEC, socket.SOCK_STREAM
-		)
-
-		for res in addrinfo:
-			af, socktype, proto, canonname, sa = res
-
-			try:
-				self.socket = socket.socket(af, socktype, proto)
-			except OSError:
-				self.socket = None
-				continue
-
-			try:
-				self.socket.settimeout(10)
-				self.socket.connect(sa)
-			except OSError:
-				self.socket.close()
-				self.socket = None
-				continue
-
-			# if we reach this point, the socket has been successfully created,
-			# so break out of the loop
-			break
-
-		if self.socket is None:
-			raise IRCSocketError('Could not open socket')
-
-		self.socket.settimeout(None)
-
-	def recv(self, bufsize=4096):
-		data = self.socket.recv(bufsize)
-
-		# 13 = \r -- 10 = \n
-		while data != b'' and (data[-1] != 10 and data[-2] != 13):
-			data += self.socket.recv(bufsize)
-
-		if data == b'':
-			raise IRCSocketError('Received empty binary data')
-
-		return botologist.util.decode(data)
-
-	def send(self, data):
-		if isinstance(data, str):
-			data = data.encode('utf-8')
-		self.socket.send(data)
-
-	def close(self):
-		self.socket.close()
-
-
-class Connection:
-	MAX_MSG_CHARS = 500
-
-	def __init__(self, nick, username=None, realname=None):
-		self.nick = nick
-		self.username = username or nick
-		self.realname = realname or nick
-		self.irc_socket = None
-		self.server = None
-		self.channels = {}
-		self.on_connect = []
-		self.on_disconnect = []
-		self.on_join = []
-		self.on_privmsg = []
-		self.error_handler = None
-		self.quitting = False
-		self.reconnect_timer = False
-		self.ping_timer = None
-		self.ping_response_timer = None
-
-	def connect(self, server):
-		assert isinstance(server, Server)
 		if self.irc_socket is not None:
 			self.disconnect()
-		self.server = server
 		thread = threading.Thread(target=self._connect)
 		thread.start()
 
@@ -429,7 +230,7 @@ class Connection:
 		log.debug('SENDING: %s', repr(msg))
 		self.irc_socket.send(msg + '\r\n')
 
-	def quit(self, reason='Leaving'):
+	def stop(self, reason='Leaving'):
 		for callback in self.on_disconnect:
 			callback()
 
@@ -478,3 +279,168 @@ class Connection:
 		log.warning('Ping timeout')
 		self.ping_response_timer = None
 		self.reconnect()
+
+
+class User(botologist.protocol.User):
+	def __init__(self, nick, host=None, ident=None):
+		self.nick = nick
+		if host and '@' in host:
+			host = host[host.index('@')+1:]
+		self.host = host
+		if ident and ident[0] == '~':
+			ident = ident[1:]
+		self.ident = ident
+
+	@property
+	def identifier(self):
+		return self.host
+
+	@classmethod
+	def from_ircformat(cls, string):
+		if string[0] == ':':
+			string = string[1:]
+		parts = string.split('!')
+		nick = parts[0]
+		ident, host = parts[1].split('@')
+		return cls(nick, host, ident)
+
+	def __eq__(self, other):
+		if not isinstance(other, self.__class__):
+			return False
+		return other.host == self.host
+
+
+class Message(botologist.protocol.Message):
+	def __init__(self, source, target, message):
+		user = User.from_ircformat(source)
+		super().__init__(message, user, target)
+		self.is_private = self.target[0] != '#'
+
+	@classmethod
+	def from_privmsg(cls, msg):
+		words = msg.split()
+		return cls(words[0][1:], words[2], ' '.join(words[3:])[1:])
+
+
+class Server:
+	def __init__(self, address):
+		parts = address.split(':')
+		self.host = parts[0]
+		if len(parts) > 1:
+			self.port = int(parts[1])
+		else:
+			self.port = 6667
+
+
+class Channel(botologist.protocol.Channel):
+	def __init__(self, name):
+		if name[0] != '#':
+			name = '#' + name
+		super().__init__(name)
+		self.host_map = {}
+		self.nick_map = {}
+		self.allow_colors = True
+
+	def add_user(self, user):
+		assert isinstance(user, User)
+		self.host_map[user.host] = user.nick
+		self.nick_map[user.nick] = user.host
+
+	def find_nick_from_host(self, host):
+		if '@' in host:
+			host = host[host.index('@')+1:]
+		if host in self.host_map:
+			return self.host_map[host]
+		return False
+
+	def find_host_from_nick(self, nick):
+		if nick in self.nick_map:
+			return self.nick_map[nick]
+		return False
+
+	def remove_user(self, nick=None, host=None):
+		assert nick or host
+
+		if host and '@' in host:
+			host = host[host.index('@')+1:]
+
+		if nick is not None and nick in self.nick_map:
+			host = self.nick_map[nick]
+		if host is not None and host in self.host_map:
+			nick = self.host_map[host]
+		if nick is not None and nick in self.nick_map:
+			del self.nick_map[nick]
+		if host is not None and host in self.host_map:
+			del self.host_map[host]
+
+	def update_nick(self, user, new_nick):
+		assert isinstance(user, User)
+
+		old_nick = user.nick
+		if old_nick in self.nick_map:
+			del self.nick_map[old_nick]
+
+		self.nick_map[new_nick] = user.host
+		self.host_map[user.host] = new_nick
+
+
+class IRCSocketError(OSError):
+	pass
+
+
+class IRCSocket:
+	def __init__(self, server):
+		self.server = server
+		self.socket = None
+
+	def connect(self):
+		addrinfo = socket.getaddrinfo(
+			self.server.host, self.server.port,
+			socket.AF_UNSPEC, socket.SOCK_STREAM
+		)
+
+		for res in addrinfo:
+			af, socktype, proto, canonname, sa = res
+
+			try:
+				self.socket = socket.socket(af, socktype, proto)
+			except OSError:
+				self.socket = None
+				continue
+
+			try:
+				self.socket.settimeout(10)
+				self.socket.connect(sa)
+			except OSError:
+				self.socket.close()
+				self.socket = None
+				continue
+
+			# if we reach this point, the socket has been successfully created,
+			# so break out of the loop
+			break
+
+		if self.socket is None:
+			raise IRCSocketError('Could not open socket')
+
+		self.socket.settimeout(None)
+
+	def recv(self, bufsize=4096):
+		data = self.socket.recv(bufsize)
+
+		# 13 = \r -- 10 = \n
+		while data != b'' and (data[-1] != 10 and data[-2] != 13):
+			data += self.socket.recv(bufsize)
+
+		if data == b'':
+			raise IRCSocketError('Received empty binary data')
+
+		return botologist.util.decode(data)
+
+	def send(self, data):
+		if isinstance(data, str):
+			data = data.encode('utf-8')
+		self.socket.send(data)
+
+	def close(self):
+		self.socket.close()
