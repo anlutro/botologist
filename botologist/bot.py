@@ -112,10 +112,10 @@ class Bot:
 	def get_admin_nicks(self):
 		admin_nicks = set()
 		for channel in self.client.channels.values():
-			for admin_host in self.admins:
-				nick = channel.find_nick_from_host(admin_host)
-				if nick:
-					admin_nicks.add(nick)
+			for admin_id in self.admins:
+				user = channel.find_user(identifier=admin_id)
+				if user:
+					admin_nicks.add(user.name)
 		return admin_nicks
 
 	def run_forever(self):
