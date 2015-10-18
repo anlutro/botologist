@@ -55,7 +55,6 @@ class Bot:
 
 		self.config = config
 		self.storage_dir = config['storage_dir']
-
 		self.admins = config.get('admins', [])
 		self.bans = config.get('bans', [])
 		self.global_plugins = config.get('global_plugins', [])
@@ -270,28 +269,25 @@ class Bot:
 			self._maybe_send_cmd_reply(command_func, command)
 
 	def _maybe_send_cmd_reply(self, command_func, message):
-		response = self._call_command(command_func, message)
-		if response:
-			self._send_msg(response, message.target)
-
-	def _call_command(self, command_func, command):
 		# check for spam
 		now = datetime.datetime.now()
-		if command.command in self._command_log and not command.user.is_admin:
-			diff = now - self._command_log[command.command]
-			if self._last_command == (command.user.identifier, command.command, command.args):
+		if message.command in self._command_log and not message.user.is_admin:
+			diff = now - self._command_log[message.command]
+			if self._last_command == (message.user.identifier, message.command, message.args):
 				threshold = self.SPAM_THROTTLE * 3
 			else:
 				threshold = self.SPAM_THROTTLE
 			if diff.seconds < threshold:
-				log.info('Command throttled: %s', command.command)
-				return None
+				log.info('Command throttled: %s', message.command)
+				return
 
 		# log the command call for spam throttling
-		self._last_command = (command.user.identifier, command.command, command.args)
-		self._command_log[command.command] = now
+		self._last_command = (message.user.identifier, message.command, message.args)
+		self._command_log[message.command] = now
 
-		return command_func(command)
+		response = command_func(message)
+		if response:
+			self._send_msg(response, message.target)
 
 	def _call_repliers(self, channel, message):
 		now = datetime.datetime.now()
