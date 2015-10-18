@@ -208,7 +208,8 @@ class Client(botologist.protocol.Client):
 				message = Message.from_privmsg(msg)
 				if not message.is_private:
 					message.channel = self.channels[message.target]
-					if message.user.host not in self.channels[message.target].host_map:
+					user = message.channel.find_user(identifier=message.user.host)
+					if not user:
 						log.debug('Unknown user %s (%s) added to channel %s',
 							message.user.nick, message.user.host, message.target)
 						self.channels[message.target].add_user(message.user)
