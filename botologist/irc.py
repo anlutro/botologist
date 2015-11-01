@@ -335,6 +335,7 @@ class Connection:
 			elif words[1] == 'KICK':
 				user = User.from_ircformat(words[0])
 				kicked_nick = words[3]
+				channel = words[2]
 				self.channels[channel].remove_user(nick=kicked_nick)
 				log.debug('User %s was kicked by %s from channel %s',
 					kicked_nick, user.nick, channel)
