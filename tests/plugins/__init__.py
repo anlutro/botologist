@@ -1,14 +1,14 @@
 import unittest
 import os.path
 
-import botologist.irc as irc
 import botologist.bot as bot
+import botologist.protocol.irc as irc
 
 class PluginTestCase(unittest.TestCase):
 	cfg = {}
 
 	def setUp(self):
-		self.channel = bot.Channel('#test')
+		self.channel = irc.Channel('#test')
 		self.bot = bot.Bot({
 			'storage_dir': '/tmp/botologist',
 			'bot': {

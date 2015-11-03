@@ -61,9 +61,9 @@ class RedditeuPlugin(botologist.plugin.Plugin):
 		channel = self.bot.conn.channels.get(cmd.message.target)
 		if not channel:
 			return
-		for host, nick in channel.host_map.items():
-			if 'nevzetz' in host or 'ip51cc146b.speed.planet.nl' in host:
-				return 'Michael is ' + nick
+		for user in channel.users:
+			if 'nevzetz' in user.identifier or 'ip51cc146b.speed.planet.nl' in user.identifier:
+				return 'Michael is ' + user.name
 		return 'Michael not found!'
 
 	@botologist.plugin.command('time')

@@ -1,3 +1,9 @@
+# which procol to use. this can make a difference for the rest of the config -
+# for example, the "local" protocol doesn't use the "server" value. the rest of
+# the config example will assume you use irc.
+# available protocols: irc, local
+protocol: irc
+
 # set this to null to log to STDOUT instead
 log_path: /var/log/botologist.log
 # available log levels: debug, info, warn, error
@@ -71,4 +77,4 @@ channels:
 #sendmail_args: -t -oi
 
 # openweathermap is used for the !weather command
-# openweathermap_apikey: ...
+#openweathermap_apikey: ...
