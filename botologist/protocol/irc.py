@@ -388,8 +388,7 @@ class IRCSocket:
 				log.debug('Trying to connect to %s:%s', (address))
 				self.socket.connect(address)
 			except OSError:
-				self.socket.close()
-				self.socket = None
+				self.close()
 				continue
 
 			# if we reach this point, the socket has been successfully created,
@@ -419,4 +418,6 @@ class IRCSocket:
 		self.socket.send(data)
 
 	def close(self):
+		self.socket.shutdown(socket.SHUT_RDWR)
 		self.socket.close()
+		self.socket = None
