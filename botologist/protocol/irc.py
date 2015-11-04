@@ -177,11 +177,11 @@ class Client(botologist.protocol.Client):
 				new_nick = words[2][1:]
 				log.debug('User %s changing nick: %s', user.host, new_nick)
 				for channel in self.channels.values():
-					user = channel.find_user(user)
-					if user:
+					channel_uuser = channel.find_user(user)
+					if channel_uuser:
 						log.debug('Updating nick for user in channel %s',
 							channel.name)
-						user.nick = new_nick
+						channel_uuser.nick = new_nick
 
 			elif words[1] == 'PART':
 				user = User.from_ircformat(words[0])
@@ -201,11 +201,11 @@ class Client(botologist.protocol.Client):
 				user = User.from_ircformat(words[0])
 				log.debug('User %s quit', user.host)
 				for channel in self.channels.values():
-					user = channel.find_user(user)
-					if user:
-						channel.remove_user(user)
+					channel_user = channel.find_user(user)
+					if channel_user:
+						channel.remove_user(channel_user)
 						log.debug('Removing user %s from channel %s',
-							user.host, channel.name)
+							channel_user.host, channel.name)
 
 			elif words[1] == 'PRIVMSG':
 				message = Message.from_privmsg(msg)
