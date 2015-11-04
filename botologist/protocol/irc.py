@@ -364,13 +364,15 @@ class IRCSocket:
 		self.socket = None
 
 	def connect(self):
+		log.debug('Looking up address info for %s:%s',
+			self.server.host, self.server.port)
 		addrinfo = socket.getaddrinfo(
 			self.server.host, self.server.port,
 			socket.AF_UNSPEC, socket.SOCK_STREAM
 		)
 
 		for res in addrinfo:
-			af, socktype, proto, canonname, sa = res
+			af, socktype, proto, canonname, address = res
 
 			try:
 				self.socket = socket.socket(af, socktype, proto)
@@ -380,7 +382,8 @@ class IRCSocket:
 
 			try:
 				self.socket.settimeout(10)
-				self.socket.connect(sa)
+				log.debug('Trying to connect to %s:%s', (address))
+				self.socket.connect(address)
 			except OSError:
 				self.socket.close()
 				self.socket = None
