@@ -13,8 +13,10 @@ def get_client(config):
 	nick = config.get('nick', 'botologist')
 
 	if 'servers' in config:
+		assert isinstance(config['servers'], list)
 		servers = (Server(s) for s in config['servers'])
 	else:
+		assert isinstance(config['server'], str)
 		servers = (Server(config['server']))
 	server_pool = ServerPool(servers)
 
