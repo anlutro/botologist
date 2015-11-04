@@ -11,8 +11,15 @@ import botologist.protocol
 
 def get_client(config):
 	nick = config.get('nick', 'botologist')
+
+	if 'servers' in config:
+		servers = (Server(s) for s in config['servers'])
+	else:
+		servers = (Server(config['server']))
+	server_pool = ServerPool(servers)
+
 	return Client(
-		config['server'],
+		server_pool,
 		nick=nick,
 		username=config.get('username', nick),
 		realname=config.get('realname', nick),
@@ -22,9 +29,10 @@ def get_client(config):
 class Client(botologist.protocol.Client):
 	MAX_MSG_CHARS = 500
 
-	def __init__(self, server, nick='__bot__', username=None, realname=None):
+	def __init__(self, server_pool, nick, username=None, realname=None):
 		super().__init__(nick)
-		self.server = Server(server)
+		self.server_pool = server_pool
+		self.server = None
 		self.username = username or nick
 		self.realname = realname or nick
 		self.irc_socket = None
@@ -85,6 +93,7 @@ class Client(botologist.protocol.Client):
 		if self.reconnect_timer:
 			self.reconnect_timer = None
 
+		self.server = self.server_pool.get()
 		log.info('Connecting to %s:%s', self.server.host, self.server.port)
 		self.irc_socket = IRCSocket(self.server)
 		self.irc_socket.connect()
@@ -328,6 +337,26 @@ class Server:
 			self.port = int(parts[1])
 		else:
 			self.port = 6667
+
+
+class ServerPool:
+	def __init__(self, servers=None):
+		self.index = 0
+		self.servers = []
+		if servers:
+			for server in servers:
+				self.add_server(server)
+
+	def add_server(self, server):
+		assert isinstance(server, Server)
+		self.servers.append(server)
+
+	def get(self):
+		server = self.servers[self.idx]
+		self.idx += 1
+		if self.idx >= len(self.servers):
+			self.idx = 0
+		return server
 
 
 class Channel(botologist.protocol.Channel):
