@@ -229,14 +229,13 @@ class Client(botologist.protocol.Client):
 				channel = self.channels.get(words[2])
 				if channel:
 					user = channel.find_user(identifier=host, name=nick)
-				else:
+				if not channel or not user:
 					user = User.from_ircformat(words[0])
 				message = Message.from_privmsg(msg, user)
 				message.channel = channel
 
 				if not message.is_private:
 					message.channel = self.channels[message.target]
-					user = message.channel.find_user(identifier=user.host)
 					if not user:
 						log.debug('Unknown user %s (%s) added to channel %s',
 							user.nick, user.host, message.target)
