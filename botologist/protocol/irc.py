@@ -153,7 +153,7 @@ class Client(botologist.protocol.Client):
 				log.warning('Received error: %s', msg)
 				self.reconnect(10)
 
-		elif words[0] > '400' and words[0] < '600':
+		elif '600' > words[0] > '400':
 			log.warning('Received error reply: %s', msg)
 
 		elif len(words) > 1:
