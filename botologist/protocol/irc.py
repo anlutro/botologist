@@ -62,6 +62,9 @@ class Client(botologist.protocol.Client):
 		thread.start()
 
 	def disconnect(self):
+		for callback in self.on_disconnect:
+			callback()
+
 		log.info('Disconnecting')
 		self.irc_socket.close()
 		self.irc_socket = None
