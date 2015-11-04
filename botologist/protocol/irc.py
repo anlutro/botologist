@@ -158,7 +158,7 @@ class Client(botologist.protocol.Client):
 
 		elif len(words) > 1:
 			try:
-				_, nick, host = User.split_ircformat(words[0])
+				nick, host, _ = User.split_ircformat(words[0])
 			except:
 				nick = host = None
 
