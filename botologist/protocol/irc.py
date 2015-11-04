@@ -177,11 +177,11 @@ class Client(botologist.protocol.Client):
 				new_nick = words[2][1:]
 				log.debug('User %s changing nick: %s', user.host, new_nick)
 				for channel in self.channels.values():
-					channel_uuser = channel.find_user(user)
-					if channel_uuser:
+					channel_user = channel.find_user(user)
+					if channel_user:
 						log.debug('Updating nick for user in channel %s',
 							channel.name)
-						channel_uuser.nick = new_nick
+						channel_user.nick = new_nick
 
 			elif words[1] == 'PART':
 				user = User.from_ircformat(words[0])
