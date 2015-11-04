@@ -10,10 +10,14 @@ class DefaultPlugin(botologist.plugin.Plugin):
 		super().__init__(bot, channel)
 
 		self.insults = (
-			(re.compile(r'.*fuck(\s+you)\s*,?\s*'+self.bot.nick+'.*', re.IGNORECASE),
+			(re.compile(r'.*fuck(\s+you)\s*,?\s*'+self.bot.nick+r'.*', re.IGNORECASE),
 			'fuck you too {nick}'),
 			(re.compile(r'.*'+self.bot.nick+r'[,:]?\s+fuck\s+you.*', re.IGNORECASE),
 			'fuck you too {nick}'),
+			(re.compile(r'.*shut\s*up\s*,?\s*'+self.bot.nick+r'.*', re.IGNORECASE),
+			'no, you shut up {nick}'),
+			(re.compile(r'.*'+self.bot.nick+r'[,:]?\s+shut\s+up.*', re.IGNORECASE),
+			'no, you shut up {nick}'),
 		)
 
 	@botologist.plugin.command('plugins', alias=['listplugins'])

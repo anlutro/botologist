@@ -27,6 +27,15 @@ class DefaultPluginTest(PluginTestCase):
 		self.assertEqual(expected, self.reply('botologist: fuck you'))
 		self.assertEqual(expected, self.reply('botologist: fuck you!'))
 
+		expected = 'no, you shut up test'
+		self.assertEqual(expected, self.reply('shut up botologist'))
+		self.assertEqual(expected, self.reply('shut up, botologist'))
+		self.assertEqual(expected, self.reply('shut up, botologist!'))
+		self.assertEqual(expected, self.reply('botologist shut up'))
+		self.assertEqual(expected, self.reply('botologist, shut up'))
+		self.assertEqual(expected, self.reply('botologist: shut up'))
+		self.assertEqual(expected, self.reply('botologist: shut up!'))
+
 	def test_works(self):
 		expected = 'I always work'
 		self.assertEqual(expected, self.reply('bot no work'))
