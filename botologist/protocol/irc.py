@@ -144,6 +144,7 @@ class Client(botologist.protocol.Client):
 		if words[0] == 'PING':
 			self.reset_ping_timer()
 			self.send('PONG ' + words[1])
+
 		elif words[0] == 'ERROR':
 			if ':Your host is trying to (re)connect too fast -- throttled' in msg:
 				log.warning('Throttled for (re)connecting too fast')
@@ -151,11 +152,18 @@ class Client(botologist.protocol.Client):
 			else:
 				log.warning('Received error: %s', msg)
 				self.reconnect(10)
+
 		elif words[0] > '400' and words[0] < '600':
 			log.warning('Received error reply: %s', msg)
+
 		elif len(words) > 1:
+			try:
+				_, nick, host = User.split_ircformat(words[0])
+			except:
+				nick = host = None
+
+			# welcome message, lets us know that we're connected
 			if words[1] == '001':
-				# welcome message, lets us know that we're connected
 				for callback in self.on_connect:
 					callback()
 
@@ -163,8 +171,8 @@ class Client(botologist.protocol.Client):
 				self.reset_ping_timer()
 
 			elif words[1] == 'JOIN':
-				user = User.from_ircformat(words[0])
 				channel = words[2]
+				user = User.from_ircformat(words[0])
 				log.debug('User %s (%s @ %s) joined channel %s',
 					user.nick, user.ident, user.host, channel)
 				if user.nick == self.nick:
@@ -176,50 +184,56 @@ class Client(botologist.protocol.Client):
 
 			# response to WHO command
 			elif words[1] == '352':
-				channel = words[3]
-				ident = words[4]
+				channel = self.channels[words[3]]
 				host = words[5]
 				nick = words[7]
-				user = User(nick, host, ident)
-				self.channels[channel].add_user(user)
+				if not channel.find_user(identifier=host, name=nick):
+					ident = words[4]
+					user = User(nick, host, ident)
+					channel.add_user(user)
 
 			elif words[1] == 'NICK':
-				user = User.from_ircformat(words[0])
 				new_nick = words[2][1:]
-				log.debug('User %s changing nick: %s', user.host, new_nick)
+				log.debug('User %s changing nick: %s', host, new_nick)
 				for channel in self.channels.values():
-					channel_user = channel.find_user(user)
+					channel_user = channel.find_user(identifier=host)
 					if channel_user:
 						log.debug('Updating nick for user in channel %s',
 							channel.name)
 						channel_user.name = new_nick
 
 			elif words[1] == 'PART':
-				user = User.from_ircformat(words[0])
 				channel = words[2]
+				user = channel.find_user(identifier=host, name=nick)
 				self.channels[channel].remove_user(user)
 				log.debug('User %s parted from channel %s', user.host, channel)
 
 			elif words[1] == 'KICK':
-				user = User.from_ircformat(words[0])
-				kicked_nick = words[3]
 				channel = words[2]
+				user = channel.find_user(identifier=host, name=nick)
+				kicked_nick = words[3]
 				self.channels[channel].remove_user(nick=kicked_nick)
 				log.debug('User %s was kicked by %s from channel %s',
 					kicked_nick, user.nick, channel)
 
 			elif words[1] == 'QUIT':
-				user = User.from_ircformat(words[0])
 				log.debug('User %s quit', user.host)
 				for channel in self.channels.values():
-					channel_user = channel.find_user(user)
+					channel_user = channel.find_user(identifier=host, name=nick)
 					if channel_user:
 						channel.remove_user(channel_user)
 						log.debug('Removing user %s from channel %s',
 							channel_user.host, channel.name)
 
 			elif words[1] == 'PRIVMSG':
-				message = Message.from_privmsg(msg)
+				channel = self.channels.get(words[2])
+				if channel:
+					user = channel.find_user(identifier=host, name=nick)
+				else:
+					user = User.from_ircformat(words[0])
+				message = Message.from_privmsg(msg, user)
+				message.channel = channel
+
 				if not message.is_private:
 					message.channel = self.channels[message.target]
 					user = message.channel.find_user(identifier=message.user.host)
@@ -309,26 +323,32 @@ class User(botologist.protocol.User):
 		self.ident = ident
 		super().__init__(nick, host)
 
-	@classmethod
-	def from_ircformat(cls, string):
+	@staticmethod
+	def split_ircformat(string):
 		if string[0] == ':':
 			string = string[1:]
 		parts = string.split('!')
 		nick = parts[0]
 		ident, host = parts[1].split('@')
+		return (nick, host, ident)
+
+	@classmethod
+	def from_ircformat(cls, string):
+		nick, host, ident = cls.split_ircformat(string)
 		return cls(nick, host, ident)
 
 
 class Message(botologist.protocol.Message):
-	def __init__(self, source, target, message):
-		user = User.from_ircformat(source)
+	def __init__(self, user, target, message):
+		if not isinstance(user, User):
+			user = User.from_ircformat(user)
 		super().__init__(message, user, target)
 		self.is_private = self.target[0] != '#'
 
 	@classmethod
-	def from_privmsg(cls, msg):
+	def from_privmsg(cls, msg, user=None):
 		words = msg.split()
-		return cls(words[0][1:], words[2], ' '.join(words[3:])[1:])
+		return cls(user or words[0][1:], words[2], ' '.join(words[3:])[1:])
 
 
 class Server:
@@ -449,6 +469,11 @@ class IRCSocket:
 		self.socket.send(data)
 
 	def close(self):
-		self.socket.shutdown(socket.SHUT_RDWR)
+		try:
+			self.socket.shutdown(socket.SHUT_RDWR)
+		except OSError:
+			# shutdown will fail if the socket has already been closed by the
+			# server, which will happen if we get throttled for example
+			pass
 		self.socket.close()
 		self.socket = None
