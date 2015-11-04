@@ -217,7 +217,7 @@ class Client(botologist.protocol.Client):
 					kicked_nick, user.nick, channel)
 
 			elif words[1] == 'QUIT':
-				log.debug('User %s quit', user.host)
+				log.debug('User %s quit', host)
 				for channel in self.channels.values():
 					channel_user = channel.find_user(identifier=host, name=nick)
 					if channel_user:
