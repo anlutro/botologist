@@ -354,10 +354,10 @@ class ServerPool:
 		self.servers.append(server)
 
 	def get(self):
-		server = self.servers[self.idx]
-		self.idx += 1
-		if self.idx >= len(self.servers):
-			self.idx = 0
+		server = self.servers[self.index]
+		self.index += 1
+		if self.index >= len(self.servers):
+			self.index = 0
 		return server
 
 
