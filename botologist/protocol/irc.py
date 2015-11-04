@@ -385,7 +385,7 @@ class IRCSocket:
 
 			try:
 				self.socket.settimeout(10)
-				log.debug('Trying to connect to %s:%s', (address))
+				log.debug('Trying to connect to %s:%s', address[0], address[1])
 				self.socket.connect(address)
 			except OSError:
 				self.close()
