@@ -21,4 +21,4 @@ class PcdbPlugin(botologist.plugin.Plugin):
 
 	@botologist.plugin.command('pcdb', alias='random')
 	def get_pcdb_random(self, cmd):
-		return PCDB.get_random()
+		return PCDB.get_random().replace('\n', ' ')
