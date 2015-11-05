@@ -4,6 +4,8 @@ import botologist.plugin
 
 
 class PCDB:
+	comments = []
+
 	@classmethod
 	def get_random(cls):
 		if not cls.comments:
@@ -12,7 +14,6 @@ class PCDB:
 				headers={'accept': 'application/json'})
 			cls.comments = [c['body'] for c in response.json()['comments']]
 		return cls.comments.pop()
-PCDB.comments = []
 
 
 class PcdbPlugin(botologist.plugin.Plugin):
