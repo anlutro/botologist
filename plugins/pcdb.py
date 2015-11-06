@@ -9,7 +9,6 @@ class PCDB:
 	@classmethod
 	def get_random(cls):
 		if not cls.comments:
-			print('requesting')
 			response = requests.get('http://pcdb.lutro.me',
 				headers={'accept': 'application/json'})
 			cls.comments = [c['body'] for c in response.json()['comments']]
