@@ -203,16 +203,16 @@ class Client(botologist.protocol.Client):
 						channel_user.name = new_nick
 
 			elif words[1] == 'PART':
-				channel = words[2]
+				channel = self.channels[words[2]]
 				user = channel.find_user(identifier=host, name=nick)
-				self.channels[channel].remove_user(user)
+				channel.remove_user(user)
 				log.debug('User %s parted from channel %s', user.host, channel)
 
 			elif words[1] == 'KICK':
-				channel = words[2]
+				channel = self.channels[words[2]]
 				user = channel.find_user(identifier=host, name=nick)
 				kicked_nick = words[3]
-				self.channels[channel].remove_user(nick=kicked_nick)
+				channel.remove_user(nick=kicked_nick)
 				log.debug('User %s was kicked by %s from channel %s',
 					kicked_nick, user.nick, channel)
 
