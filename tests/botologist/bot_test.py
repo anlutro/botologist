@@ -43,17 +43,18 @@ class BotTest(unittest.TestCase):
 		bot = self.make_bot()
 		bot.admins = ['baz']
 		bot.client.channels['#chan'] = channel
-		bot._send_msg = mock.MagicMock()
-
-		bot._handle_privmsg(irc.Message('foo!bar@baz', '#chan', '!b'))
-		bot._send_msg.assert_not_called()
-		bot._handle_privmsg(irc.Message('foo!bar@baz', '#chan', '!a'))
-		bot._send_msg.assert_called_with('test: !asdf', '#chan')
-		bot._handle_privmsg(irc.Message('foo!bar@baz', '#chan', '!as'))
-		bot._send_msg.assert_called_with('test: !asdf', '#chan')
-		bot._handle_privmsg(irc.Message('foo!bar@baz', '#chan', '!asd'))
-		bot._send_msg.assert_called_with('test: !asdf', '#chan')
-		bot._handle_privmsg(irc.Message('foo!bar@baz', '#chan', '!asdf'))
-		bot._send_msg.assert_called_with('test: !asdf', '#chan')
-		bot._handle_privmsg(irc.Message('foo!bar@baz', '#chan', '!asdfg'))
-		bot._send_msg.assert_not_called()
+		def assert_reply(input, output):
+			bot._send_msg = mock.MagicMock()
+			bot._handle_privmsg(irc.Message('foo!bar@baz', '#chan', input))
+			if output:
+				bot._send_msg.assert_called_with(output, '#chan')
+			else:
+				bot._send_msg.assert_not_called()
+			bot._send_msg.close()
+		assert_reply('!b', None)
+		assert_reply('!a', 'test: !asdf')
+		assert_reply('!as', 'test: !asdf')
+		assert_reply('!asd', 'test: !asdf')
+		assert_reply('!asdf', 'test: !asdf')
+		assert_reply('!asdfg', None)
+		assert_reply('!asdg', None)
