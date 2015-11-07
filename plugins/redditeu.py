@@ -91,3 +91,14 @@ class RedditeuPlugin(botologist.plugin.Plugin):
 	def garner_masturbation_video(self, msg):
 		if 'garner masturbation video' in msg.message.lower():
 			return 'https://www.youtube.com/watch?v=akTE1n-U0C0'
+
+	@botologist.plugin.reply()
+	def deridu(self, msg):
+		msgl = msg.message.lower()
+		if msgl == 'deridu':
+			return 'what the fuck is that'
+		elif msgl == 'what the fuck is that':
+			return 'watch yo profamity'
+		elif msgl == 'watch your profanity' or msgl == 'watch your profamity' \
+				or msgl == 'watch yo profamity' or msgl == 'watchoprofamity':
+			return 'right I\'m sorry'
