@@ -1,6 +1,7 @@
 import logging
 log = logging.getLogger(__name__)
 
+import json
 import requests
 import requests.exceptions
 import botologist.plugin
