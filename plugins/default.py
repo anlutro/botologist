@@ -7,20 +7,6 @@ import botologist.plugin
 
 
 class DefaultPlugin(botologist.plugin.Plugin):
-	def __init__(self, bot, channel):
-		super().__init__(bot, channel)
-
-		self.insults = (
-			(re.compile(r'.*fuck(\s+you)\s*,?\s*'+self.bot.nick+r'.*', re.IGNORECASE),
-			'fuck you too {nick}'),
-			(re.compile(r'.*'+self.bot.nick+r'[,:]?\s+fuck\s+you.*', re.IGNORECASE),
-			'fuck you too {nick}'),
-			(re.compile(r'.*shut\s*up\s*,?\s*'+self.bot.nick+r'.*', re.IGNORECASE),
-			'no, you shut up {nick}'),
-			(re.compile(r'.*'+self.bot.nick+r'[,:]?\s+shut\s+up.*', re.IGNORECASE),
-			'no, you shut up {nick}'),
-		)
-
 	@botologist.plugin.command('plugins', alias=['listplugins'])
 	def show_plugins(self, msg):
 		return ', '.join(self.channel.plugins)
@@ -59,19 +45,6 @@ class DefaultPlugin(botologist.plugin.Plugin):
 	def tableflip(self, msg):
 		if '(╯°□°)╯︵ ┻━┻' in msg.message:
 			return '┬─┬ ノ( ゜-゜ノ)'
-
-	@botologist.plugin.reply()
-	def return_insults(self, msg):
-		for expr, reply in self.insults:
-			if expr.match(msg.message):
-				return reply.format(nick=msg.user.nick)
-
-	no_work = re.compile(r".*(__)?bot(__)?\s+(no|not|does ?n.?t)\s+work.*", re.IGNORECASE)
-
-	@botologist.plugin.reply()
-	def bot_always_works(self, msg):
-		if self.no_work.match(msg.message):
-			return 'I always work'
 
 	@botologist.plugin.command('coinflip')
 	def coinflip(self, cmd):

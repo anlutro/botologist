@@ -2,6 +2,7 @@ import logging
 log = logging.getLogger(__name__)
 
 import random
+import re
 
 import botologist.plugin
 
@@ -51,6 +52,31 @@ def get_random_time():
 
 class RedditeuPlugin(botologist.plugin.Plugin):
 	"""#redditeu plugin."""
+
+	def __init__(self, bot, channel):
+		super().__init__(bot, channel)
+
+		self.insults = (
+			re.compile(r'.*fuck(\s+you)\s*,?\s*'+self.bot.nick+r'.*', re.IGNORECASE),
+			re.compile(r'.*'+self.bot.nick+r'[,:]?\s+fuck\s+you.*', re.IGNORECASE),
+			re.compile(r'.*shut\s*up\s*,?\s*'+self.bot.nick+r'.*', re.IGNORECASE),
+			re.compile(r'.*'+self.bot.nick+r'[,:]?\s+shut\s+up.*', re.IGNORECASE),
+		)
+
+	@botologist.plugin.reply()
+	def return_insults(self, msg):
+		for expr in self.insults:
+			if expr.match(msg.message):
+				return ('{}: I feel offended by your recent action(s). Please '
+					'read http://stop-irc-bullying.eu/stop').format(msg.user.nick)
+
+	no_work = re.compile(r".*(__)?bot(__)?\s+(no|not|does ?n.?t)\s+work.*", re.IGNORECASE)
+
+	@botologist.plugin.reply()
+	def bot_always_works(self, msg):
+		if self.no_work.match(msg.message):
+			return 'I always work'
+
 	@botologist.plugin.command('btc')
 	def get_btc_worth(self, cmd):
 		return '1 bitcoin is currently worth ' + Bitcoin.get_worth()

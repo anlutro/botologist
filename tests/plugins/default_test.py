@@ -19,30 +19,6 @@ class DefaultPluginTest(PluginTestCase):
 		}})
 		self.assertEqual('Mumble (http://mumble.info) - address: localhost - port: 1234', self.cmd('mumble'))
 
-	def test_insults(self):
-		expected = 'fuck you too test'
-		self.assertEqual(expected, self.reply('fuck you botologist'))
-		self.assertEqual(expected, self.reply('fuck you, botologist'))
-		self.assertEqual(expected, self.reply('fuck you, botologist!'))
-		self.assertEqual(expected, self.reply('botologist fuck you'))
-		self.assertEqual(expected, self.reply('botologist, fuck you'))
-		self.assertEqual(expected, self.reply('botologist: fuck you'))
-		self.assertEqual(expected, self.reply('botologist: fuck you!'))
-
-		expected = 'no, you shut up test'
-		self.assertEqual(expected, self.reply('shut up botologist'))
-		self.assertEqual(expected, self.reply('shut up, botologist'))
-		self.assertEqual(expected, self.reply('shut up, botologist!'))
-		self.assertEqual(expected, self.reply('botologist shut up'))
-		self.assertEqual(expected, self.reply('botologist, shut up'))
-		self.assertEqual(expected, self.reply('botologist: shut up'))
-		self.assertEqual(expected, self.reply('botologist: shut up!'))
-
-	def test_works(self):
-		expected = 'I always work'
-		self.assertEqual(expected, self.reply('bot no work'))
-		self.assertEqual(expected, self.reply('__bot__ no work'))
-
 	def test_roll(self):
 		usage_msg = 'Usage: \x02!roll 6\x0F or \x02!roll 2d10'
 		self.assertEqual(usage_msg, self.cmd('roll'))
