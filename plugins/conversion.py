@@ -3,11 +3,10 @@ log = logging.getLogger(__name__)
 
 import collections
 import datetime
-import json
 import re
-import urllib.error
+import requests
+import requests.exceptions
 
-import botologist.http
 import botologist.plugin
 
 
@@ -28,23 +27,17 @@ def format_number(number):
 	return f_number
 
 
-def get_duckduckgo_data(url):
-	response = botologist.http.get(url)
-	content = response.read().decode()
-	return json.loads(content)
+def get_duckduckgo_data(url, query_params):
+	return requests.get(url, query_params).json()
 
 
 def get_conversion_result(*args):
 	query = ' '.join([str(arg) for arg in args])
-	params = collections.OrderedDict([
-		('q', query), ('format', 'json'), ('no_html', 1)
-	])
-	qs = urllib.parse.urlencode(params)
-	url = 'http://api.duckduckgo.com/?' + qs.lower()
+	query_params = {'q': query.lower(), 'format': 'json', 'no_html': 1}
 
 	try:
-		data = get_duckduckgo_data(url)
-	except urllib.error.URLError:
+		data = get_duckduckgo_data('http://api.duckduckgo.com', query_params)
+	except requests.exceptions.RequestException:
 		log.warning('DuckDuckGo request failed', exc_info=True)
 		return False
 
@@ -52,16 +45,16 @@ def get_conversion_result(*args):
 		return data['Answer']
 
 
+_rate_expr = re.compile(r'<Cube currency=["\']([A-Za-z]{3})["\'] rate=["\']([\d.]+)["\']/>')
 def get_currency_data():
 	url = 'http://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml'
 	try:
-		response = botologist.http.get(url)
-		content = response.read().decode()
-	except urllib.error.URLError:
+		response = requests.get(url)
+	except requests.exceptions.RequestException:
 		log.warning('ECB exchange data request failed', exc_info=True)
 		return {}
 
-	matches = re.findall(r'<Cube currency=["\']([A-Za-z]{3})["\'] rate=["\']([\d.]+)["\']/>', content)
+	matches = _rate_expr.findall(response.text)
 	currency_data = {}
 	for currency, exchange_rate in matches:
 		currency_data[currency.upper()] = float(exchange_rate)

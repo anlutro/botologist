@@ -1,18 +1,14 @@
 import logging
 log = logging.getLogger(__name__)
 
-import json
-import urllib.error
+import requests
+import requests.exceptions
 
-import botologist.http
 import botologist.plugin
 
 
-def get_owm_json(*args, **kwargs):
-	response = botologist.http.get(*args, **kwargs)
-	contents = response.read().decode('utf-8')
-	response.close()
-	return contents
+def get_owm_data(url, query_params):
+	return requests.get(url, query_params).json()
 
 
 class WeatherPlugin(botologist.plugin.Plugin):
@@ -34,12 +30,11 @@ class WeatherPlugin(botologist.plugin.Plugin):
 		query_params = {'q': city, 'units': 'metric', 'APPID': self.api_key}
 
 		try:
-			response = get_owm_json(url, query_params=query_params)
-		except urllib.error.URLError:
+			data = get_owm_data(url, query_params=query_params)
+		except requests.exceptions.RequestException:
 			log.warning('OpenWeatherMap request caused an exception', exc_info=True)
 			return 'An HTTP error occured, try again later!'
 
-		data = json.loads(response)
 		status = int(data['cod'])
 
 		if status == 404:

@@ -1,19 +1,16 @@
 import logging
 log = logging.getLogger(__name__)
 
-import json
-import urllib.error
+import requests
+import requests.exceptions
 
-import botologist.http
 import botologist.plugin
 
 
 def _get_qlr_data(nick):
 	url = 'http://www.qlranks.com/api.aspx'
-	response = botologist.http.get(url, query_params={'nick': nick}, timeout=4)
-	data = response.read().decode()
-	response.close()
-	return json.loads(data)['players'][0]
+	response = requests.get(url, {'nick': nick}, timeout=4)
+	return response.json()['players'][0]
 
 
 def _get_qlr_elo(nick, modes=None):
@@ -27,7 +24,7 @@ def _get_qlr_elo(nick, modes=None):
 
 	try:
 		data = _get_qlr_data(nick)
-	except urllib.error.URLError:
+	except requests.exceptions.RequestException:
 		log.warning('QLRanks request caused an exception', exc_info=True)
 		return 'HTTP error, try again!'
 

@@ -1,3 +1,4 @@
+import json
 import os.path
 import unittest.mock as mock
 
@@ -5,7 +6,7 @@ from tests.plugins import PluginTestCase
 import plugins.weather
 
 
-f = 'plugins.weather.get_owm_json'
+f = 'plugins.weather.get_owm_data'
 
 
 def get_json(state):
@@ -14,7 +15,7 @@ def get_json(state):
 		'files', 'openweathermap_'+state+'.json'
 	)
 	with open(path, 'r') as f:
-		return f.read()
+		return json.load(f)
 
 
 class WeatherPluginTest(PluginTestCase):
