@@ -4,20 +4,6 @@ log = logging.getLogger(__name__)
 import botologist.plugin
 
 
-class Protocol:
-	def new_client(self, config):
-		raise NotImplementedError('method new_client must be defined')
-
-	def new_user(self, *args, **kwargs):
-		raise NotImplementedError('method new_user must be defined')
-
-	def new_channel(self, *args, **kwargs):
-		raise NotImplementedError('method new_channel must be defined')
-
-	def new_message(self, *args, **kwargs):
-		raise NotImplementedError('method new_channel must be defined')
-
-
 class Client:
 	def __init__(self, name):
 		self.name = name
