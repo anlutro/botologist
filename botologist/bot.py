@@ -58,6 +58,7 @@ class Bot:
 		self.admins = config.get('admins', [])
 		self.bans = config.get('bans', [])
 		self.global_plugins = config.get('global_plugins', [])
+		self.started = None
 
 		self.plugins = {}
 		self._command_log = {}
@@ -126,6 +127,7 @@ class Bot:
 				args=(self, self.http_host, self.http_port),
 				error_handler=self.error_handler.handle_error)
 			thread.start()
+		self.started = datetime.datetime.now()
 		self.client.run_forever()
 
 	def register_plugin(self, name, plugin):

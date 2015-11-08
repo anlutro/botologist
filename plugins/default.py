@@ -1,3 +1,4 @@
+import datetime
 import inspect
 import random
 import re
@@ -119,3 +120,12 @@ class DefaultPlugin(botologist.plugin.Plugin):
 	def version(self, msg):
 		'''Show the version of the bot.'''
 		return self.bot.version
+
+	@botologist.plugin.command('uptime')
+	def uptime(self, msg):
+		'''Show the uptime of the bot.'''
+		now = datetime.datetime.now()
+		diff = now - self.bot.started
+		hours, remainder = divmod(diff.seconds, 3600)
+		minutes, seconds = divmod(remainder, 60)
+		return '{}h {}m {}s'.format(hours, minutes, seconds)

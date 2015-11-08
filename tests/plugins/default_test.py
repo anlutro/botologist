@@ -1,3 +1,5 @@
+import datetime
+import re
 from tests.plugins import PluginTestCase
 
 class DefaultPluginTest(PluginTestCase):
@@ -53,3 +55,7 @@ class DefaultPluginTest(PluginTestCase):
 		self.assertEqual('Maximum 10d20!', self.cmd('roll 10d21'))
 		self.assertEqual('Cannot roll less than 1 die!', self.cmd('roll 0d9'))
 		self.assertEqual('Cannot roll die with less than 2 sides!', self.cmd('roll 1d1'))
+
+	def test_uptime(self):
+		self.bot.started = datetime.datetime(2015, 1, 1, 12, 0, 0)
+		self.assertTrue(re.match(r'\d{1,2}h \d{1,2}m \d{1,2}s', self.cmd('uptime')))
