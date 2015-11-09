@@ -122,8 +122,8 @@ class RedditeuPlugin(botologist.plugin.Plugin):
 	def deridu(self, msg):
 		msgl = msg.message.lower()
 		if msgl == 'deridu':
-			return 'what the fuck is that'
-		elif msgl == 'what the fuck is that':
+			return 'what the fuck is this'
+		elif msgl == 'what the fuck is this':
 			return 'watch yo profamity'
 		elif msgl == 'watch your profanity' or msgl == 'watch your profamity' \
 				or msgl == 'watch yo profamity' or msgl == 'watchoprofamity':
