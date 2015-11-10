@@ -62,6 +62,7 @@ def get_currency_data():
 
 	return currency_data
 
+
 class Currency:
 	last_fetch = None
 	currency_data = None
@@ -119,8 +120,9 @@ class Currency:
 
 class ConversionPlugin(botologist.plugin.Plugin):
 	amount_pattern = r'((?:[\d][\d,. ]*?|[\.][\d]*?)[km]??)'
-	unit_pattern = r'((?:(?:square|cubic) )?[a-z.]+)'
-	pattern = re.compile(amount_pattern + r' ?' + unit_pattern + r' (into|in|to) ' + unit_pattern, re.I)
+	unit_pattern = r'((?:(?:square|cubic) )?[a-z.,]+)'
+	pattern = re.compile(amount_pattern + r' ?' + unit_pattern + \
+		r' (into|in|to) ' + unit_pattern, re.I)
 
 	@botologist.plugin.reply()
 	def convert(self, msg):
@@ -148,12 +150,26 @@ class ConversionPlugin(botologist.plugin.Plugin):
 		if real_amount % 1 == 0.0:
 			real_amount = int(real_amount)
 
-		result = Currency.convert(real_amount, conv_from, conv_to)
-		if result:
-			format_amount = format_number(real_amount)
-			format_result = format_number(result)
-			return '{} {} = {} {}'.format(format_amount, conv_from, format_result, conv_to)
+		if ',' in conv_to:
+			retvals = []
+			for conv_to in conv_to.split(','):
+				result = Currency.convert(real_amount, conv_from, conv_to)
+				if result:
+					format_result = format_number(result)
+					retvals.append('{} {}'.format(format_result, conv_to))
+			if retvals:
+				format_amount = format_number(real_amount)
+				return '{} {} = {}'.format(format_amount, conv_from,
+					', '.join(retvals))
+		else:
+			result = Currency.convert(real_amount, conv_from, conv_to)
+			if result:
+				format_amount = format_number(real_amount)
+				format_result = format_number(result)
+				return '{} {} = {} {}'.format(format_amount,
+					conv_from, format_result, conv_to)
 
-		result = get_conversion_result(real_amount, conv_from, match.group(3), conv_to)
+		result = get_conversion_result(real_amount,
+			conv_from, match.group(3), conv_to)
 		if result:
 			return result

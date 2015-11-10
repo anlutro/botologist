@@ -26,6 +26,8 @@ class ConversionPluginTest(PluginTestCase):
 		self.assertEqual('TEST', self.reply('10 cny into eur'))
 		self.assertEqual('TEST', self.reply('10 eur into cny'))
 		self.assertEqual('TEST', self.reply('10 usd into cny'))
+		self.assertEqual('10 eur = 80 nok, 60 dkk', self.reply('10 eur into nok,dkk'))
+		self.assertEqual('10 eur = 80 nok, 60 dkk', self.reply('10 eur into nok,dkk,cny'))
 
 	def check_convert_reply(self, message, expected_qs, response='DEFAULT'):
 		if response == 'DEFAULT':
