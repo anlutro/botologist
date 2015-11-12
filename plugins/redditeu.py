@@ -42,12 +42,23 @@ def get_random_time():
 		random.randint(-23, -1),
 		random.randint(13, 32),
 	))
-
 	minute = random.randint(0, 99)
-
 	ampm = random.choice(('AM', 'PM'))
 
 	return '{}:{} {}'.format(hour, str(minute).zfill(2), ampm)
+
+
+def get_random_date():
+	year = random.randint(1000,9999)
+	month = random.randint(0, 12)
+	day = random.randint(0, 31)
+
+	args = [str(day).zfill(2), str(month).zfill(2), str(year)]
+	random.shuffle(args)
+
+	separator = random.choice(('-', '/', '.'))
+
+	return separator.join(args)
 
 
 class RedditeuPlugin(botologist.plugin.Plugin):
@@ -95,7 +106,8 @@ class RedditeuPlugin(botologist.plugin.Plugin):
 	@botologist.plugin.command('time')
 	def the_time(self, cmd):
 		'''If you need to know what the time really is. For really reals.'''
-		return 'the time is ' + get_random_time()
+		return 'the time is {} - the date is {}'.format(
+			get_random_time(), get_random_date())
 
 	@botologist.plugin.command('speedtest')
 	def speedtest(self, cmd):
