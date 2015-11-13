@@ -28,6 +28,14 @@ def get_client(config):
 	)
 
 
+def _find_user(channel, host, nick):
+	if channel:
+		user = channel.find_user(identifier=host, name=nick)
+		if user:
+			return user
+	return User(nick, host)
+
+
 class Client(botologist.protocol.Client):
 	MAX_MSG_CHARS = 500
 
@@ -205,13 +213,13 @@ class Client(botologist.protocol.Client):
 
 			elif words[1] == 'PART':
 				channel = self.channels[words[2]]
-				user = self._find_user(channel, host, nick)
+				user = _find_user(channel, host, nick)
 				channel.remove_user(user)
 				log.debug('User %s parted from channel %s', user.host, channel)
 
 			elif words[1] == 'KICK':
 				channel = self.channels[words[2]]
-				user = self._find_user(channel, host, nick)
+				user = _find_user(channel, host, nick)
 				kicked_nick = words[3]
 				channel.remove_user(nick=kicked_nick)
 				log.debug('User %s was kicked by %s from channel %s',
@@ -231,7 +239,7 @@ class Client(botologist.protocol.Client):
 
 			elif words[1] == 'PRIVMSG':
 				channel = self.channels.get(words[2])
-				user = self._find_user(channel, host, nick)
+				user = _find_user(channel, host, nick)
 				message = Message.from_privmsg(msg, user)
 				message.channel = channel
 
@@ -243,13 +251,6 @@ class Client(botologist.protocol.Client):
 						self.channels[message.target].add_user(user)
 				for callback in self.on_privmsg:
 					callback(message)
-
-	def _find_user(channel, host, nick):
-		if channel:
-			user = channel.find_user(identifier=host, name=nick)
-			if user:
-				return user
-		return User(nick, host)
 
 	def send_msg(self, target, message):
 		if target in self.channels:
