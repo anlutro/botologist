@@ -134,6 +134,7 @@ class Client(botologist.protocol.Client):
 						raise
 
 	def join_channel(self, channel):
+		assert isinstance(channel, Channel)
 		log.info('Joining channel: %s', channel.name)
 		self.channels[channel.name] = channel
 		self.send('JOIN ' + channel.name)
@@ -214,7 +215,10 @@ class Client(botologist.protocol.Client):
 				kicked_nick = words[3]
 				channel.remove_user(nick=kicked_nick)
 				log.debug('User %s was kicked by %s from channel %s',
-					kicked_nick, user.nick, channel)
+					kicked_nick, user.nick, channel.channel)
+				if kicked_nick == self.nick:
+					self.join_channel(channel)
+
 
 			elif words[1] == 'QUIT':
 				log.debug('User %s quit', host)
