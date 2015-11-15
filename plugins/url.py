@@ -25,8 +25,10 @@ def find_shortened_urls(message):
 
 
 def get_location(url):
-	return requests.head(url).url
-
+	response = requests.head(url)
+	if response.status_code != 301 and response.status_code != 302:
+		return response.url
+	return response.headers['location']
 
 def unshorten_url(url):
 	try:
