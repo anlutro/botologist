@@ -18,7 +18,7 @@ class PCDB:
 class PcdbPlugin(botologist.plugin.Plugin):
 	"""porn comments database plugin."""
 
-	@botologist.plugin.command('pcdb', alias='random')
+	@botologist.plugin.command('pcdb', alias=['random', 'r'])
 	def get_pcdb_random(self, cmd):
 		comment = PCDB.get_random()
 		retval = comment['body'].replace('\n', ' ')
