@@ -10,7 +10,9 @@ class PCDB:
 	def search(search_for):
 		response = requests.get('http://pcdb.lutro.me',
 			{'search': search_for}, headers={'accept': 'application/json'})
-		return response.json()['comments'].pop()
+		comments = response.json()['comments']
+		if comments:
+			return comments[0]
 
 	@classmethod
 	def get_random(cls):
