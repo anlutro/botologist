@@ -6,6 +6,12 @@ import botologist.plugin
 class PCDB:
 	comments = []
 
+	@staticmethod
+	def search(search_for):
+		response = requests.get('http://pcdb.lutro.me',
+			{'search': search_for}, headers={'accept': 'application/json'})
+		return response.json()['comments'].pop()
+
 	@classmethod
 	def get_random(cls):
 		if not cls.comments:
@@ -20,13 +26,24 @@ class PcdbPlugin(botologist.plugin.Plugin):
 
 	@botologist.plugin.command('pcdb', alias=['random', 'r'])
 	def get_pcdb_random(self, cmd):
-		comment = PCDB.get_random()
+		include_url = False
+		if cmd.args and cmd.args[-1] in ('+url', '--url', '-u'):
+			cmd.args.pop()
+
+		if cmd.args:
+			comment = PCDB.search(' '.join(cmd.args))
+		else:
+			comment = PCDB.get_random()
+
+		if not comment:
+			return 'No results!'
+
 		retval = comment['body'].replace('\n', ' ')
 
 		if len(retval) > 400:
 			retval = retval[:394] + ' [...]'
 
-		if cmd.args and cmd.args[0] in ('+url', '--url', '-u'):
+		if include_url:
 			retval += ' - '+comment['source_url']
 
 		return retval
