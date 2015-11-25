@@ -28,11 +28,12 @@ class Stream:
 	rerun_searches = ('[re]', 'rebroadcast', 'rerun')
 	empty_title_rebroadcast = ('twitch.tv/gsl', 'twitch.tv/wcs', 'twitch.tv/esl_sc2')
 
-	def __init__(self, user, url, title=''):
+	def __init__(self, user, url, title='', game=None):
 		self.user = user
 		self.url = url
 		self.full_url = 'http://' + url
 		self.title = re.sub(r'\n', ' ', str(title))
+		self.game = game
 
 		title_lower = self.title.lower()
 		if any(s in title_lower for s in self.rerun_searches):
@@ -367,6 +368,8 @@ class StreamsPlugin(botologist.plugin.Plugin):
 			stream_str = 'New stream online: ' + stream.full_url
 			if stream.title:
 				stream_str += ' - ' + stream.title
+			if stream.game:
+				stream_str += ' [game: {}]'.format(stream.game)
 			if highlights:
 				stream_str += ' ({})'.format(' '.join(highlights))
 			retval.append(stream_str)

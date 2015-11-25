@@ -7,10 +7,12 @@ import plugins.streams
 
 
 def make_twitch_stream(data):
-	channel = data.get('channel', {}).get('name', '').lower()
-	title = data.get('channel', {}).get('status', '')
+	channel_data = data.get('channel', {})
+	channel = channel_data.get('name', '').lower()
+	title = channel_data.get('status', '')
+	game = data.get('game')
 
-	return plugins.streams.Stream(channel, 'twitch.tv/' + channel, title)
+	return plugins.streams.Stream(channel, 'twitch.tv/' + channel, title, game)
 
 
 def get_twitch_data(channels):
