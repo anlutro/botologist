@@ -368,7 +368,7 @@ class StreamsPlugin(botologist.plugin.Plugin):
 			stream_str = 'New stream online: ' + stream.full_url
 			if stream.title:
 				stream_str += ' - ' + stream.title
-			if stream.game:
+			if stream.game and stream.game not in stream.title:
 				stream_str += ' [game: {}]'.format(stream.game)
 			if highlights:
 				stream_str += ' ({})'.format(' '.join(highlights))
