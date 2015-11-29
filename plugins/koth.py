@@ -103,7 +103,7 @@ class KothPlugin(botologist.plugin.Plugin):
 		'''Remove yourself from the king of the hill queue.'''
 		if not self.is_active:
 			return 'No king of the hill active.'
-		if not user in self.queue:
+		if user not in self.queue:
 			return 'You are not in the queue!'
 
 		self.queue.remove(user)

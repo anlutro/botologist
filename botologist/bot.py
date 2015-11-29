@@ -157,7 +157,7 @@ class Bot:
 			assert isinstance(plugins, list)
 			for plugin in plugins:
 				assert isinstance(plugin, str)
-				if not plugin in self.plugins:
+				if plugin not in self.plugins:
 					plugin_class = guess_plugin_class(plugin)
 					self.register_plugin(plugin, plugin_class)
 				log.debug('Adding plugin %s to channel %s', plugin, channel.channel)
@@ -166,7 +166,7 @@ class Bot:
 		# global plugins
 		for plugin in self.global_plugins:
 			assert isinstance(plugin, str)
-			if not plugin in self.plugins:
+			if plugin not in self.plugins:
 				plugin_class = guess_plugin_class(plugin)
 				self.register_plugin(plugin, plugin_class)
 			log.debug('Adding plugin %s to channel %s', plugin, channel.channel)
