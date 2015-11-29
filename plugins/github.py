@@ -45,7 +45,7 @@ class GithubPlugin(botologist.plugin.Plugin):
 		hmac_obj = hmac.new(self.secret, body.encode('utf-8'), hashlib.sha1)
 		calculated = 'sha1=' + hmac_obj.hexdigest()
 		if not hmac.compare_digest(calculated, signature):
-			log.warn('HMAC mismatch: %s %s', signature, calculated)
+			log.warning('HMAC mismatch: %s %s', signature, calculated)
 			raise Exception('Github webhook signature mismatch!')
 
 	# https://developer.github.com/v3/activity/events/types/#issuesevent
