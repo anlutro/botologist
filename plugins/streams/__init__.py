@@ -210,7 +210,7 @@ class StreamManager:
 		return url
 
 	def get_subscriptions(self, host):
-		if not host in self.subs:
+		if host not in self.subs:
 			return None
 
 		return [stream for stream in self.subs[host] if stream in self.streams]
