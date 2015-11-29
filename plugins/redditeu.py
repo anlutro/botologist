@@ -50,7 +50,7 @@ def get_random_time():
 
 
 def get_random_date():
-	year = random.randint(1000,9999)
+	year = random.randint(1000, 9999)
 	month = random.randint(0, 12)
 	day = random.randint(0, 31)
 
