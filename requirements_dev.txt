@@ -1,2 +1,2 @@
 -r requirements.txt
-pylint>=1.4
+pylint>=1.4,<1.5
