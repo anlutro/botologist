@@ -9,6 +9,11 @@ def get_client(config):
 
 
 class Client(protocol.Client):
+	def __init__(self, name):
+		super().__init__(name)
+		self.user = None
+		self.channel = None
+
 	def run_forever(self):
 		log.info('Starting local server')
 
