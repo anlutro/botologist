@@ -10,6 +10,6 @@ install:
 
 script:
   - python -m unittest discover -s . -p '*_test.py'
-  - pylint --rcfile=.pylintrc -f text -r n --confidence=INFERENCE botologist plugins
+  - pylint --rcfile=.pylintrc -f text -r n --confidence=HIGH,INFERENCE,INFERENCE_FAILURE botologist plugins
 
 sudo: false
