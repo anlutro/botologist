@@ -101,4 +101,7 @@ class DefaultPlugin(botologist.plugin.Plugin):
 		diff = now - self.bot.started
 		hours, remainder = divmod(diff.seconds, 3600)
 		minutes, seconds = divmod(remainder, 60)
-		return '{}h {}m {}s'.format(hours, minutes, seconds)
+		ret = '{}h {}m {}s'.format(hours, minutes, seconds)
+		if diff.days > 0:
+			ret = '{}d '.format(diff.days) + ret
+		return ret
