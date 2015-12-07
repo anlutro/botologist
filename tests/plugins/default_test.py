@@ -34,4 +34,4 @@ class DefaultPluginTest(PluginTestCase):
 
 	def test_uptime(self):
 		self.bot.started = datetime.datetime(2015, 1, 1, 12, 0, 0)
-		self.assertTrue(re.match(r'\d{1,2}h \d{1,2}m \d{1,2}s', self.cmd('uptime')))
+		self.assertTrue(re.match(r'\d+d \d{1,2}h \d{1,2}m \d{1,2}s', self.cmd('uptime')))
