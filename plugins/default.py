@@ -105,3 +105,8 @@ class DefaultPlugin(botologist.plugin.Plugin):
 		if diff.days > 0:
 			ret = '{}d '.format(diff.days) + ret
 		return ret
+
+	@botologist.plugin.command('downtime')
+	def downtime(self, msg):
+		'''Show the downtime of the bot.'''
+		return 'I have no downtime'
