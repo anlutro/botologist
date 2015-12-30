@@ -139,5 +139,6 @@ class RedditeuPlugin(botologist.plugin.Plugin):
 		elif 'the fuck is this' in msgl:
 			return 'watch yo profamity'
 		elif msgl == 'watch your profanity' or msgl == 'watch your profamity' \
-				or msgl == 'watch yo profamity' or msgl == 'watchoprofamity':
+				or msgl == 'watch yo profamity' or msgl == 'watchoprofamity' \
+				or msgl == 'watcho profamity':
 			return 'right I\'m sorry'
