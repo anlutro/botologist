@@ -61,6 +61,11 @@ handler.setFormatter(formatter)
 # add the logging handler for all loggers
 root.addHandler(handler)
 
+# get rid of various annoying log messages
+if log_level < logging.WARNING:
+	logging.getLogger('requests.packages.urllib3.connectionpool') \
+		.setLevel(logging.WARNING)
+
 print('Starting chat bot...')
 
 # initialize and run the bot
