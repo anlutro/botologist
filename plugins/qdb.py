@@ -6,7 +6,7 @@ import requests
 import requests.exceptions
 import botologist.plugin
 
-BASE_URL = 'http://qdb.lutro.me'
+BASE_URL = 'https://qdb.lutro.me'
 
 
 def _get_quote_url(quote):
