@@ -102,6 +102,8 @@ class RedditeuPlugin(botologist.plugin.Plugin):
 		for user in channel.users:
 			if 'nevzetz' in user.identifier or 'ip51cc146b.speed.planet.nl' in user.identifier:
 				return 'Michael is ' + user.name
+			if 'steele' in user.name.lower():
+				return "There's a chance it's " + user.name
 		return 'Michael not found!'
 
 	@botologist.plugin.command('time')
