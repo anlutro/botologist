@@ -75,6 +75,9 @@ class RedditeuPlugin(botologist.plugin.Plugin):
 			re.compile(r'.*'+self.bot.nick+r'[,:]?\s+shut\s+up.*', re.IGNORECASE),
 		)
 
+		self.monologue_lastuser = None
+		self.monologue_counter = 0
+
 	@botologist.plugin.reply()
 	def return_insults(self, msg):
 		for expr in self.insults:
@@ -144,3 +147,14 @@ class RedditeuPlugin(botologist.plugin.Plugin):
 				or msgl == 'watch yo profamity' or msgl == 'watchoprofamity' \
 				or msgl == 'watcho profamity':
 			return 'right I\'m sorry'
+
+	@botologist.plugin.reply()
+	def monologue_detector(self, msg):
+		if msg.user == self.monologue_lastuser:
+			self.monologue_counter += 1
+		else:
+			self.monologue_lastuser = msg.user
+			count = self.monologue_counter
+			self.monologue_counter = 1
+			if count > 15:
+				return 'AUTISM C-C-C-C-COMBO BREAKER! ({} line long monologue)'.format(count)
