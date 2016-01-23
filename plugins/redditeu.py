@@ -158,3 +158,13 @@ class RedditeuPlugin(botologist.plugin.Plugin):
 			self.monologue_counter = 1
 			if count > 15:
 				return 'AUTISM C-C-C-C-COMBO BREAKER! ({} line long monologue)'.format(count)
+
+	@botologist.plugin.kick()
+	def kick_handler(self, kicked_user, channel, user):
+		print(kicked_user.identifier, self.monologue_lastuser.identifier)
+		if kicked_user == self.monologue_lastuser:
+			self.monologue_lastuser = None
+			count = self.monologue_counter
+			self.monologue_counter = 1
+			if count > 15:
+				return 'AUTISM C-C-C-C-COMBO BREAKER! ({} line long monologue)'.format(count)

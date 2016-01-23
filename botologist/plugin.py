@@ -36,6 +36,14 @@ def join():
 	return wrapper
 
 
+def kick():
+	"""Plugin kick reply decorator."""
+	def wrapper(func):
+		func._is_kick = True
+		return func
+	return wrapper
+
+
 def ticker():
 	"""Plugin ticker decorator."""
 	def wrapper(func):
@@ -65,6 +73,7 @@ class PluginMetaclass(type):
 
 		cls._commands = {}
 		cls._joins = []
+		cls._kicks = []
 		cls._replies = []
 		cls._tickers = []
 		cls._http_handlers = []
@@ -83,6 +92,10 @@ class PluginMetaclass(type):
 			if hasattr(f, '_is_join'):
 				log_msg = '%s.%s is a join reply'
 				cls._joins.append(fname)
+
+			if hasattr(f, '_is_kick'):
+				log_msg = '%s.%s is a kick reply'
+				cls._kicks.append(fname)
 
 			if hasattr(f, '_is_reply'):
 				log_msg = '%s.%s is a reply'
@@ -116,6 +129,10 @@ class Plugin(metaclass=PluginMetaclass):
 		self.joins = []
 		for join in self._joins:
 			self.joins.append(getattr(self, join))
+
+		self.kicks = []
+		for kick in self._kicks:
+			self.kicks.append(getattr(self, kick))
 
 		self.replies = []
 		for reply in self._replies:
