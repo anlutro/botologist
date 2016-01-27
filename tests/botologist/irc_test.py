@@ -36,11 +36,11 @@ class IrcChannelTest(unittest.TestCase):
 		user = User('nick', 'ident@host.com')
 		chan.add_user(user)
 		self.assertEqual(user.nick, chan.find_nick_from_host(user.host))
-		chan.remove_user(host=user.host)
+		chan.remove_user(identifier=user.host)
 		self.assertEqual(None, chan.find_nick_from_host(user.host))
 		chan.add_user(user)
 		self.assertEqual(user.nick, chan.find_nick_from_host(user.host))
-		chan.remove_user(nick=user.nick)
+		chan.remove_user(name=user.nick)
 		self.assertEqual(None, chan.find_nick_from_host(user.host))
 
 	def test_update_nick(self):
