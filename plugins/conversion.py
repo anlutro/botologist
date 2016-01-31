@@ -118,10 +118,16 @@ class Currency:
 
 
 class ConversionPlugin(botologist.plugin.Plugin):
+<<<<<<< HEAD
 	amount_pattern = r'((?:[\d][\d,. ]*?|[\.][\d]*?)[km]??)'
 	unit_pattern = r'((?:(?:square|cubic) )?[a-z.,]+)'
 	pattern = re.compile(amount_pattern + r' ?' + unit_pattern + \
 		r' (into|in|to) ' + unit_pattern, re.I)
+=======
+	amount_pattern = r'([\d\.][\d,. ]*?[km]??)'
+	unit_pattern = r'((?:(?:square|cubic) )?[a-z.]+)'
+	pattern = re.compile(amount_pattern + r' ?' + unit_pattern + r' (into|in|to) ' + unit_pattern, re.I)
+>>>>>>> 5d8f12a35060c8e83bbd9b1bd067e97e6c888a59
 
 	@botologist.plugin.reply()
 	def convert(self, msg):
