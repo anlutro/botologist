@@ -3,6 +3,7 @@ log = logging.getLogger(__name__)
 
 import signal
 import socket
+import ssl
 import threading
 
 import botologist.util
@@ -430,6 +431,12 @@ class IRCSocket:
 		self.server = server
 		self.socket = None
 
+		# SSL/TLS Options
+		self.context = ssl.SSLContext(ssl.PROTOCOL_TLSv1)
+		self.context.verify_mode = ssl.CERT_REQUIRED
+		self.context.check_hostname = True
+		self.context.load_default_certs()
+
 	def connect(self):
 		log.debug('Looking up address info for %s:%s',
 			self.server.host, self.server.port)
@@ -446,11 +453,15 @@ class IRCSocket:
 			except OSError:
 				self.socket = None
 				continue
+			if True:
+				ssl_sock = self.context.wrap_socket(self.socket, server_hostname="irc.freenode.net")
+				self.socket = ssl_sock
+				ssl_sock.connect((self.server.host, self.server.port))
 
 			try:
 				self.socket.settimeout(10)
 				log.debug('Trying to connect to %s:%s', address[0], address[1])
-				self.socket.connect(address)
+				#self.socket.connect((address, self.server.port))
 			except OSError:
 				self.close()
 				continue
