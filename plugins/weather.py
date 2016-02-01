@@ -48,5 +48,7 @@ class WeatherPlugin(botologist.plugin.Plugin):
 		retval = 'Weather in {}: {}'.format(location, weather)
 		if 'temp' in data['main']:
 			retval += ' - temperature: {}°C'.format(data['main']['temp'])
+		if 'wind' in data:
+			retval += ' - wind: {}m/s'.format(data['wind']['speed'])
 
 		return retval
