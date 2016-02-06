@@ -222,10 +222,7 @@ class Client(botologist.protocol.Client):
 				user = _find_user(channel, host, nick)
 				kicked_nick = words[3]
 				kicked_user = channel.find_user(name=kicked_nick)
-				print('kicked_nick:', kicked_nick)
-				print('kicked_user:', kicked_user)
-				print([(user.name, user.identifier) for user in channel.users])
-				channel.remove_user(name=kicked_nick)
+				channel.users.remove(name=kicked_nick)
 				log.debug('User %s was kicked by %s from channel %s',
 					kicked_nick, user.nick, channel.channel)
 				for callback in self.on_kick:
@@ -238,8 +235,8 @@ class Client(botologist.protocol.Client):
 				for channel in self.channels.values():
 					channel_user = channel.find_user(identifier=host, name=nick)
 					if channel_user:
-						channel.remove_user(channel_user)
-						log.debug('Removing user %s from channel %s',
+						channel.users.remove(channel_user)
+						log.debug('Removed user %s from channel %s',
 							channel_user.host, channel.name)
 
 			elif words[1] == 'PRIVMSG':
