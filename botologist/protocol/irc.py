@@ -222,7 +222,7 @@ class Client(botologist.protocol.Client):
 				user = _find_user(channel, host, nick)
 				kicked_nick = words[3]
 				kicked_user = channel.find_user(name=kicked_nick)
-				channel.users.remove(name=kicked_nick)
+				channel.users.remove(kicked_user)
 				log.debug('User %s was kicked by %s from channel %s',
 					kicked_nick, user.nick, channel.channel)
 				for callback in self.on_kick:
