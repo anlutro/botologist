@@ -234,7 +234,9 @@ class Client(botologist.protocol.Client):
 				log.debug('User %s quit', host)
 				for channel in self.channels.values():
 					channel_user = channel.find_user(identifier=host, name=nick)
-					if channel_user:
+					# TODO: why would channel_user not be in channel.users? race
+					# condition? another thread removing the user? wtf?
+					if channel_user and channel_user in channel.users:
 						channel.users.remove(channel_user)
 						log.debug('Removed user %s from channel %s',
 							channel_user.host, channel.name)
