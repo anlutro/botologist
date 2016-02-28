@@ -168,3 +168,8 @@ class RedditeuPlugin(botologist.plugin.Plugin):
 			self.monologue_counter = 1
 			if count > 15:
 				return 'AUTISM C-C-C-C-COMBO BREAKER! ({} line long monologue)'.format(count)
+
+	@botologist.plugin.reply()
+	def nooooo(self, msg):
+		if 'nooo' in msg.message.lower():
+			return 'https://vid.me/1VfD'
