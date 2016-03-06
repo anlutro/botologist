@@ -173,3 +173,9 @@ class RedditeuPlugin(botologist.plugin.Plugin):
 	def nooooo(self, msg):
 		if 'nooo' in msg.message.lower():
 			return 'https://vid.me/1VfD'
+
+	@botologist.plugin.reply()
+	def guys(self, msg):
+		msgl = msg.message.lower()
+		if 'dont be late' in msgl or "don't be late" in msgl:
+			return 'same to you'
