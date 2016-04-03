@@ -8,7 +8,7 @@ class PCDB:
 
 	@staticmethod
 	def search(search_for):
-		response = requests.get('http://pcdb.lutro.me',
+		response = requests.get('https://porncomment.com',
 			{'search': search_for}, headers={'accept': 'application/json'})
 		comments = response.json()['comments']
 		if comments:
@@ -17,7 +17,7 @@ class PCDB:
 	@classmethod
 	def get_random(cls):
 		if not cls.comments:
-			response = requests.get('http://pcdb.lutro.me',
+			response = requests.get('http://porncomment.com',
 				headers={'accept': 'application/json'})
 			cls.comments = response.json()['comments']
 		return cls.comments.pop()

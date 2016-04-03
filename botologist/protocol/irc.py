@@ -221,20 +221,24 @@ class Client(botologist.protocol.Client):
 				channel = self.channels[words[2]]
 				user = _find_user(channel, host, nick)
 				kicked_nick = words[3]
-				channel.remove_user(nick=kicked_nick)
+				kicked_user = channel.find_user(name=kicked_nick)
+				channel.users.remove(kicked_user)
 				log.debug('User %s was kicked by %s from channel %s',
 					kicked_nick, user.nick, channel.channel)
+				for callback in self.on_kick:
+					callback(channel, kicked_user, user)
 				if kicked_nick == self.nick:
 					self.join_channel(channel)
-
 
 			elif words[1] == 'QUIT':
 				log.debug('User %s quit', host)
 				for channel in self.channels.values():
 					channel_user = channel.find_user(identifier=host, name=nick)
-					if channel_user:
-						channel.remove_user(channel_user)
-						log.debug('Removing user %s from channel %s',
+					# TODO: why would channel_user not be in channel.users? race
+					# condition? another thread removing the user? wtf?
+					if channel_user and channel_user in channel.users:
+						channel.users.remove(channel_user)
+						log.debug('Removed user %s from channel %s',
 							channel_user.host, channel.name)
 
 			elif words[1] == 'PRIVMSG':
@@ -409,11 +413,11 @@ class Channel(botologist.protocol.Channel):
 		if user:
 			return user.host
 
-	def remove_user(self, user=None, nick=None, host=None):
-		if not user and host and '@' in host:
-			host = host[host.index('@')+1:]
+	def remove_user(self, user=None, name=None, identifier=None):
+		if not user and identifier and '@' in identifier:
+			identifier = identifier[identifier.index('@')+1:]
 
-		return super().remove_user(user=user, name=nick, identifier=host)
+		return super().remove_user(user=user, name=name, identifier=identifier)
 
 
 class IRCSocketError(OSError):

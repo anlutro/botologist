@@ -14,6 +14,7 @@ class Client:
 		self.on_disconnect = []
 		self.on_join = []
 		self.on_privmsg = []
+		self.on_kick = []
 
 	@property
 	def nick(self):
@@ -36,6 +37,7 @@ class Channel:
 
 		self.commands = {}
 		self.joins = []
+		self.kicks = []
 		self.replies = []
 		self.tickers = []
 		self.admins = []
@@ -53,6 +55,8 @@ class Channel:
 			self.commands[cmd] = callback
 		for join_callback in plugin.joins:
 			self.joins.append(join_callback)
+		for kick_callback in plugin.kicks:
+			self.kicks.append(kick_callback)
 		for reply_callback in plugin.replies:
 			self.replies.append(reply_callback)
 		for tick_callback in plugin.tickers:
@@ -72,9 +76,13 @@ class Channel:
 			name = user.name
 
 		for user in self.users:
-			if (identifier and user.identifier == identifier) or \
+			if identifier and name:
+				if user.identifier == identifier and user.name == name:
+					return user
+			elif (identifier and user.identifier == identifier) or \
 					(name and user.name == name):
 				return user
+
 		return None
 
 	def remove_user(self, user=None, name=None, identifier=None):
@@ -97,10 +105,12 @@ class User:
 	def __eq__(self, other):
 		if not isinstance(other, self.__class__):
 			return False
+		if self.name and other.name:
+			return other.name == self.name and other.identifier == self.identifier
 		return other.identifier == self.identifier
 
 	def __hash__(self):
-		return hash(self.identifier)
+		return hash((self.identifier, self.nick))
 
 
 class Message:

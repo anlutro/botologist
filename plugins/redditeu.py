@@ -75,6 +75,9 @@ class RedditeuPlugin(botologist.plugin.Plugin):
 			re.compile(r'.*'+self.bot.nick+r'[,:]?\s+shut\s+up.*', re.IGNORECASE),
 		)
 
+		self.monologue_lastuser = None
+		self.monologue_counter = 0
+
 	@botologist.plugin.reply()
 	def return_insults(self, msg):
 		for expr in self.insults:
@@ -96,12 +99,14 @@ class RedditeuPlugin(botologist.plugin.Plugin):
 	@botologist.plugin.command('michael')
 	def who_is_michael(self, cmd):
 		'''Find out what nick Michael is hiding under.'''
-		channel = self.bot.conn.channels.get(cmd.message.target)
+		channel = self.bot.client.channels.get(cmd.message.target)
 		if not channel:
 			return
 		for user in channel.users:
 			if 'nevzetz' in user.identifier or 'ip51cc146b.speed.planet.nl' in user.identifier:
 				return 'Michael is ' + user.name
+			if 'steele' in user.name.lower():
+				return "There's a chance it's " + user.name
 		return 'Michael not found!'
 
 	@botologist.plugin.command('time')
@@ -139,5 +144,32 @@ class RedditeuPlugin(botologist.plugin.Plugin):
 		elif 'the fuck is this' in msgl:
 			return 'watch yo profamity'
 		elif msgl == 'watch your profanity' or msgl == 'watch your profamity' \
-				or msgl == 'watch yo profamity' or msgl == 'watchoprofamity':
+				or msgl == 'watch yo profamity' or msgl == 'watchoprofamity' \
+				or msgl == 'watcho profamity':
 			return 'right I\'m sorry'
+
+	@botologist.plugin.reply()
+	def monologue_detector(self, msg):
+		if msg.user == self.monologue_lastuser:
+			self.monologue_counter += 1
+		else:
+			self.monologue_lastuser = msg.user
+			count = self.monologue_counter
+			self.monologue_counter = 1
+			if count > 15:
+				return 'AUTISM C-C-C-C-COMBO BREAKER! ({} line long monologue)'.format(count)
+
+	@botologist.plugin.kick()
+	def kick_handler(self, kicked_user, channel, user):
+		print(kicked_user.identifier, self.monologue_lastuser.identifier)
+		if kicked_user == self.monologue_lastuser:
+			self.monologue_lastuser = None
+			count = self.monologue_counter
+			self.monologue_counter = 1
+			if count > 15:
+				return 'AUTISM C-C-C-C-COMBO BREAKER! ({} line long monologue)'.format(count)
+
+	@botologist.plugin.reply()
+	def nooooo(self, msg):
+		if 'nooo' in msg.message.lower():
+			return 'https://vid.me/1VfD'

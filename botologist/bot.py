@@ -76,6 +76,7 @@ class Bot:
 		self.client.on_disconnect.append(self._stop_timers)
 		self.client.on_join.append(self._handle_join)
 		self.client.on_privmsg.append(self._handle_privmsg)
+		self.client.on_kick.append(self._handle_kick)
 
 		# configure plugins
 		for name, plugin_class in config.get('plugins', {}).items():
@@ -201,6 +202,20 @@ class Bot:
 		response = None
 		for join_func in channel.joins:
 			response = join_func(user, channel)
+			if response:
+				self._send_msg(response, channel.channel)
+				return
+
+	def _handle_kick(self, channel, kicked_user, user):
+		assert isinstance(channel, botologist.protocol.Channel)
+		assert isinstance(kicked_user, botologist.protocol.User)
+		assert isinstance(user, botologist.protocol.User)
+
+		# iterate through join callbacks. the first, if any, to return a
+		# non-empty value, will be sent back to the channel as a response.
+		response = None
+		for kick_func in channel.kicks:
+			response = kick_func(kicked_user, channel, user)
 			if response:
 				self._send_msg(response, channel.channel)
 				return
