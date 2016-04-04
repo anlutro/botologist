@@ -16,7 +16,7 @@ url_shorteners = r'|'.join((
 	r'https?://t\.co',
 	r'https?://tinyurl\.com',
 ))
-short_url_regex = re.compile(r'((' + url_shorteners + r')\/[a-zA-Z0-9]+)')
+short_url_regex = re.compile(r'((' + url_shorteners + r')\/[a-zA-Z0-9/]+)')
 
 
 def find_shortened_urls(message):
