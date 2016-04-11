@@ -103,7 +103,9 @@ class RedditeuPlugin(botologist.plugin.Plugin):
 		if not channel:
 			return
 		for user in channel.users:
-			if 'nevzetz' in user.identifier or 'ip51cc146b.speed.planet.nl' in user.identifier:
+			if 'cunt' in user.ident or '78.153.150.16' in user.host:
+				return 'The new Micahel is ' + user.name
+			if 'nevzetz' in user.host or 'ip51cc146b.speed.planet.nl' in user.host:
 				return 'Michael is ' + user.name
 			if 'steele' in user.name.lower():
 				return "There's a chance it's " + user.name
