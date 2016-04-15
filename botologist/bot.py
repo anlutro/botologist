@@ -128,8 +128,14 @@ class Bot:
 				args=(self, self.http_host, self.http_port),
 				error_handler=self.error_handler.handle_error)
 			thread.start()
+
 		self.started = datetime.datetime.now()
 		self.client.run_forever()
+
+		if self.http_server:
+			log.info('Shutting down HTTP server')
+			self.http_server.shutdown()
+			self.http_server = None
 
 	def register_plugin(self, name, plugin):
 		if isinstance(plugin, str):
@@ -346,11 +352,6 @@ class Bot:
 		log.debug('Ticker started')
 
 	def _stop_timers(self):
-		if self.http_server:
-			log.info('Shutting down HTTP server')
-			self.http_server.shutdown()
-			self.http_server = None
-
 		if self.timer:
 			log.info('Ticker stopped')
 			self.timer.cancel()
