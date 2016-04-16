@@ -72,8 +72,8 @@ class Bot:
 
 		self.error_handler = botologist.error.ErrorHandler(self)
 		self.client.error_handler = self.error_handler.handle_error
-		self.client.on_connect.append(self._start_tick_timer)
-		self.client.on_disconnect.append(self._stop_timers)
+		self.client.on_connect.append(self._start)
+		self.client.on_disconnect.append(self._stop)
 		self.client.on_join.append(self._handle_join)
 		self.client.on_privmsg.append(self._handle_privmsg)
 		self.client.on_kick.append(self._handle_kick)
@@ -121,21 +121,8 @@ class Bot:
 		return admin_nicks
 
 	def run_forever(self):
-		if self.http_port:
-			log.info('Running HTTP server on %s:%s', self.http_host, self.http_port)
-			thread = botologist.util.ErrorProneThread(
-				target=botologist.http.run_http_server,
-				args=(self, self.http_host, self.http_port),
-				error_handler=self.error_handler.handle_error)
-			thread.start()
-
 		self.started = datetime.datetime.now()
 		self.client.run_forever()
-
-		if self.http_server:
-			log.info('Shutting down HTTP server')
-			self.http_server.shutdown()
-			self.http_server = None
 
 	def register_plugin(self, name, plugin):
 		if isinstance(plugin, str):
@@ -346,12 +333,28 @@ class Bot:
 
 		return final_replies
 
+	def _start(self):
+		if self.http_port and not slef.http_server:
+			log.info('Running HTTP server on %s:%s', self.http_host, self.http_port)
+			thread = botologist.util.ErrorProneThread(
+				target=botologist.http.run_http_server,
+				args=(self, self.http_host, self.http_port),
+				error_handler=self.error_handler.handle_error)
+			thread.start()
+
+		self._start_tick_timer()
+
 	def _start_tick_timer(self):
 		self.timer = threading.Timer(self.TICK_INTERVAL, self._tick)
 		self.timer.start()
 		log.debug('Ticker started')
 
-	def _stop_timers(self):
+	def _stop(self):		
+		if self.http_server:
+			log.info('Shutting down HTTP server')
+			self.http_server.shutdown()
+			self.http_server = None
+
 		if self.timer:
 			log.info('Ticker stopped')
 			self.timer.cancel()
