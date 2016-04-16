@@ -334,7 +334,7 @@ class Bot:
 		return final_replies
 
 	def _start(self):
-		if self.http_port and not slef.http_server:
+		if self.http_port and not self.http_server:
 			log.info('Running HTTP server on %s:%s', self.http_host, self.http_port)
 			thread = botologist.util.ErrorProneThread(
 				target=botologist.http.run_http_server,
