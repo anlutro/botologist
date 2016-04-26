@@ -96,8 +96,7 @@ class QdbPlugin(botologist.plugin.Plugin):
 		'''
 		if len(cmd.args) < 1:
 			arg = 'random'
-
-		if cmd.args[0][0] == '#':
+		elif cmd.args[0][0] == '#':
 			try:
 				arg = int(cmd.args[0][1:])
 			except ValueError:

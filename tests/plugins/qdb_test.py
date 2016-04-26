@@ -26,3 +26,8 @@ class QdbPluginTest(PluginTestCase):
 			ret = self.cmd('qdb #1')
 			mf.assert_called_with('https://qdb.lutro.me/1', query_params=None)
 			self.assertEqual('https://qdb.lutro.me/1 - bar', ret)
+
+	def test_search_no_args(self):
+		with mock.patch(f) as mf:
+			ret = self.cmd('qdb')
+			mf.assert_called_with('https://qdb.lutro.me/random' query_params=None)
