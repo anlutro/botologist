@@ -95,7 +95,7 @@ class QdbPlugin(botologist.plugin.Plugin):
 		Examples: !qdb search for this - !qdb #220
 		'''
 		if len(cmd.args) < 1:
-			return
+			arg = 'random'
 
 		if cmd.args[0][0] == '#':
 			try:
