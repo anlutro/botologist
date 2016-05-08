@@ -1,3 +1,9 @@
+# which procol to use. this can make a difference for the rest of the config -
+# for example, the "local" protocol doesn't use the "server" value. the rest of
+# the config example will assume you use irc.
+# available protocols: irc, local
+protocol: irc
+
 # set this to null to log to STDOUT instead
 log_path: /var/log/botologist.log
 # available log levels: debug, info, warn, error
@@ -42,22 +48,33 @@ channels:
       - conversion
 
 # uncomment these lines to enable the !mumble command
-# mumble:
-#   address: my.host.com
-#   port: 64738
-#   password: p4sSw0rD
+#mumble:
+#  address: my.host.com
+#  port: 64738
+#  password: p4sSw0rD
 
 # uncomment these lines if you want to use the twitter plugin
-# twitter_api:
-#   consumer_key: 'consumer_key'
-#   consumer_secret: 'consumer_secret'
-#   access_token: 'access_token'
-#   access_token_secret: 'access_token_secret'
+#twitter_api:
+#  consumer_key: 'consumer_key'
+#  consumer_secret: 'consumer_secret'
+#  access_token: 'access_token'
+#  access_token_secret: 'access_token_secret'
 
 # if you want to run a HTTP server for webhooks, uncomment these lines
-# http_host: localhost
-# http_port: 9123
+#http_host: localhost
+#http_port: 9123
 
-# if you want error reports sent via real email, uncomment these lines
-# admin_email: myname@mydomain.com
-# mail_from: ircbot@mydomain.com
+# if you want error reports sent via real email, uncomment these lines.
+# usually, if you have an exim instance running on your server, setting this to
+# a username on the server instead of an actual e-mail address will send it to
+# /var/mail/$USER. if you want to send to the user running the bot process,
+# set admin_email: null
+#admin_email: myname@mydomain.com
+#mail_from: ircbot@mydomain.com
+
+# mail is sent via sendmail. customize the bin path and args here:
+#sendmail_bin: /usr/sbin/sendmail
+#sendmail_args: -t -oi
+
+# openweathermap is used for the !weather command
+#openweathermap_apikey: ...

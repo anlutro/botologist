@@ -2,9 +2,9 @@ import logging
 log = logging.getLogger(__name__)
 
 import re
-import urllib.error
+import requests
+import requests.exceptions
 
-import botologist.http
 import botologist.plugin
 
 
@@ -25,14 +25,15 @@ def find_shortened_urls(message):
 
 
 def get_location(url):
-	response = botologist.http.head(url)
-	return response.url
-
+	response = requests.head(url)
+	if response.status_code != 301 and response.status_code != 302:
+		return response.url
+	return response.headers['location']
 
 def unshorten_url(url):
 	try:
 		url = get_location(url)
-	except urllib.error.URLError:
+	except requests.exceptions.RequestException:
 		log.info('HTTP error while unshortening URL', exc_info=True)
 		return None
 

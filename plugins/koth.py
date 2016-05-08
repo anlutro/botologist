@@ -32,15 +32,18 @@ class KothPlugin(botologist.plugin.Plugin):
 			return self.remove(cmd.user)
 
 	def start(self):
+		'''Start a king of the hill event. Admins only.'''
 		if self.is_active:
 			return 'King of the hill already active!'
 
+		log.info('Starting KOTH')
 		self.queue = collections.deque()
 		self.is_active = True
 		self.signups_open = True
 		return 'King of the hill started! Type \x02!koth add\x0F to add yourself!'
 
 	def list(self):
+		'''Show who's currently in the KOTH queue.'''
 		if not self.is_active:
 			return 'No king of the hill active! Type \x02!koth start\x0F to start one.'
 		if not self.queue:
@@ -49,6 +52,7 @@ class KothPlugin(botologist.plugin.Plugin):
 		return 'Signed up: ' + ', '.join([user.nick for user in self.queue])
 
 	def next(self):
+		'''Pick the next player from the queue. Admins only.'''
 		if not self.is_active:
 			return 'No king of the hill active! Type \x02!koth start\x0F to start one.'
 		if not self.queue:
@@ -62,6 +66,8 @@ class KothPlugin(botologist.plugin.Plugin):
 		return 'Last in queue: {} - queue empty!'.format(user.nick)
 
 	def close(self):
+		'''Prevent people from signing up for the king of the hill event, but
+		without stopping the event.'''
 		if not self.is_active:
 			return 'No king of the hill active!'
 		if not self.signups_open:
@@ -71,15 +77,18 @@ class KothPlugin(botologist.plugin.Plugin):
 		return 'Signups are now closed!'
 
 	def end(self):
+		'''Stop the current king of the hill event. Admins only.'''
 		if not self.is_active:
 			return 'No king of the hill active! Type \x02!koth start\x0F to start one.'
 
 		self.queue = None
 		self.is_active = False
 		self.signups_open = False
+		log.info('KOTH ended')
 		return 'King of the hill ended, queue cleared!'
 
 	def add(self, user):
+		'''Add yourself to the king of the hill queue.'''
 		if not self.is_active:
 			return 'No king of the hill active.'
 		if not self.signups_open:
@@ -91,9 +100,10 @@ class KothPlugin(botologist.plugin.Plugin):
 		return 'You were added to the queue in position {}!'.format(len(self.queue))
 
 	def remove(self, user):
+		'''Remove yourself from the king of the hill queue.'''
 		if not self.is_active:
 			return 'No king of the hill active.'
-		if not user in self.queue:
+		if user not in self.queue:
 			return 'You are not in the queue!'
 
 		self.queue.remove(user)

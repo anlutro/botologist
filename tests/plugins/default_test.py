@@ -1,3 +1,5 @@
+import datetime
+import re
 from tests.plugins import PluginTestCase
 
 class DefaultPluginTest(PluginTestCase):
@@ -17,21 +19,6 @@ class DefaultPluginTest(PluginTestCase):
 		}})
 		self.assertEqual('Mumble (http://mumble.info) - address: localhost - port: 1234', self.cmd('mumble'))
 
-	def test_insults(self):
-		expected = 'fuck you too test'
-		self.assertEqual(expected, self.reply('fuck you botologist'))
-		self.assertEqual(expected, self.reply('fuck you, botologist'))
-		self.assertEqual(expected, self.reply('fuck you, botologist!'))
-		self.assertEqual(expected, self.reply('botologist fuck you'))
-		self.assertEqual(expected, self.reply('botologist, fuck you'))
-		self.assertEqual(expected, self.reply('botologist: fuck you'))
-		self.assertEqual(expected, self.reply('botologist: fuck you!'))
-
-	def test_works(self):
-		expected = 'I always work'
-		self.assertEqual(expected, self.reply('bot no work'))
-		self.assertEqual(expected, self.reply('__bot__ no work'))
-
 	def test_roll(self):
 		usage_msg = 'Usage: \x02!roll 6\x0F or \x02!roll 2d10'
 		self.assertEqual(usage_msg, self.cmd('roll'))
@@ -44,3 +31,7 @@ class DefaultPluginTest(PluginTestCase):
 		self.assertEqual('Maximum 10d20!', self.cmd('roll 10d21'))
 		self.assertEqual('Cannot roll less than 1 die!', self.cmd('roll 0d9'))
 		self.assertEqual('Cannot roll die with less than 2 sides!', self.cmd('roll 1d1'))
+
+	def test_uptime(self):
+		self.bot.started = datetime.datetime(2015, 1, 1, 12, 0, 0)
+		self.assertTrue(re.match(r'\d+d \d{1,2}h \d{1,2}m \d{1,2}s', self.cmd('uptime')))

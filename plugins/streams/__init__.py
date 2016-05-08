@@ -28,11 +28,12 @@ class Stream:
 	rerun_searches = ('[re]', 'rebroadcast', 'rerun')
 	empty_title_rebroadcast = ('twitch.tv/gsl', 'twitch.tv/wcs', 'twitch.tv/esl_sc2')
 
-	def __init__(self, user, url, title=''):
+	def __init__(self, user, url, title='', game=None):
 		self.user = user
 		self.url = url
 		self.full_url = 'http://' + url
 		self.title = re.sub(r'\n', ' ', str(title))
+		self.game = game
 
 		title_lower = self.title.lower()
 		if any(s in title_lower for s in self.rerun_searches):
@@ -209,7 +210,10 @@ class StreamManager:
 		return url
 
 	def get_subscriptions(self, host):
-		return self.subs.get(host, None)
+		if host not in self.subs:
+			return None
+
+		return [stream for stream in self.subs[host] if stream in self.streams]
 
 	def get_online_streams(self):
 		if not self.streams:
@@ -270,6 +274,7 @@ class StreamsPlugin(botologist.plugin.Plugin):
 	@botologist.plugin.command('addstream')
 	@error.return_streamerror_message
 	def add_stream_cmd(self, msg):
+		'''Add a stream. Admins only.'''
 		if len(msg.args) < 1:
 			return None
 		if not msg.user.is_admin:
@@ -282,6 +287,7 @@ class StreamsPlugin(botologist.plugin.Plugin):
 	@botologist.plugin.command('delstream')
 	@error.return_streamerror_message
 	def del_stream_cmd(self, msg):
+		'''Delete a stream. Admins only.'''
 		if len(msg.args) < 1:
 			return None
 		if not msg.user.is_admin:
@@ -294,6 +300,7 @@ class StreamsPlugin(botologist.plugin.Plugin):
 	@botologist.plugin.command('sub')
 	@error.return_streamerror_message
 	def subscribe_stream_cmd(self, msg):
+		'''Add yourself as a subscriber for a stream.'''
 		if 'irccloud' in msg.user.host:
 			return 'irccloud users cannot subscribe! try /mode {} +x'.format(
 				msg.user.nick)
@@ -313,6 +320,7 @@ class StreamsPlugin(botologist.plugin.Plugin):
 	@botologist.plugin.command('unsub')
 	@error.return_streamerror_message
 	def unsubscribe_stream_cmd(self, msg):
+		'''Remove yourself as a subscriber for a stream.'''
 		if len(msg.args) < 1:
 			return None
 		result = self.streams.del_subscriber(msg.user.host, msg.args[0])
@@ -321,8 +329,9 @@ class StreamsPlugin(botologist.plugin.Plugin):
 		else:
 			return 'You are not subscribed to that stream.'
 
-	@botologist.plugin.command('streams', threaded=True)
+	@botologist.plugin.command('streams', alias='s', threaded=True)
 	def list_streams_cmd(self, msg):
+		'''Show currently online streams.'''
 		streams = self.streams.get_online_streams()
 		if not streams:
 			return 'No streams online!'
@@ -351,14 +360,16 @@ class StreamsPlugin(botologist.plugin.Plugin):
 				continue
 
 			highlights = []
-			for user, subs in self.streams.subs.items():
+			for user_id, subs in self.streams.subs.items():
 				if stream.url in subs:
-					nick = self.channel.find_nick_from_host(user)
-					if nick:
-						highlights.append(nick)
+					user = self.channel.find_user(identifier=user_id)
+					if user:
+						highlights.append(user.name)
 			stream_str = 'New stream online: ' + stream.full_url
 			if stream.title:
 				stream_str += ' - ' + stream.title
+			if stream.game and stream.game not in stream.title:
+				stream_str += ' [game: {}]'.format(stream.game)
 			if highlights:
 				stream_str += ' ({})'.format(' '.join(highlights))
 			retval.append(stream_str)

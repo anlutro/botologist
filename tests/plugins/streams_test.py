@@ -127,12 +127,13 @@ class StreamManagerTest(unittest.TestCase):
 		sm.del_subscriber('host.com', 'asdf')
 		self.assertEqual([], sm.get_subscriptions('host.com'))
 
-	def test_subscription_persists_when_stream_removed(self):
+	def test_subscription_persists_but_is_not_public_when_stream_removed(self):
 		sm = streams.StreamManager(self.file_path)
 		sm.add_stream('twitch.tv/asdf')
 		sm.add_subscriber('host.com', 'asdf')
 		sm.del_stream('asdf')
-		self.assertEqual(['twitch.tv/asdf'], sm.get_subscriptions('host.com'))
+		self.assertEqual(['twitch.tv/asdf'], sm.subs['host.com'])
+		self.assertEqual([], sm.get_subscriptions('host.com'))
 
 	def test_all_online_streams(self):
 		sm = streams.StreamManager(self.file_path)

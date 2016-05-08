@@ -3,13 +3,13 @@ language: python
 python:
   - '3.3'
   - '3.4'
+  - '3.5'
 
 install:
-  - pip install -r requirements.txt
-  - pip install pylint
+  - pip install -r requirements_dev.txt
 
 script:
   - python -m unittest discover -s . -p '*_test.py'
-  - pylint --rcfile=.pylintrc -f text -r n --confidence=INFERENCE botologist plugins
+  - pylint --rcfile=.pylintrc -f text -r n --confidence=HIGH,INFERENCE,INFERENCE_FAILURE botologist plugins
 
 sudo: false

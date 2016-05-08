@@ -1,14 +1,19 @@
 import logging
 log = logging.getLogger(__name__)
 
-import botologist.irc
 import botologist.bot
 
 
-def command(command, threaded=False):
+def command(command, alias=None, threaded=False):
 	"""Plugin command decorator."""
+	if alias is None:
+		alias = []
+	elif isinstance(alias, str):
+		alias = [alias]
+
 	def wrapper(func):
 		func._command = command
+		func._command_aliases = alias
 		func._is_threaded = threaded
 		return func
 	return wrapper
@@ -27,6 +32,14 @@ def join():
 	"""Plugin join reply decorator."""
 	def wrapper(func):
 		func._is_join = True
+		return func
+	return wrapper
+
+
+def kick():
+	"""Plugin kick reply decorator."""
+	def wrapper(func):
+		func._is_kick = True
 		return func
 	return wrapper
 
@@ -60,6 +73,7 @@ class PluginMetaclass(type):
 
 		cls._commands = {}
 		cls._joins = []
+		cls._kicks = []
 		cls._replies = []
 		cls._tickers = []
 		cls._http_handlers = []
@@ -70,10 +84,18 @@ class PluginMetaclass(type):
 			if hasattr(f, '_command'):
 				log_msg = '%s.%s is a command'
 				cls._commands[f._command] = fname
+				if f._command_aliases:
+					log_msg += ' - aliases: ' + ', '.join(f._command_aliases)
+				for alias in f._command_aliases:
+					cls._commands[alias] = fname
 
 			if hasattr(f, '_is_join'):
 				log_msg = '%s.%s is a join reply'
 				cls._joins.append(fname)
+
+			if hasattr(f, '_is_kick'):
+				log_msg = '%s.%s is a kick reply'
+				cls._kicks.append(fname)
 
 			if hasattr(f, '_is_reply'):
 				log_msg = '%s.%s is a reply'
@@ -96,7 +118,7 @@ class PluginMetaclass(type):
 class Plugin(metaclass=PluginMetaclass):
 	"""Base plugin class."""
 	def __init__(self, bot, channel):
-		assert isinstance(channel, botologist.irc.Channel)
+		assert isinstance(channel, botologist.protocol.Channel)
 		assert isinstance(bot, botologist.bot.Bot)
 
 		# pylint: disable=no-member
@@ -107,6 +129,10 @@ class Plugin(metaclass=PluginMetaclass):
 		self.joins = []
 		for join in self._joins:
 			self.joins.append(getattr(self, join))
+
+		self.kicks = []
+		for kick in self._kicks:
+			self.kicks.append(getattr(self, kick))
 
 		self.replies = []
 		for reply in self._replies:

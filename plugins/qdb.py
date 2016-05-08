@@ -2,26 +2,19 @@ import logging
 log = logging.getLogger(__name__)
 
 import json
-import urllib.error
-
-import botologist.http
+import requests
+import requests.exceptions
 import botologist.plugin
 
-BASE_URL = 'http://qdb.lutro.me'
+BASE_URL = 'https://qdb.lutro.me'
 
 
 def _get_quote_url(quote):
 	return BASE_URL + '/' + str(quote['id'])
 
 
-def _get_qdb_data(*args, **kwargs):
-	if 'headers' not in kwargs:
-		kwargs['headers'] = {}
-	kwargs['headers']['Accept'] = 'application/json'
-
-	response = botologist.http.get(*args, **kwargs)
-	content = response.read().decode('utf-8')
-	return json.loads(content)
+def _get_qdb_data(url, query_params):
+	return requests.get(url, query_params, headers={'accept': 'application/json'}).json()
 
 
 def _search_for_quote(quote):
@@ -43,7 +36,7 @@ def _search_for_quote(quote):
 
 	try:
 		data = _get_qdb_data(url, query_params=query_params)
-	except urllib.error.URLError:
+	except requests.exceptions.RequestException:
 		log.warning('QDB request caused an exception', exc_info=True)
 		return 'HTTP error!'
 
@@ -97,6 +90,10 @@ def _search_for_quote(quote):
 class QdbPlugin(botologist.plugin.Plugin):
 	@botologist.plugin.command('qdb')
 	def search(self, cmd):
+		'''Search for a quote, or show a specific quote.
+
+		Examples: !qdb search for this - !qdb #220
+		'''
 		if len(cmd.args) < 1:
 			return
 

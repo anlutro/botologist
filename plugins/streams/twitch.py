@@ -1,27 +1,24 @@
 import logging
 log = logging.getLogger(__name__)
 
-import json
-
-import botologist.http
+import requests
+import requests.exceptions
 import plugins.streams
 
 
 def make_twitch_stream(data):
-	channel = data.get('channel', {}).get('name', '').lower()
-	title = data.get('channel', {}).get('status', '')
+	channel_data = data.get('channel', {})
+	channel = channel_data.get('name', '').lower()
+	title = channel_data.get('status', '')
+	game = data.get('game')
 
-	return plugins.streams.Stream(channel, 'twitch.tv/' + channel, title)
+	return plugins.streams.Stream(channel, 'twitch.tv/' + channel, title, game)
 
 
 def get_twitch_data(channels):
 	url = 'https://api.twitch.tv/kraken/streams'
 	query_params = {'channel': ','.join(channels)}
-	response = botologist.http.get(url, query_params=query_params)
-	contents = response.read().decode()
-	response.close()
-
-	return json.loads(contents)
+	return requests.get(url, query_params).json()
 
 
 def get_online_streams(urls):

@@ -8,9 +8,12 @@ import subprocess
 import traceback
 
 
-def send_email(email):
-	p = subprocess.Popen(['/usr/sbin/sendmail', '-t', '-oi'],
-		stdin=subprocess.PIPE)
+def send_email(email, sendmail_bin, sendmail_args=None):
+	if sendmail_args is None:
+		sendmail_args = ['-t', '-oi']
+	elif isinstance(sendmail_args, str):
+		sendmail_args = sendmail_args.split()
+	p = subprocess.Popen([sendmail_bin] + sendmail_args, stdin=subprocess.PIPE)
 	p.communicate(email.as_string().encode('utf-8'))
 
 
@@ -38,13 +41,17 @@ class ErrorHandler:
 
 		self.bot._send_msg(medium_msg, self.bot.get_admin_nicks())
 
-		email = MIMEText(long_msg)
-		email['Subject'] = '[botologist] ' + medium_msg
+		if 'admin_email' in self.bot.config:
+			email = MIMEText(long_msg)
+			email['Subject'] = '[botologist] ' + medium_msg
+			email['From'] = self.bot.config.get('email_from', 'botologist')
 
-		user = pwd.getpwuid(os.getuid())[0]
-		email['To'] = self.bot.config.get('admin_email', user)
-		email['From'] = self.bot.config.get('email_from', 'botologist')
+			if self.bot.config['admin_email'] is None:
+				email['To'] = pwd.getpwuid(os.getuid())[0]
+			else:
+				email['To'] = self.bot.config['admin_email']
 
-		send_email(email)
-
-		log.info('Sent email with exception information to %s', user)
+			sendmail_bin = self.bot.config.get('sendmail_bin', '/usr/sbin/sendmail')
+			sendmail_args = self.bot.config.get('sendmail_args', None)
+			send_email(email, sendmail_bin, sendmail_args)
+			log.info('Sent email with exception information to %s', email['To'])

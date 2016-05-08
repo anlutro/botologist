@@ -1,32 +1,42 @@
 import logging
 log = logging.getLogger(__name__)
 
-import collections
 import datetime
-import json
 import re
-import urllib.error
+import requests
+import requests.exceptions
 
-import botologist.http
 import botologist.plugin
 
 
-def get_duckduckgo_data(url):
-	response = botologist.http.get(url)
-	content = response.read().decode()
-	return json.loads(content)
+def format_number(number):
+	if not isinstance(number, int):
+		number = float(number)
+		if number % 1 == 0.0:
+			number = int(number)
+
+	if isinstance(number, int):
+		f_number = '{:,}'.format(number)
+	else:
+		f_number = '{:,.2f}'.format(float(number))
+
+	if len(f_number) > 12:
+		f_number = '{:.2}'.format(number)
+
+	return f_number
 
 
-def get_conversion_result(query):
-	params = collections.OrderedDict([
-		('q', query), ('format', 'json'), ('no_html', 1)
-	])
-	qs = urllib.parse.urlencode(params)
-	url = 'http://api.duckduckgo.com/?' + qs.lower()
+def get_duckduckgo_data(url, query_params):
+	return requests.get(url, query_params).json()
+
+
+def get_conversion_result(*args):
+	query = ' '.join([str(arg) for arg in args])
+	query_params = {'q': query.lower(), 'format': 'json', 'no_html': 1}
 
 	try:
-		data = get_duckduckgo_data(url)
-	except urllib.error.URLError:
+		data = get_duckduckgo_data('http://api.duckduckgo.com', query_params)
+	except requests.exceptions.RequestException:
 		log.warning('DuckDuckGo request failed', exc_info=True)
 		return False
 
@@ -34,16 +44,16 @@ def get_conversion_result(query):
 		return data['Answer']
 
 
+_rate_expr = re.compile(r'<Cube currency=["\']([A-Za-z]{3})["\'] rate=["\']([\d.]+)["\']/>')
 def get_currency_data():
 	url = 'http://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml'
 	try:
-		response = botologist.http.get(url)
-		content = response.read().decode()
-	except urllib.error.URLError:
+		response = requests.get(url)
+	except requests.exceptions.RequestException:
 		log.warning('ECB exchange data request failed', exc_info=True)
 		return {}
 
-	matches = re.findall(r'<Cube currency=["\']([A-Za-z]{3})["\'] rate=["\']([\d.]+)["\']/>', content)
+	matches = _rate_expr.findall(response.text)
 	currency_data = {}
 	for currency, exchange_rate in matches:
 		currency_data[currency.upper()] = float(exchange_rate)
@@ -51,10 +61,11 @@ def get_currency_data():
 
 	return currency_data
 
+
 class Currency:
 	last_fetch = None
 	currency_data = None
-	aliases = {'NIS': 'ILS'}
+	aliases = {'NIS': 'ILS', 'EURO': 'EUR'}
 
 	@classmethod
 	def currencies(cls):
@@ -77,6 +88,9 @@ class Currency:
 			from_cur = cls.aliases[from_cur]
 		if to_cur in cls.aliases:
 			to_cur = cls.aliases[to_cur]
+
+		if from_cur == to_cur:
+			return None
 
 		if from_cur == 'EUR':
 			if to_cur not in cls.currency_data:
@@ -104,8 +118,16 @@ class Currency:
 
 
 class ConversionPlugin(botologist.plugin.Plugin):
+<<<<<<< HEAD
+	amount_pattern = r'((?:[\d][\d,. ]*?|[\.][\d]*?)[km]??)'
+	unit_pattern = r'((?:(?:square|cubic) )?[a-z.,]+)'
+	pattern = re.compile(amount_pattern + r' ?' + unit_pattern + \
+		r' (into|in|to) ' + unit_pattern, re.I)
+=======
+	amount_pattern = r'([\d\.][\d,. ]*?[km]??)'
 	unit_pattern = r'((?:(?:square|cubic) )?[a-z.]+)'
-	pattern = re.compile(r'([\d.,]+) ?'+unit_pattern+r' (into|in|to) '+unit_pattern, re.I)
+	pattern = re.compile(amount_pattern + r' ?' + unit_pattern + r' (into|in|to) ' + unit_pattern, re.I)
+>>>>>>> 5d8f12a35060c8e83bbd9b1bd067e97e6c888a59
 
 	@botologist.plugin.reply()
 	def convert(self, msg):
@@ -113,16 +135,46 @@ class ConversionPlugin(botologist.plugin.Plugin):
 		if not match:
 			return
 
-		amount = match.group(1)
 		conv_from = match.group(2)
 		conv_to = match.group(4)
+		if conv_from == conv_to:
+			return
 
-		result = Currency.convert(amount, conv_from, conv_to)
-		if result:
-			if len(amount) > 8:
-				amount = '{:.2f}'.format(float(amount))
-			return '{} {} = {:.2f} {}'.format(amount, conv_from, result, conv_to)
+		amount = match.group(1).lower().replace(' ', '').replace(',', '')
 
-		result = get_conversion_result(' '.join(match.groups()))
+		try:
+			if amount.endswith('k'):
+				real_amount = float(amount[:-1]) * 1000
+			elif amount.endswith('m'):
+				real_amount = float(amount[:-1]) * 1000000
+			else:
+				real_amount = float(amount)
+		except ValueError:
+			return
+
+		if real_amount % 1 == 0.0:
+			real_amount = int(real_amount)
+
+		if ',' in conv_to:
+			retvals = []
+			for conv_to in conv_to.split(','):
+				result = Currency.convert(real_amount, conv_from, conv_to)
+				if result:
+					format_result = format_number(result)
+					retvals.append('{} {}'.format(format_result, conv_to))
+			if retvals:
+				format_amount = format_number(real_amount)
+				return '{} {} = {}'.format(format_amount, conv_from,
+					', '.join(retvals))
+		else:
+			result = Currency.convert(real_amount, conv_from, conv_to)
+			if result:
+				format_amount = format_number(real_amount)
+				format_result = format_number(result)
+				return '{} {} = {} {}'.format(format_amount,
+					conv_from, format_result, conv_to)
+
+		result = get_conversion_result(real_amount,
+			conv_from, match.group(3), conv_to)
 		if result:
 			return result

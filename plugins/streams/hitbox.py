@@ -1,10 +1,8 @@
 import logging
 log = logging.getLogger(__name__)
 
-import json
-import urllib.parse
-
-import botologist.http
+import requests
+import requests.exceptions
 import plugins.streams
 
 
@@ -15,17 +13,13 @@ def make_hitbox_stream(data):
 
 
 def get_hitbox_data(channels):
-	channels = [urllib.parse.quote(channel) for channel in channels]
-	url = 'http://api.hitbox.tv/media/live/' + ','.join(channels)
+	url = 'http://api.hitbox.tv/media/live/' + (','.join(channels))
+	response = requests.get(url)
 
-	response = botologist.http.get(url)
-	contents = response.read().decode()
-	response.close()
-
-	if contents == 'no_media_found':
+	if response.text == 'no_media_found':
 		return []
 
-	return json.loads(contents)
+	return response.json()
 
 
 def get_online_streams(urls):

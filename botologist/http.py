@@ -2,45 +2,6 @@ import logging
 log = logging.getLogger(__name__)
 
 import http.server
-import socket
-import urllib.error
-import urllib.request
-import urllib.parse
-
-
-def request(method, url, body, headers=None, timeout=2):
-	if headers is None:
-		headers = {}
-
-	req = urllib.request.Request(url=url, method=method, headers=headers)
-
-	log.debug('Making %s request: %s', method.upper(), url)
-
-	try:
-		return urllib.request.urlopen(req, timeout=timeout)
-	except socket.timeout as exception:
-		raise urllib.error.URLError('Request timed out') from exception
-
-
-def get(url, query_params=None, **kwargs):
-	if query_params:
-		scheme, host, path, qs, fragment = urllib.parse.urlsplit(url)
-		if qs:
-			url_query_params = urllib.parse.parse_qs(qs)
-			url_query_params.update(query_params)
-			query_params = url_query_params
-		new_query_string = urllib.parse.urlencode(query_params, doseq=True)
-		url = urllib.parse.urlunsplit((scheme, host, path, new_query_string, fragment))
-
-	return request('GET', url, '', **kwargs)
-
-
-def post(url, body='', **kwargs):
-	return request('POST', url, body, **kwargs)
-
-
-def head(url, body='', **kwargs):
-	return request('HEAD', url, body, **kwargs)
 
 
 class RequestHandler(http.server.BaseHTTPRequestHandler):
