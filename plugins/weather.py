@@ -18,10 +18,10 @@ def get_owm_json(*args, **kwargs):
 class WeatherPlugin(botologist.plugin.Plugin):
 	@botologist.plugin.command('weather')
 	def weather(self, cmd):
-		if len(cmd.args) < 1:
-			return 'Usage: !weather city'
+		city = 'Edinburgh'
 
-		city = '-'.join(cmd.args)
+		if not 'city' in vars():
+		    city = '-'.join(cmd.args)
 		url = 'http://api.openweathermap.org/data/2.5/weather'
 		query_params = {'q': city, 'units': 'metric'}
 
