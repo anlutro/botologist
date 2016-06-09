@@ -38,6 +38,7 @@ def _find_user(channel, host, nick):
 
 class Client(botologist.protocol.Client):
 	MAX_MSG_CHARS = 500
+	PING_EVERY = 3 * 60 # seconds
 
 	def __init__(self, server_pool, nick, username=None, realname=None):
 		super().__init__(nick)
@@ -309,7 +310,7 @@ class Client(botologist.protocol.Client):
 		if self.ping_timer:
 			self.ping_timer.cancel()
 			self.ping_timer = None
-		self.ping_timer = threading.Timer(10*60, self.send_ping)
+		self.ping_timer = threading.Timer(self.PING_EVERY, self.send_ping)
 		self.ping_timer.start()
 
 	def send_ping(self):
