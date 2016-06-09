@@ -222,7 +222,9 @@ class Client(botologist.protocol.Client):
 				user = _find_user(channel, host, nick)
 				kicked_nick = words[3]
 				kicked_user = channel.find_user(name=kicked_nick)
-				channel.users.remove(kicked_user)
+				# https://github.com/anlutro/botologist/issues/66
+				if kicked_user and kicked_user in channel.users:
+					channel.users.remove(kicked_user)
 				log.debug('User %s was kicked by %s from channel %s',
 					kicked_nick, user.nick, channel.channel)
 				for callback in self.on_kick:
@@ -234,12 +236,11 @@ class Client(botologist.protocol.Client):
 				log.debug('User %s quit', host)
 				for channel in self.channels.values():
 					channel_user = channel.find_user(identifier=host, name=nick)
-					# TODO: why would channel_user not be in channel.users? race
-					# condition? another thread removing the user? wtf?
+					# https://github.com/anlutro/botologist/issues/66
 					if channel_user and channel_user in channel.users:
 						channel.users.remove(channel_user)
-						log.debug('Removed user %s from channel %s',
-							channel_user.host, channel.name)
+					log.debug('Removed user %s from channel %s',
+						channel_user.host, channel.name)
 
 			elif words[1] == 'PRIVMSG':
 				channel = self.channels.get(words[2])
