@@ -239,8 +239,9 @@ class Client(botologist.protocol.Client):
 					# https://github.com/anlutro/botologist/issues/66
 					if channel_user and channel_user in channel.users:
 						channel.users.remove(channel_user)
-					log.debug('Removed user %s from channel %s',
-						channel_user.host, channel.name)
+					if channel_user:
+						log.debug('Removed user %s from channel %s',
+							channel_user.host, channel.name)
 
 			elif words[1] == 'PRIVMSG':
 				channel = self.channels.get(words[2])
