@@ -68,30 +68,38 @@ class Channel:
 		assert isinstance(user, User)
 		self.users.add(user)
 
-	def find_user(self, user=None, name=None, identifier=None):
+	def find_user(self, **kwargs):
+		users = self.find_users(**kwargs)
+		assert len(users) < 2, 'more than 1 user matched criteria: ' + repr(kwargs)
+		return users[0] if users else None
+
+	def find_users(self, user=None, name=None, identifier=None):
 		assert user or name or identifier
+		users = []
 
 		if user:
 			identifier = user.identifier
 			name = user.name
+			user = None
 
 		if identifier and name:
 			for user in self.users:
 				if user.identifier == identifier and user.name == name:
-					return user
+					users.append(user)
+			return users
 
 		for user in self.users:
 			if (identifier and user.identifier == identifier) or \
 					(name and user.name == name):
-				return user
+				users.append(user)
 
-		return None
+		return users
 
 	def remove_user(self, user=None, name=None, identifier=None):
 		assert user or name or identifier
 
-		user = self.find_user(user, name, identifier)
-		if user:
+		users = self.find_users(user, name, identifier)
+		for user in users:
 			self.users.remove(user)
 
 

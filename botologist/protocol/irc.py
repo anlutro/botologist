@@ -222,10 +222,8 @@ class Client(botologist.protocol.Client):
 				channel = self.channels[words[2]]
 				user = _find_user(channel, host, nick)
 				kicked_nick = words[3]
-				kicked_user = channel.find_user(name=kicked_nick)
-				# https://github.com/anlutro/botologist/issues/66
-				if kicked_user and kicked_user in channel.users:
-					channel.users.remove(kicked_user)
+				kicked_user = _find_user(name=kicked_nick)
+				channel.remove_user(kicked_user)
 				log.debug('User %s was kicked by %s from channel %s',
 					kicked_nick, user.nick, channel.channel)
 				for callback in self.on_kick:
@@ -236,10 +234,8 @@ class Client(botologist.protocol.Client):
 			elif words[1] == 'QUIT':
 				log.debug('User %s quit', host)
 				for channel in self.channels.values():
-					channel_user = channel.find_user(identifier=host, name=nick)
-					# https://github.com/anlutro/botologist/issues/66
-					if channel_user and channel_user in channel.users:
-						channel.users.remove(channel_user)
+					channel_user = _find_user(identifier=host, name=nick)
+					channel.remove_user(channel_user)
 					if channel_user:
 						log.debug('Removed user %s from channel %s',
 							channel_user.host, channel.name)
