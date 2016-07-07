@@ -36,7 +36,7 @@ class KothPlugin(botologist.plugin.Plugin):
 		if self.is_active:
 			return 'King of the hill already active!'
 
-		log.warning('Starting KOTH')
+		log.info('Starting KOTH')
 		self.queue = collections.deque()
 		self.is_active = True
 		self.signups_open = True
@@ -84,7 +84,7 @@ class KothPlugin(botologist.plugin.Plugin):
 		self.queue = None
 		self.is_active = False
 		self.signups_open = False
-		log.warning('KOTH ended')
+		log.info('KOTH ended')
 		return 'King of the hill ended, queue cleared!'
 
 	def add(self, user):
