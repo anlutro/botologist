@@ -71,8 +71,8 @@ class RedditeuPlugin(botologist.plugin.Plugin):
 		self.insults = (
 			re.compile(r'.*fuck(\s+you)\s*,?\s*'+self.bot.nick+r'.*', re.IGNORECASE),
 			re.compile(r'.*'+self.bot.nick+r'[,:]?\s+fuck\s+you.*', re.IGNORECASE),
-			re.compile(r'.*shut\s*up\s*,?\s*'+self.bot.nick+r'.*', re.IGNORECASE),
-			re.compile(r'.*'+self.bot.nick+r'[,:]?\s+shut\s+up.*', re.IGNORECASE),
+			re.compile(r'.*shut\s*(the\s*fuck)?\s*up\s*,?\s*'+self.bot.nick+r'.*', re.IGNORECASE),
+			re.compile(r'.*'+self.bot.nick+r'[,:]?\s+shut\s*(the\s*fuck)?\s*up.*', re.IGNORECASE),
 		)
 
 		self.monologue_lastuser = None
