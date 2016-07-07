@@ -352,6 +352,10 @@ class User(botologist.protocol.User):
 		nick, host, ident = cls.split_ircformat(string)
 		return cls(nick, host, ident)
 
+	def __repr__(self):
+		return '<botologist.protocol.irc.User "{}!{}@{}">'.format(
+			self.name, self.ident, self.host)
+
 
 class Message(botologist.protocol.Message):
 	def __init__(self, user, target, message):
