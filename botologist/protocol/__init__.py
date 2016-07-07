@@ -75,11 +75,13 @@ class Channel:
 			identifier = user.identifier
 			name = user.name
 
-		for user in self.users:
-			if identifier and name:
+		if identifier and name:
+			for user in self.users:
 				if user.identifier == identifier and user.name == name:
 					return user
-			elif (identifier and user.identifier == identifier) or \
+
+		for user in self.users:
+			if (identifier and user.identifier == identifier) or \
 					(name and user.name == name):
 				return user
 
