@@ -33,7 +33,9 @@ def _find_user(channel, host, nick):
 		user = channel.find_user(identifier=host, name=nick)
 		if user:
 			return user
-	return User(nick, host)
+	if host and nick:
+		return User(nick, host)
+	return None
 
 
 class Client(botologist.protocol.Client):
@@ -222,8 +224,8 @@ class Client(botologist.protocol.Client):
 				channel = self.channels[words[2]]
 				user = _find_user(channel, host, nick)
 				kicked_nick = words[3]
-				kicked_user = _find_user(name=kicked_nick)
-				channel.remove_user(kicked_user)
+				kicked_user = _find_user(channel, None, kicked_nick)
+				channel.remove_user(name=kicked_nick)
 				log.debug('User %s was kicked by %s from channel %s',
 					kicked_nick, user.nick, channel.channel)
 				for callback in self.on_kick:
@@ -234,7 +236,7 @@ class Client(botologist.protocol.Client):
 			elif words[1] == 'QUIT':
 				log.debug('User %s quit', host)
 				for channel in self.channels.values():
-					channel_user = _find_user(identifier=host, name=nick)
+					channel_user = _find_user(channel, host, nick)
 					channel.remove_user(channel_user)
 					if channel_user:
 						log.debug('Removed user %s from channel %s',
