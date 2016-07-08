@@ -89,8 +89,11 @@ class Channel:
 			return users
 
 		for user in self.users:
-			if (identifier and user.identifier == identifier) or \
-					(name and user.name == name):
+			if identifier and user.identifier == identifier:
+				log.debug('user %r matches identifier %r', user, identifier)
+				users.append(user)
+			elif name and user.name == name:
+				log.debug('user %r matches name %r', user, name)
 				users.append(user)
 
 		return users
@@ -100,6 +103,7 @@ class Channel:
 
 		users = self.find_users(user, name, identifier)
 		for user in users:
+			log.debug('removing user %r from %s', user, self.name)
 			self.users.remove(user)
 
 
