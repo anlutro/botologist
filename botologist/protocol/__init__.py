@@ -70,7 +70,7 @@ class Channel:
 
 	def find_user(self, **kwargs):
 		users = self.find_users(**kwargs)
-		if len(users) != 1:
+		if len(users) > 1:
 			log.warning('more than 1 user matched criteria %r in channel %s',
 				kwargs, self.name)
 		return users[0] if users else None
