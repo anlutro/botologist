@@ -349,7 +349,7 @@ class Bot:
 		self.timer.start()
 		log.debug('Ticker started')
 
-	def _stop(self):		
+	def _stop(self):
 		if self.http_server:
 			log.info('Shutting down HTTP server')
 			self.http_server.shutdown()
