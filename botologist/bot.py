@@ -117,7 +117,7 @@ class Bot:
 			for admin_id in self.admins:
 				users = channel.find_users(identifier=admin_id)
 				for user in users:
-					if nick != self.nick:
+					if user.nick != self.nick:
 						admin_nicks.add(user.name)
 		return admin_nicks
 
