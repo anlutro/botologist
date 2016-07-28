@@ -115,9 +115,10 @@ class Bot:
 		admin_nicks = set()
 		for channel in self.client.channels.values():
 			for admin_id in self.admins:
-				user = channel.find_user(identifier=admin_id)
-				if user:
-					admin_nicks.add(user.name)
+				user = channel.find_users(identifier=admin_id)
+				if for user in users:
+					if nick != self.nick:
+						admin_nicks.add(user.name)
 		return admin_nicks
 
 	def run_forever(self):
