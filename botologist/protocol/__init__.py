@@ -66,6 +66,9 @@ class Channel:
 
 	def add_user(self, user):
 		assert isinstance(user, User)
+		if self.find_user(user=user):
+			log.info('user %r already present in channel, not adding', user)
+			return
 		self.users.add(user)
 
 	def find_user(self, **kwargs):
