@@ -271,10 +271,10 @@ class Bot:
 
 		if command_func._is_threaded:
 			log.debug('Starting thread for command %s', cmd_string)
-			thread = botologist.util.ErrorProneThread(
-				target=self._maybe_send_cmd_reply,
+			thread = threading.Thread(
+				target=self._wrap_error_handler(self._maybe_send_cmd_reply),
 				args=(command_func, command),
-				error_handler=self.error_handler.handle_error)
+			)
 			thread.start()
 		else:
 			self._maybe_send_cmd_reply(command_func, command)
@@ -337,16 +337,19 @@ class Bot:
 	def _start(self):
 		if self.http_port and not self.http_server:
 			log.info('Running HTTP server on %s:%s', self.http_host, self.http_port)
-			thread = botologist.util.ErrorProneThread(
-				target=botologist.http.run_http_server,
+			thread = threading.Thread(
+				target=self._wrap_error_handler(botologist.http.run_http_server),
 				args=(self, self.http_host, self.http_port),
-				error_handler=self.error_handler.handle_error)
+			)
 			thread.start()
 
 		self._start_tick_timer()
 
 	def _start_tick_timer(self):
-		self.timer = threading.Timer(self.TICK_INTERVAL, self._tick)
+		self.timer = threading.Timer(
+			function=self._wrap_error_handler(self._tick),
+			interval=self.TICK_INTERVAL,
+		)
 		self.timer.start()
 		log.debug('Ticker started')
 
@@ -378,3 +381,8 @@ class Bot:
 						self._send_msg(result, channel.channel)
 		finally:
 			self._start_tick_timer()
+
+	def _wrap_error_handler(self, func):
+		if self.error_handler:
+			return self.error_handler.wrap(func)
+		return func
