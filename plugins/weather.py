@@ -30,7 +30,7 @@ class WeatherPlugin(botologist.plugin.Plugin):
 
 		try:
 			data = get_owm_data(url, query_params=query_params)
-		except requests.exceptions.RequestException:
+		except (requests.exceptions.RequestException, ValueError):
 			log.warning('OpenWeatherMap request caused an exception', exc_info=True)
 			return 'An HTTP error occured, try again later!'
 
@@ -47,5 +47,7 @@ class WeatherPlugin(botologist.plugin.Plugin):
 		retval = 'Weather in {}: {}'.format(location, weather)
 		if 'temp' in data['main']:
 			retval += ' - temperature: {}°C'.format(data['main']['temp'])
+		if 'wind' in data:
+			retval += ' - wind: {}m/s'.format(data['wind']['speed'])
 
 		return retval

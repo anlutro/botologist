@@ -71,8 +71,8 @@ class RedditeuPlugin(botologist.plugin.Plugin):
 		self.insults = (
 			re.compile(r'.*fuck(\s+you)\s*,?\s*'+self.bot.nick+r'.*', re.IGNORECASE),
 			re.compile(r'.*'+self.bot.nick+r'[,:]?\s+fuck\s+you.*', re.IGNORECASE),
-			re.compile(r'.*shut\s*up\s*,?\s*'+self.bot.nick+r'.*', re.IGNORECASE),
-			re.compile(r'.*'+self.bot.nick+r'[,:]?\s+shut\s+up.*', re.IGNORECASE),
+			re.compile(r'.*shut\s*(the\s*fuck)?\s*up\s*,?\s*'+self.bot.nick+r'.*', re.IGNORECASE),
+			re.compile(r'.*'+self.bot.nick+r'[,:]?\s+shut\s*(the\s*fuck)?\s*up.*', re.IGNORECASE),
 		)
 
 		self.monologue_lastuser = None
@@ -103,7 +103,7 @@ class RedditeuPlugin(botologist.plugin.Plugin):
 		if not channel:
 			return
 		for user in channel.users:
-			if 'nevzetz' in user.identifier or 'ip51cc146b.speed.planet.nl' in user.identifier:
+			if 'nevzetz' in user.host or 'ip51cc146b.speed.planet.nl' in user.host:
 				return 'Michael is ' + user.name
 			if 'steele' in user.name.lower():
 				return "There's a chance it's " + user.name
@@ -141,7 +141,7 @@ class RedditeuPlugin(botologist.plugin.Plugin):
 		msgl = msg.message.lower()
 		if msgl == 'deridu':
 			return 'what the fuck is this'
-		elif 'the fuck is this' in msgl:
+		elif 'fuck is this' in msgl or 'what the fuck is' in msgl or 'wtf is this' in msgl:
 			return 'watch yo profamity'
 		elif msgl == 'watch your profanity' or msgl == 'watch your profamity' \
 				or msgl == 'watch yo profamity' or msgl == 'watchoprofamity' \
@@ -168,3 +168,14 @@ class RedditeuPlugin(botologist.plugin.Plugin):
 			self.monologue_counter = 1
 			if count > 15:
 				return 'AUTISM C-C-C-C-COMBO BREAKER! ({} line long monologue)'.format(count)
+
+	@botologist.plugin.reply()
+	def nooooo(self, msg):
+		if 'nooo' in msg.message.lower():
+			return 'https://vid.me/1VfD'
+
+	@botologist.plugin.reply()
+	def guys(self, msg):
+		msgl = msg.message.lower()
+		if 'dont be late' in msgl or "don't be late" in msgl:
+			return 'same to you'

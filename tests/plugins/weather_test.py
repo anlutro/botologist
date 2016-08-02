@@ -25,12 +25,12 @@ class WeatherPluginTest(PluginTestCase):
 	@mock.patch(f, return_value=get_json('edinburgh'))
 	def test_cmd_simple(self, mock):
 		ret = self.cmd('weather edinburgh')
-		self.assertEqual('Weather in Edinburgh, GB: light rain - temperature: 17.64°C', ret)
+		self.assertEqual('Weather in Edinburgh, GB: light rain - temperature: 17.64°C - wind: 1.5m/s', ret)
 
 	@mock.patch(f, return_value=get_json('tel_aviv'))
 	def test_cmd_multiword_city(self, mock):
 		ret = self.cmd('weather tel aviv')
-		self.assertEqual('Weather in Tel Aviv District, IL: few clouds - temperature: 33.11°C', ret)
+		self.assertEqual('Weather in Tel Aviv District, IL: few clouds - temperature: 33.11°C - wind: 5.7m/s', ret)
 
 	@mock.patch(f, return_value=get_json('404'))
 	def test_not_found(self, mock):

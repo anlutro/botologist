@@ -52,26 +52,26 @@ def _search_for_quote(quote):
 
 	url = BASE_URL+'/'+str(quote['id'])
 
-	if len(quote['body']) > 160:
+	if len(quote['body']) > 400:
 		body = quote['body']
 		if search:
 			try:
 				body_len = len(body)
 				substr_pos = body.lower().index(search.lower())
 				start = body.rfind('\n', 0, substr_pos) + 1
-				while body_len - start < 100:
+				while body_len - start < 300:
 					substr_pos = body.rfind('\n', 0, start - 1) + 1
-					if body_len - substr_pos < 100:
+					if body_len - substr_pos < 300:
 						start = substr_pos
 					else:
 						break
-				end = start + 150 - len(search)
+				end = start + 350 - len(search)
 			except ValueError:
 				start = 0
-				end = 100
+				end = 300
 		else:
 			start = 0
-			end = 100
+			end = 300
 
 		body = body.replace('\r', '').replace('\n', ' ').replace('\t', ' ')
 		excerpt = body[start:end]
@@ -95,9 +95,8 @@ class QdbPlugin(botologist.plugin.Plugin):
 		Examples: !qdb search for this - !qdb #220
 		'''
 		if len(cmd.args) < 1:
-			return
-
-		if cmd.args[0][0] == '#':
+			arg = 'random'
+		elif cmd.args[0][0] == '#':
 			try:
 				arg = int(cmd.args[0][1:])
 			except ValueError:

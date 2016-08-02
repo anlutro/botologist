@@ -66,30 +66,49 @@ class Channel:
 
 	def add_user(self, user):
 		assert isinstance(user, User)
+		if self.find_user(user=user):
+			log.info('user %r already present in channel, not adding', user)
+			return
 		self.users.add(user)
 
-	def find_user(self, user=None, name=None, identifier=None):
+	def find_user(self, **kwargs):
+		users = self.find_users(**kwargs)
+		if len(users) > 1:
+			log.warning('more than 1 user matched criteria %r in channel %s',
+				kwargs, self.name)
+		return users[0] if users else None
+
+	def find_users(self, user=None, name=None, identifier=None):
 		assert user or name or identifier
+		users = []
 
 		if user:
 			identifier = user.identifier
 			name = user.name
+			user = None
+
+		if identifier and name:
+			for user in self.users:
+				if user.identifier == identifier and user.name == name:
+					users.append(user)
+			return users
 
 		for user in self.users:
-			if identifier and name:
-				if user.identifier == identifier and user.name == name:
-					return user
-			elif (identifier and user.identifier == identifier) or \
-					(name and user.name == name):
-				return user
+			if identifier and user.identifier == identifier:
+				log.debug('user %r matches identifier %r', user, identifier)
+				users.append(user)
+			elif name and user.name == name:
+				log.debug('user %r matches name %r', user, name)
+				users.append(user)
 
-		return None
+		return users
 
 	def remove_user(self, user=None, name=None, identifier=None):
 		assert user or name or identifier
 
-		user = self.find_user(user, name, identifier)
-		if user:
+		users = self.find_users(user, name, identifier)
+		for user in users:
+			log.debug('removing user %r from %s', user, self.name)
 			self.users.remove(user)
 
 

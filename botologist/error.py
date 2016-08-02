@@ -55,3 +55,11 @@ class ErrorHandler:
 			sendmail_args = self.bot.config.get('sendmail_args', None)
 			send_email(email, sendmail_bin, sendmail_args)
 			log.info('Sent email with exception information to %s', email['To'])
+
+	def wrap(self, func):
+		def wrapped(*args, **kwargs):
+			try:
+				func(*args, **kwargs)
+			except:
+				self.handle_error()
+		return wrapped

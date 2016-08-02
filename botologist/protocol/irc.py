@@ -34,11 +34,14 @@ def _find_user(channel, host, nick):
 		user = channel.find_user(identifier=host, name=nick)
 		if user:
 			return user
-	return User(nick, host)
+	if host and nick:
+		return User(nick, host)
+	return None
 
 
 class Client(botologist.protocol.Client):
 	MAX_MSG_CHARS = 500
+	PING_EVERY = 3 * 60 # seconds
 
 	def __init__(self, server_pool, nick, username=None, realname=None):
 		super().__init__(nick)
@@ -214,21 +217,17 @@ class Client(botologist.protocol.Client):
 
 			elif words[1] == 'PART':
 				channel = self.channels[words[2]]
-				user = _find_user(channel, host, nick)
-				channel.remove_user(user)
-				log.debug('User %s parted from channel %s', user.host, channel)
+				log.debug('User %s parted from channel %s', host, channel)
+				channel.remove_user(name=nick, identifier=host)
 
 			elif words[1] == 'KICK':
 				channel = self.channels[words[2]]
 				user = _find_user(channel, host, nick)
 				kicked_nick = words[3]
-				kicked_user = channel.find_user(name=kicked_nick)
-				print('kicked_nick:', kicked_nick)
-				print('kicked_user:', kicked_user)
-				print([(user.name, user.identifier) for user in channel.users])
-				channel.remove_user(name=kicked_nick)
+				kicked_user = _find_user(channel, None, kicked_nick)
 				log.debug('User %s was kicked by %s from channel %s',
 					kicked_nick, user.nick, channel.channel)
+				channel.remove_user(name=kicked_nick)
 				for callback in self.on_kick:
 					callback(channel, kicked_user, user)
 				if kicked_nick == self.nick:
@@ -237,11 +236,7 @@ class Client(botologist.protocol.Client):
 			elif words[1] == 'QUIT':
 				log.debug('User %s quit', host)
 				for channel in self.channels.values():
-					channel_user = channel.find_user(identifier=host, name=nick)
-					if channel_user:
-						channel.remove_user(channel_user)
-						log.debug('Removing user %s from channel %s',
-							channel_user.host, channel.name)
+					channel.remove_user(name=nick, identifier=host)
 
 			elif words[1] == 'PRIVMSG':
 				channel = self.channels.get(words[2])
@@ -309,7 +304,7 @@ class Client(botologist.protocol.Client):
 		if self.ping_timer:
 			self.ping_timer.cancel()
 			self.ping_timer = None
-		self.ping_timer = threading.Timer(10*60, self.send_ping)
+		self.ping_timer = threading.Timer(self.PING_EVERY, self.send_ping)
 		self.ping_timer.start()
 
 	def send_ping(self):
@@ -350,6 +345,10 @@ class User(botologist.protocol.User):
 	def from_ircformat(cls, string):
 		nick, host, ident = cls.split_ircformat(string)
 		return cls(nick, host, ident)
+
+	def __repr__(self):
+		return '<botologist.protocol.irc.User "{}!{}@{}">'.format(
+			self.name, self.ident, self.host)
 
 
 class Message(botologist.protocol.Message):
