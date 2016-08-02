@@ -210,8 +210,8 @@ class Client(botologist.protocol.Client):
 				for channel in self.channels.values():
 					channel_user = channel.find_user(identifier=host)
 					if channel_user:
-						log.debug('Updating nick for user in channel %s',
-							channel.name)
+						log.debug('Updating nick for user %r in channel %s',
+							channel_user, channel.name)
 						channel_user.name = new_nick
 
 			elif words[1] == 'PART':
@@ -233,7 +233,7 @@ class Client(botologist.protocol.Client):
 					self.join_channel(channel)
 
 			elif words[1] == 'QUIT':
-				log.debug('User %s quit', host)
+				log.debug('User %s!%s quit', nick, host)
 				for channel in self.channels.values():
 					channel.remove_user(name=nick, identifier=host)
 
