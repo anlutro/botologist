@@ -9,6 +9,7 @@ api = dota2api.Initialise()
 dota_ids = {
     20714906: 'Naypalm',
     39594528: 'haiku',
+    56467315: 'moop',
 }
 
 class DotaPlugin(botologist.plugin.Plugin):
