@@ -338,7 +338,7 @@ class Client(botologist.protocol.Client):
 class User(botologist.protocol.User):
 	def __init__(self, nick, host=None, ident=None):
 		if host and '@' in host:
-			host = host[host.index('@')+1:]
+			ident, host = host.split('@')
 		self.host = host
 		if ident and ident[0] == '~':
 			ident = ident[1:]
