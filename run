@@ -3,6 +3,11 @@
 arg=$1
 [ -z $1 ] || shift
 
+if [[ -e envs ]]; then
+	echo "Sourcing envs file"
+	source ./envs
+fi
+
 if [ -z $VIRTUAL_ENV ]; then
 	python=$(dirname $(readlink -f $0))/.virtualenv/bin/python
 else
