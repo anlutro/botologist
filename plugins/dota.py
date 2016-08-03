@@ -26,8 +26,8 @@ class DotaPlugin(botologist.plugin.Plugin):
                     kills=p['kills'],
                     deaths=p['deaths'],
                     assists=p['assists'],
-                    gpm=p['gpm'],
-                    xpm=p['xpm'],
+                    gpm=p['gold_per_min'],
+                    xpm=p['xp_per_min'],
                 )
         return ret
 
