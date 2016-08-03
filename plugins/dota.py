@@ -17,13 +17,15 @@ class DotaPlugin(botologist.plugin.Plugin):
         ret = ''
         for p in match['players']:
             if p['account_id'] in list(dota_ids.keys()):
-                ret += '{player_name} ({hero_name}, level {level}) kda:{kills}/{deaths}/{assists}. '.format(
+                ret += '{player_name} ({hero_name}, level {level}) kda:{kills}/{deaths}/{assists} xpm:{xpm} gpm:{gpm}. '.format(
                     hero_name=p['hero_name'],
                     player_name=dota_ids[p['account_id']],
                     level=p['level'],
                     kills=p['kills'],
                     deaths=p['deaths'],
                     assists=p['assists'],
+                    gpm=m['gpm'],
+                    xpm=m['xpm'],
                 )
         return ret
 
