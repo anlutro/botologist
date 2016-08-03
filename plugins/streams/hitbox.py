@@ -17,7 +17,7 @@ def get_hitbox_data(channels):
 	response = requests.get(url)
 
 	if response.text == 'no_media_found':
-		return []
+		return {}
 
 	return response.json()
 
