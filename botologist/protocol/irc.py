@@ -3,6 +3,7 @@ log = logging.getLogger(__name__)
 
 import signal
 import socket
+import ssl
 import threading
 
 import botologist.util
@@ -12,12 +13,20 @@ import botologist.protocol
 def get_client(config):
 	nick = config.get('nick', 'botologist')
 
+	def _make_server_obj(cfg):
+		if isinstance(cfg, dict):
+			return (Server(**cfg))
+		elif isinstance(cfg, str):
+			return (Server(cfg))
+		else:
+			raise ValueError('server config must be dict or str, %s given', type(cfg))
+
 	if 'servers' in config:
 		assert isinstance(config['servers'], list)
-		servers = (Server(s) for s in config['servers'])
+		servers = (_make_server_obj(s) for s in config['servers'])
 	else:
-		assert isinstance(config['server'], str)
-		servers = (Server(config['server']),)
+		servers = (_make_server_obj(config['server']),)
+
 	server_pool = ServerPool(servers)
 
 	return Client(
@@ -364,13 +373,16 @@ class Message(botologist.protocol.Message):
 
 
 class Server:
-	def __init__(self, address):
+	def __init__(self, address, ssl=False, ssl_protocol=ssl.PROTOCOL_TLSv1_2):
 		parts = address.split(':')
 		self.host = parts[0]
 		if len(parts) > 1:
 			self.port = int(parts[1])
 		else:
 			self.port = 6667
+
+		self.ssl = True
+		self.ssl_protocol = ssl_protocol
 
 
 class ServerPool:
@@ -428,6 +440,12 @@ class IRCSocket:
 	def __init__(self, server):
 		self.server = server
 		self.socket = None
+		self.ssl_context = None
+		if self.server.ssl:
+			self.ssl_context = ssl.SSLContext(server.ssl_protocol)
+			self.ssl_context.verify_mode = ssl.CERT_REQUIRED
+			self.ssl_context.check_hostname = True
+			self.ssl_context.load_default_certs()
 
 	def connect(self):
 		log.debug('Looking up address info for %s:%s',
@@ -445,6 +463,10 @@ class IRCSocket:
 			except OSError:
 				self.socket = None
 				continue
+
+			if self.server.ssl:
+				self.socket = self.ssl_context.wrap_socket(
+					self.socket, server_hostname=self.server.host)
 
 			try:
 				self.socket.settimeout(10)
