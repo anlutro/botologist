@@ -15,9 +15,9 @@ def get_client(config):
 
 	def _make_server_obj(cfg):
 		if isinstance(cfg, dict):
-			return (Server(**cfg))
+			return Server(**cfg)
 		elif isinstance(cfg, str):
-			return (Server(cfg))
+			return Server(cfg)
 		else:
 			raise ValueError('server config must be dict or str, %s given', type(cfg))
 
