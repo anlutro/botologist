@@ -17,6 +17,8 @@ class DotaPlugin(botologist.plugin.Plugin):
         ret = ''
         for p in match['players']:
             if p['account_id'] in list(dota_ids.keys()):
+                from pprint import pprint
+                pprint(p)
                 ret += '{player_name} ({hero_name}, level {level}) kda:{kills}/{deaths}/{assists} xpm:{xpm} gpm:{gpm}. '.format(
                     hero_name=p['hero_name'],
                     player_name=dota_ids[p['account_id']],
@@ -24,8 +26,8 @@ class DotaPlugin(botologist.plugin.Plugin):
                     kills=p['kills'],
                     deaths=p['deaths'],
                     assists=p['assists'],
-                    gpm=m['gpm'],
-                    xpm=m['xpm'],
+                    gpm=p['gpm'],
+                    xpm=p['xpm'],
                 )
         return ret
 
