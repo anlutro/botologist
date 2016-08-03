@@ -131,8 +131,8 @@ class Client(botologist.protocol.Client):
 				data = self.irc_socket.recv()
 			except OSError:
 				if self.quitting:
-					log.info('socket.recv threw an exception, but the client '
-						'is quitting, so exiting loop', exc_info=True)
+					log.info('socket.recv threw an exception, but quitting, '
+						'so exiting loop', exc_info=True)
 				else:
 					log.exception('socket.recv threw an exception')
 					self.reconnect(5)
@@ -143,6 +143,11 @@ class Client(botologist.protocol.Client):
 					continue
 
 				log.debug('RECEIVED: %s', repr(msg))
+
+				if self.quitting and msg.startswith('ERROR :'):
+					log.info('received an IRC ERROR, but quitting, so exiting loop')
+					return
+
 				try:
 					self.handle_msg(msg)
 				except:
@@ -373,7 +378,7 @@ class Message(botologist.protocol.Message):
 
 
 class Server:
-	def __init__(self, address, ssl=False, ssl_protocol=ssl.PROTOCOL_TLSv1_2):
+	def __init__(self, address, ssl=False):
 		parts = address.split(':')
 		self.host = parts[0]
 		if len(parts) > 1:
@@ -382,7 +387,6 @@ class Server:
 			self.port = 6667
 
 		self.ssl = True
-		self.ssl_protocol = ssl_protocol
 
 
 class ServerPool:
@@ -442,7 +446,11 @@ class IRCSocket:
 		self.socket = None
 		self.ssl_context = None
 		if self.server.ssl:
-			self.ssl_context = ssl.SSLContext(server.ssl_protocol)
+			# https://docs.python.org/3/library/ssl.html#protocol-versions
+			self.ssl_context = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
+			self.ssl_context.options |= ssl.OP_NO_SSLv2
+			self.ssl_context.options |= ssl.OP_NO_SSLv3
+
 			self.ssl_context.verify_mode = ssl.CERT_REQUIRED
 			self.ssl_context.check_hostname = True
 			self.ssl_context.load_default_certs()
