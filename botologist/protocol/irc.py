@@ -448,8 +448,8 @@ class IRCSocket:
 		if self.server.ssl:
 			# https://docs.python.org/3/library/ssl.html#protocol-versions
 			self.ssl_context = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
-			self.ssl_context.options |= ssl.OP_NO_SSLv2
-			self.ssl_context.options |= ssl.OP_NO_SSLv3
+			self.ssl_context.options |= ssl.OP_NO_SSLv2 # pylint: disable=no-member
+			self.ssl_context.options |= ssl.OP_NO_SSLv3 # pylint: disable=no-member
 
 			self.ssl_context.verify_mode = ssl.CERT_REQUIRED
 			self.ssl_context.check_hostname = True
