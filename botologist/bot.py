@@ -71,7 +71,7 @@ class Bot:
 		self.http_server = None
 
 		self.error_handler = botologist.error.ErrorHandler(self)
-		self.client.error_handler = self.error_handler.handle_error
+		self.client.error_handler = self.error_handler
 		self.client.on_connect.append(self._start)
 		self.client.on_disconnect.append(self._stop)
 		self.client.on_join.append(self._handle_join)

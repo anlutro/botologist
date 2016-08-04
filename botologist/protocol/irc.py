@@ -50,6 +50,7 @@ def _find_user(channel, host, nick):
 class Client(botologist.protocol.Client):
 	MAX_MSG_CHARS = 500
 	PING_EVERY = 3 * 60 # seconds
+	PING_TIMEOUT = 10 # seconds
 
 	def __init__(self, server_pool, nick, username=None, realname=None):
 		super().__init__(nick)
@@ -88,7 +89,9 @@ class Client(botologist.protocol.Client):
 	def connect(self):
 		if self.irc_socket is not None:
 			self.disconnect()
-		thread = threading.Thread(target=self._connect)
+		thread = threading.Thread(
+			target=self._wrap_error_handler(self._connect)
+		)
 		thread.start()
 
 	def disconnect(self):
@@ -105,9 +108,14 @@ class Client(botologist.protocol.Client):
 
 		if time:
 			log.info('Reconnecting in %d seconds', time)
-			thread = self.reconnect_timer = threading.Timer(time, self._connect)
+			thread = self.reconnect_timer = threading.Timer(
+				time,
+				self._wrap_error_handler(self._connect),
+			)
 		else:
-			thread = threading.Thread(target=self._connect)
+			thread = threading.Thread(
+				target=self._wrap_error_handler(self._connect),
+			)
 
 		thread.start()
 
@@ -148,15 +156,7 @@ class Client(botologist.protocol.Client):
 					log.info('received an IRC ERROR, but quitting, so exiting loop')
 					return
 
-				try:
-					self.handle_msg(msg)
-				except:
-					# if an error handler is defined, call it and continue
-					# the loop. if not, re-raise the exception
-					if self.error_handler:
-						self.error_handler() # pylint: disable=not-callable
-					else:
-						raise
+				self.handle_msg(msg)
 
 	def join_channel(self, channel):
 		assert isinstance(channel, Channel)
@@ -317,7 +317,10 @@ class Client(botologist.protocol.Client):
 		if self.ping_timer:
 			self.ping_timer.cancel()
 			self.ping_timer = None
-		self.ping_timer = threading.Timer(self.PING_EVERY, self.send_ping)
+		self.ping_timer = threading.Timer(
+			self.PING_EVERY,
+			self._wrap_error_handler(self.send_ping),
+		)
 		self.ping_timer.start()
 
 	def send_ping(self):
@@ -326,7 +329,10 @@ class Client(botologist.protocol.Client):
 			return
 
 		self.send('PING ' + self.server.host)
-		self.ping_response_timer = threading.Timer(10, self.handle_ping_timeout)
+		self.ping_response_timer = threading.Timer(
+			self.PING_TIMEOUT,
+			self._wrap_error_handler(self.handle_ping_timeout),
+		)
 		self.ping_response_timer.start()
 
 	def handle_ping_timeout(self):

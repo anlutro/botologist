@@ -29,6 +29,11 @@ class Client:
 	def run_forever(self):
 		raise NotImplementedError('method run_forever must be defined')
 
+	def _wrap_error_handler(self, func):
+		if self.error_handler:
+			return self.error_handler.wrap(func)
+		return func
+
 
 class Channel:
 	def __init__(self, name):
