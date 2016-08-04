@@ -19,7 +19,9 @@ def get_client(config):
 		elif isinstance(cfg, str):
 			return Server(cfg)
 		else:
-			raise ValueError('server config must be dict or str, %s given', type(cfg))
+			raise ValueError(
+				'server config must be dict or str, {} given'.format(type(cfg))
+			)
 
 	if 'servers' in config:
 		assert isinstance(config['servers'], list)
