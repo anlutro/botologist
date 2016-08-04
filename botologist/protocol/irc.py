@@ -469,10 +469,12 @@ class IRCSocket:
 			try:
 				self.socket = socket.socket(af, socktype, proto)
 			except OSError:
+				log.warning('uncaught exception while initialising socket', exc_info=True)
 				self.socket = None
 				continue
 
 			if self.server.ssl:
+				log.debug('server is using SSL')
 				self.socket = self.ssl_context.wrap_socket(
 					self.socket, server_hostname=self.server.host)
 
@@ -481,6 +483,7 @@ class IRCSocket:
 				log.debug('Trying to connect to %s:%s', address[0], address[1])
 				self.socket.connect(address)
 			except OSError:
+				log.warning('uncaught exception while connecting to socket', exc_info=True)
 				self.close()
 				continue
 
