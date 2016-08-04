@@ -386,7 +386,7 @@ class Server:
 		else:
 			self.port = 6667
 
-		self.ssl = True
+		self.ssl = ssl
 
 
 class ServerPool:
