@@ -15,6 +15,7 @@ def make_hitbox_stream(data):
 def get_hitbox_data(channels):
 	url = 'http://api.hitbox.tv/media/live/' + (','.join(channels))
 	response = requests.get(url)
+	response.raise_for_status()
 
 	if response.text == 'no_media_found':
 		return {}
