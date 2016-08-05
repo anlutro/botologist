@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/anlutro/botologist.png?branch=master)](https://travis-ci.org/anlutro/botologist)
 
-Plugin-based single-server IRC bot written in Python 3.
+Plugin-based single-server IRC bot written in Python 3. This is a private project, meaning no promises of backwards compatibility and no guarantees of safety/security running the program yourself.
 
 ## Installation
 
@@ -140,3 +140,7 @@ The `botologist/bot.py` module contains 1 main class: `botologist.bot.Bot` - whi
 The core plugin classes and functionality is defined in `botologist/plugin.py`. Various plugins extend the `botologist.plugin.Plugin` class to provide a plugin. Plugins can be associated with channels via the `config.yml` file.
 
 Plugins define functionality such as commands, replies, join handlers and tickers via method decorators. The best way to see how to do this is to look at an existing plugin.
+
+## Licence
+
+The contents of this repository are released under the [MIT license](http://opensource.org/licenses/MIT). See the [LICENSE](LICENSE) file included for more information.
