@@ -5,7 +5,6 @@ import dota2api
 import datetime
 import botologist.plugin
 
-api = dota2api.Initialise()
 dota_ids = {
     20714906: 'Naypalm',
     39594528: 'haiku',
@@ -13,6 +12,11 @@ dota_ids = {
 }
 
 class DotaPlugin(botologist.plugin.Plugin):
+    def __init__(self, bot, channel):
+        super().__init__(bot, channel)
+        api_key = self.bot.config.get('dota2_apikey')
+        self.api = dota2api.Initialise(api_key)
+
     def get_our_scores(self, match):
         ret = ''
         for p in match['players']:
@@ -33,7 +37,7 @@ class DotaPlugin(botologist.plugin.Plugin):
     def get_match_str(self, match_id):
         if not isinstance(match_id, int):
             return "Game not found."
-        m = api.get_match_details(match_id)
+        m = self.api.get_match_details(match_id)
         return "Dota 2 {match_id} {time}, score: {radiant_score}-{dire_score}, {winner} victory, duration {duration}m. {our_scores} {dotabuff}".format(
             time=datetime.datetime.fromtimestamp(m['start_time']).strftime('%b %d'),
             match_id=match_id,
@@ -56,7 +60,7 @@ class DotaPlugin(botologist.plugin.Plugin):
         account_id = self.get_account_id(cmd.user)
         if not account_id:
             return "Account not found."
-        matches = api.get_match_history(account_id)
+        matches = self.api.get_match_history(account_id)
         latest_match = {'match_id': 'Not found.'}
         if 'total_results' in matches and matches['total_results'] > 0:
             latest_match = matches['matches'][0]
