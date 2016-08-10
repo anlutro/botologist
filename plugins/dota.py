@@ -70,6 +70,21 @@ class DotaPlugin(botologist.plugin.Plugin):
             latest_match = matches['matches'][0]
         return self.get_match_str(latest_match['match_id'])
 
+    @botologist.plugin.command('steamid')
+    def steamid(self, cmd):
+        if len(cmd.args) != 1:
+            return "Usage: !steamid 13371337"
+        try:
+            steamid = int(cmd.args[0])
+        except ValueError:
+            return "That's not a valid Steam ID."
+        if not self._add_steamid(cmd.user.nick, steamid):
+            return "Steam ID for {user} is now {steamid}.".format(
+                steamid=steamid,
+                user=cmd.user.nick
+            )
+        return "Failed to update Steam ID."
+
     # SQL helper functions, the joy
     def _nick_exists(self, user):
         self.cur.execute('''SELECT id FROM d2_users WHERE user = (?)''', (str(user),))
@@ -85,3 +100,14 @@ class DotaPlugin(botologist.plugin.Plugin):
     def _all_accounts(self):
         self.cur.execute('''SELECT user, steamid FROM d2_users ORDER BY id''')
         return self.cur.fetchall()
+
+    def _remove_user(self, user):
+        self.cur.execute('''delete from d2_users where user = (?)''', (user,))
+
+    def _add_steamid(self, user, steamid):
+        user = str(user)
+        steamid = int(steamid)
+        if self._nick_exists(user):
+            self._remove_user(user)
+        self.cur.execute('''insert into d2_users (user, steamid) values (?, ?)''', (user, steamid))
+        self.conn.commit()
