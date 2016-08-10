@@ -24,7 +24,7 @@ class IrcChannelTest(unittest.TestCase):
 
 	def test_add_user(self):
 		chan = Channel('#foobar')
-		user = User('nick', 'ident@host.com')
+		user = User('nick', 'host.com', 'ident')
 		chan.add_user(user)
 		self.assertEqual(user.nick, chan.find_nick_from_host(user.host))
 		self.assertEqual(None, chan.find_nick_from_host('asdsaff'))
@@ -33,7 +33,7 @@ class IrcChannelTest(unittest.TestCase):
 
 	def test_remove_user(self):
 		chan = Channel('#foobar')
-		user = User('nick', 'ident@host.com')
+		user = User('nick', 'host.com', 'ident')
 		chan.add_user(user)
 		self.assertEqual(user.nick, chan.find_nick_from_host(user.host))
 		chan.remove_user(identifier=user.host)
@@ -45,7 +45,7 @@ class IrcChannelTest(unittest.TestCase):
 
 	def test_update_nick(self):
 		chan = Channel('#foobar')
-		user = User('oldnick', 'ident@host.com')
+		user = User('oldnick', 'host.com', 'ident')
 		chan.add_user(user)
 		self.assertEqual(user.nick, chan.find_nick_from_host(user.host))
 		self.assertEqual(user.host, chan.find_host_from_nick('oldnick'))
@@ -54,10 +54,20 @@ class IrcChannelTest(unittest.TestCase):
 		self.assertEqual('newnick', chan.find_nick_from_host(user.host))
 		self.assertEqual(user.host, chan.find_host_from_nick('newnick'))
 
+	def test_issue66(self):
+		chan = Channel('#foobar')
+		user1 = User('nick', 'host.com', 'ident')
+		chan.add_user(user1)
+		user2 = User('nick_', 'host.com', 'ident')
+		chan.add_user(user2)
+		chan.remove_user(name=user1.nick, identifier=user1.host)
+		user2.name = 'nick'
+		chan.remove_user(name=user2.nick, identifier=user2.host)
+
 
 class IrcUserTest(unittest.TestCase):
 	def test_strips_tilde(self):
-		user = User('foo_bar', '@bar.baz', '~foo')
+		user = User('foo_bar', 'bar.baz', '~foo')
 		self.assertEqual('foo_bar', user.nick)
 		self.assertEqual('bar.baz', user.host)
 		self.assertEqual('foo', user.ident)

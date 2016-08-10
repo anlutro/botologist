@@ -55,7 +55,7 @@ else:
 handler.setLevel(log_level)
 
 # define the logging format
-formatter = logging.Formatter('[%(asctime)s] %(levelname)s - %(name)s - %(message)s')
+formatter = logging.Formatter('%(asctime)s [%(levelname)8s] [%(name)s] %(message)s')
 handler.setFormatter(formatter)
 
 # add the logging handler for all loggers

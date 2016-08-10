@@ -12,6 +12,11 @@ log_level: debug
 # the server to connect to
 server: irc.quakenet.org:6667
 
+# if you need ssl
+# server:
+#   address: irc.freenode.net:7000
+#   ssl: true
+
 # the nick to use
 nick: botologist
 

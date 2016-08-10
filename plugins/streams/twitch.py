@@ -18,7 +18,10 @@ def make_twitch_stream(data):
 def get_twitch_data(channels):
 	url = 'https://api.twitch.tv/kraken/streams'
 	query_params = {'channel': ','.join(channels)}
-	return requests.get(url, query_params).json()
+	response = requests.get(url, query_params)
+	response.raise_for_status()
+
+	return response.json()
 
 
 def get_online_streams(urls):
@@ -29,6 +32,7 @@ def get_online_streams(urls):
 		return []
 
 	data = get_twitch_data(channels)
-	log.debug('%s online twitch.tv streams', len(data['streams']))
+	streams = data.get('streams', [])
+	log.debug('%s online twitch.tv streams', len(streams))
 
-	return [make_twitch_stream(stream) for stream in data['streams']]
+	return [make_twitch_stream(stream) for stream in streams]

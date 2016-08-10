@@ -15,9 +15,10 @@ def make_hitbox_stream(data):
 def get_hitbox_data(channels):
 	url = 'http://api.hitbox.tv/media/live/' + (','.join(channels))
 	response = requests.get(url)
+	response.raise_for_status()
 
 	if response.text == 'no_media_found':
-		return []
+		return {}
 
 	return response.json()
 
@@ -32,11 +33,11 @@ def get_online_streams(urls):
 	data = get_hitbox_data(channels)
 
 	if not data:
-		return data
+		return []
 
 	streams = [
 		make_hitbox_stream(stream)
-		for stream in data['livestream']
+		for stream in data.get('livestream', [])
 		if stream['media_is_live'] == '1'
 	]
 

@@ -13,12 +13,22 @@ import botologist.protocol
 def get_client(config):
 	nick = config.get('nick', 'botologist')
 
+	def _make_server_obj(cfg):
+		if isinstance(cfg, dict):
+			return Server(**cfg)
+		elif isinstance(cfg, str):
+			return Server(cfg)
+		else:
+			raise ValueError(
+				'server config must be dict or str, {} given'.format(type(cfg))
+			)
+
 	if 'servers' in config:
 		assert isinstance(config['servers'], list)
-		servers = (Server(s) for s in config['servers'])
+		servers = (_make_server_obj(s) for s in config['servers'])
 	else:
-		assert isinstance(config['server'], str)
-		servers = (Server(config['server']),)
+		servers = (_make_server_obj(config['server']),)
+
 	server_pool = ServerPool(servers)
 
 	return Client(
@@ -42,6 +52,7 @@ def _find_user(channel, host, nick):
 class Client(botologist.protocol.Client):
 	MAX_MSG_CHARS = 500
 	PING_EVERY = 3 * 60 # seconds
+	PING_TIMEOUT = 10 # seconds
 
 	def __init__(self, server_pool, nick, username=None, realname=None):
 		super().__init__(nick)
@@ -80,7 +91,9 @@ class Client(botologist.protocol.Client):
 	def connect(self):
 		if self.irc_socket is not None:
 			self.disconnect()
-		thread = threading.Thread(target=self._connect)
+		thread = threading.Thread(
+			target=self._wrap_error_handler(self._connect)
+		)
 		thread.start()
 
 	def disconnect(self):
@@ -97,9 +110,14 @@ class Client(botologist.protocol.Client):
 
 		if time:
 			log.info('Reconnecting in %d seconds', time)
-			thread = self.reconnect_timer = threading.Timer(time, self._connect)
+			thread = self.reconnect_timer = threading.Timer(
+				time,
+				self._wrap_error_handler(self._connect),
+			)
 		else:
-			thread = threading.Thread(target=self._connect)
+			thread = threading.Thread(
+				target=self._wrap_error_handler(self._connect),
+			)
 
 		thread.start()
 
@@ -123,8 +141,8 @@ class Client(botologist.protocol.Client):
 				data = self.irc_socket.recv()
 			except OSError:
 				if self.quitting:
-					log.info('socket.recv threw an exception, but the client '
-						'is quitting, so exiting loop', exc_info=True)
+					log.info('socket.recv threw an exception, but quitting, '
+						'so exiting loop', exc_info=True)
 				else:
 					log.exception('socket.recv threw an exception')
 					self.reconnect(5)
@@ -135,15 +153,12 @@ class Client(botologist.protocol.Client):
 					continue
 
 				log.debug('RECEIVED: %s', repr(msg))
-				try:
-					self.handle_msg(msg)
-				except:
-					# if an error handler is defined, call it and continue
-					# the loop. if not, re-raise the exception
-					if self.error_handler:
-						self.error_handler() # pylint: disable=not-callable
-					else:
-						raise
+
+				if self.quitting and msg.startswith('ERROR :'):
+					log.info('received an IRC ERROR, but quitting, so exiting loop')
+					return
+
+				self.handle_msg(msg)
 
 	def join_channel(self, channel):
 		assert isinstance(channel, Channel)
@@ -211,8 +226,8 @@ class Client(botologist.protocol.Client):
 				for channel in self.channels.values():
 					channel_user = channel.find_user(identifier=host)
 					if channel_user:
-						log.debug('Updating nick for user in channel %s',
-							channel.name)
+						log.debug('Updating nick for user %r in channel %s',
+							channel_user, channel.name)
 						channel_user.name = new_nick
 
 			elif words[1] == 'PART':
@@ -234,7 +249,7 @@ class Client(botologist.protocol.Client):
 					self.join_channel(channel)
 
 			elif words[1] == 'QUIT':
-				log.debug('User %s quit', host)
+				log.debug('User %s!%s quit', nick, host)
 				for channel in self.channels.values():
 					channel.remove_user(name=nick, identifier=host)
 
@@ -304,7 +319,10 @@ class Client(botologist.protocol.Client):
 		if self.ping_timer:
 			self.ping_timer.cancel()
 			self.ping_timer = None
-		self.ping_timer = threading.Timer(self.PING_EVERY, self.send_ping)
+		self.ping_timer = threading.Timer(
+			self.PING_EVERY,
+			self._wrap_error_handler(self.send_ping),
+		)
 		self.ping_timer.start()
 
 	def send_ping(self):
@@ -313,7 +331,10 @@ class Client(botologist.protocol.Client):
 			return
 
 		self.send('PING ' + self.server.host)
-		self.ping_response_timer = threading.Timer(10, self.handle_ping_timeout)
+		self.ping_response_timer = threading.Timer(
+			self.PING_TIMEOUT,
+			self._wrap_error_handler(self.handle_ping_timeout),
+		)
 		self.ping_response_timer.start()
 
 	def handle_ping_timeout(self):
@@ -325,7 +346,7 @@ class Client(botologist.protocol.Client):
 class User(botologist.protocol.User):
 	def __init__(self, nick, host=None, ident=None):
 		if host and '@' in host:
-			host = host[host.index('@')+1:]
+			ident, host = host.split('@')
 		self.host = host
 		if ident and ident[0] == '~':
 			ident = ident[1:]
@@ -347,8 +368,8 @@ class User(botologist.protocol.User):
 		return cls(nick, host, ident)
 
 	def __repr__(self):
-		return '<botologist.protocol.irc.User "{}!{}@{}">'.format(
-			self.name, self.ident, self.host)
+		return '<botologist.protocol.irc.User "{}!{}@{}" at {}>'.format(
+			self.name, self.ident, self.host, hex(id(self)))
 
 
 class Message(botologist.protocol.Message):
@@ -365,13 +386,15 @@ class Message(botologist.protocol.Message):
 
 
 class Server:
-	def __init__(self, address):
+	def __init__(self, address, ssl=False):
 		parts = address.split(':')
 		self.host = parts[0]
 		if len(parts) > 1:
 			self.port = int(parts[1])
 		else:
 			self.port = 6667
+
+		self.ssl = ssl
 
 
 class ServerPool:
@@ -429,6 +452,16 @@ class IRCSocket:
 	def __init__(self, server):
 		self.server = server
 		self.socket = None
+		self.ssl_context = None
+		if self.server.ssl:
+			# https://docs.python.org/3/library/ssl.html#protocol-versions
+			self.ssl_context = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
+			self.ssl_context.options |= ssl.OP_NO_SSLv2 # pylint: disable=no-member
+			self.ssl_context.options |= ssl.OP_NO_SSLv3 # pylint: disable=no-member
+
+			self.ssl_context.verify_mode = ssl.CERT_REQUIRED
+			self.ssl_context.check_hostname = True
+			self.ssl_context.load_default_certs()
 
 		# SSL/TLS Options
 		self.context = ssl.SSLContext(ssl.PROTOCOL_TLSv1)
@@ -450,6 +483,7 @@ class IRCSocket:
 			try:
 				self.socket = socket.socket(af, socktype, proto)
 			except OSError:
+				log.warning('uncaught exception while initialising socket', exc_info=True)
 				self.socket = None
 				continue
 			if True:
@@ -457,11 +491,17 @@ class IRCSocket:
 				self.socket = ssl_sock
 				ssl_sock.connect((self.server.host, self.server.port))
 
+			if self.server.ssl:
+				log.debug('server is using SSL')
+				self.socket = self.ssl_context.wrap_socket(
+					self.socket, server_hostname=self.server.host)
+
 			try:
 				self.socket.settimeout(10)
 				log.debug('Trying to connect to %s:%s', address[0], address[1])
 				#self.socket.connect((address, self.server.port))
 			except OSError:
+				log.warning('uncaught exception while connecting to socket', exc_info=True)
 				self.close()
 				continue
 

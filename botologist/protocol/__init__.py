@@ -29,11 +29,16 @@ class Client:
 	def run_forever(self):
 		raise NotImplementedError('method run_forever must be defined')
 
+	def _wrap_error_handler(self, func):
+		if self.error_handler:
+			return self.error_handler.wrap(func)
+		return func
+
 
 class Channel:
 	def __init__(self, name):
 		self.name = name
-		self.users = set()
+		self.users = []
 
 		self.commands = {}
 		self.joins = []
@@ -69,7 +74,7 @@ class Channel:
 		if self.find_user(user=user):
 			log.info('user %r already present in channel, not adding', user)
 			return
-		self.users.add(user)
+		self.users.append(user)
 
 	def find_user(self, **kwargs):
 		users = self.find_users(**kwargs)
@@ -127,9 +132,6 @@ class User:
 		if self.name and other.name:
 			return other.name == self.name and other.identifier == self.identifier
 		return other.identifier == self.identifier
-
-	def __hash__(self):
-		return hash((self.identifier, self.nick))
 
 
 class Message:
