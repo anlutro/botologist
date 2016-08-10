@@ -463,12 +463,6 @@ class IRCSocket:
 			self.ssl_context.check_hostname = True
 			self.ssl_context.load_default_certs()
 
-		# SSL/TLS Options
-		self.context = ssl.SSLContext(ssl.PROTOCOL_TLSv1)
-		self.context.verify_mode = ssl.CERT_REQUIRED
-		self.context.check_hostname = True
-		self.context.load_default_certs()
-
 	def connect(self):
 		log.debug('Looking up address info for %s:%s',
 			self.server.host, self.server.port)
@@ -486,10 +480,6 @@ class IRCSocket:
 				log.warning('uncaught exception while initialising socket', exc_info=True)
 				self.socket = None
 				continue
-			if True:
-				ssl_sock = self.context.wrap_socket(self.socket, server_hostname="irc.freenode.net")
-				self.socket = ssl_sock
-				ssl_sock.connect((self.server.host, self.server.port))
 
 			if self.server.ssl:
 				log.debug('server is using SSL')
@@ -499,7 +489,7 @@ class IRCSocket:
 			try:
 				self.socket.settimeout(10)
 				log.debug('Trying to connect to %s:%s', address[0], address[1])
-				#self.socket.connect((address, self.server.port))
+				self.socket.connect(address)
 			except OSError:
 				log.warning('uncaught exception while connecting to socket', exc_info=True)
 				self.close()
