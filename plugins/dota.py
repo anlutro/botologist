@@ -7,8 +7,6 @@ import dota2api
 import datetime
 import botologist.plugin
 
-#db = os.path.join(bot.storage_dir, 'dota2.db')
-#conn = sqlite3.connect(db, check_same_thread=False)
 
 class DotaPlugin(botologist.plugin.Plugin):
     def __init__(self, bot, channel):
