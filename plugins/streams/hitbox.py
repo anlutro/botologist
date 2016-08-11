@@ -20,7 +20,11 @@ def get_hitbox_data(channels):
 	if response.text == 'no_media_found':
 		return {}
 
-	return response.json()
+	try:
+		return response.json()
+	except ValueError:
+		log.warning('could not decode hitbox response: %r', response.text)
+		return {}
 
 
 def get_online_streams(urls):
