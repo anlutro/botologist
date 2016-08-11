@@ -20,7 +20,6 @@ class DotaPlugin(botologist.plugin.Plugin):
     def get_our_scores(self, match):
         ret = ''
         accounts = self._all_accounts()
-        print(accounts)
         for p in match['players']:
             for user, steamid in accounts:
                 if p['account_id'] == steamid:
