@@ -57,6 +57,9 @@ class DotaPlugin(botologist.plugin.Plugin):
 
     @botologist.plugin.command('dota')
     def dota(self, cmd):
+        '''
+        Gets the latest dota match for the user requesting it.
+        '''
         if not self._nick_exists(cmd.user.nick):
             return "Steam ID not found for {user}.".format(
                 user=str(cmd.user.nick)
@@ -64,7 +67,12 @@ class DotaPlugin(botologist.plugin.Plugin):
         account_id = self._get_steam_id(cmd.user.nick)
         if not account_id:
             return "Invalid Steam ID."
-        matches = self.api.get_match_history(account_id)
+        try:
+            matches = self.api.get_match_history(account_id)
+        except dota2api.exceptions.APIError(e):
+            return "Failed to fetch from API: {error}".format(error=e)
+        except dota2api.exceptions.APITimeoutError:
+            return "Connection to Dota 2 API timed out."
         latest_match = {'match_id': 'Not found.'}
         if 'total_results' in matches and matches['total_results'] > 0:
             latest_match = matches['matches'][0]
@@ -72,6 +80,9 @@ class DotaPlugin(botologist.plugin.Plugin):
 
     @botologist.plugin.command('steamid')
     def steamid(self, cmd):
+        '''
+        Adds the user's steam id (dota version) to the sqlite db
+        '''
         if len(cmd.args) != 1:
             return "Usage: !steamid 13371337"
         try:
