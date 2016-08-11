@@ -23,7 +23,7 @@ def get_hitbox_data(channels):
 	try:
 		return response.json()
 	except ValueError:
-		log.debug('could not decode hitbox response: %r', response.text)
+		log.warning('could not decode hitbox response: %r', response.text)
 		return {}
 
 
