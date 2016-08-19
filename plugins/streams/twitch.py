@@ -19,7 +19,11 @@ def get_twitch_data(channels):
 	url = 'https://api.twitch.tv/kraken/streams'
 	query_params = {'channel': ','.join(channels)}
 	response = requests.get(url, query_params)
-	response.raise_for_status()
+	try:
+		response.raise_for_status()
+	except requests.exceptions.HTTPError:
+		log.warning('HTTP error while fetching twitch API data', exc_info=True)
+		return {}
 
 	return response.json()
 
