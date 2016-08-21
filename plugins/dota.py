@@ -14,8 +14,11 @@ class DotaPlugin(botologist.plugin.Plugin):
         api_key = self.bot.config.get('dota2_apikey')
         self.api = dota2api.Initialise(api_key)
         db = os.path.join(self.bot.storage_dir, 'dota2.db')
+        if not os.path.isfile(db):
+            open(db, "w+")
         self.conn = sqlite3.connect(db, check_same_thread=False)
         self.cur = self.conn.cursor()
+        self._create_table()
 
     def get_our_scores(self, match):
         ret = ''
@@ -164,3 +167,9 @@ class DotaPlugin(botologist.plugin.Plugin):
         if not old_matchid or matchid != old_matchid:
             self.cur.execute('''UPDATE d2_users SET latest_match = (?) WHERE id = (?)''', (matchid, sql_ret[0]))
             self.conn.commit()
+
+    def _create_table(self):
+        '''
+        Create d2_users table if it doesn't exist.
+        '''
+        self.cur.execute('''CREATE TABLE IF NOT EXISTS d2_users (id INTEGER PRIMARY KEY AUTOINCREMENT, steamid INTEGER, user TEXT, latest_match INTEGER)''')
