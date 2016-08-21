@@ -116,6 +116,7 @@ class DotaPlugin(botologist.plugin.Plugin):
             log.debug("Latest: {}, Olds: [{}]".format(latest_match_id, old_matchids))
             if latest_match_id not in old_matchids:
                 ret.append(self.get_match_str(latest_match_id))
+                old_matchids.append(latest_match_id)  # If 2 players are in the same game we don't want double messages
         return ret
 
     # SQL helper functions, the joy
