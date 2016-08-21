@@ -352,11 +352,11 @@ class Bot:
 			interval=self.TICK_INTERVAL,
 		)
 		self.timer.start()
-		log.debug('Ticker started')
+		log.debug('started ticker with interval %d seconds', self.TICK_INTERVAL)
 
 	def _stop(self):
 		if self.http_server:
-			log.info('Shutting down HTTP server')
+			log.info('shutting down HTTP server')
 			self.http_server.shutdown()
 			self.http_server = None
 		if self.http_thread:
@@ -364,15 +364,15 @@ class Bot:
 			self.http_thread = None
 
 		if self.timer:
-			log.info('Ticker stopped')
+			log.info('ticker stopped')
 			self.timer.cancel()
 			self.timer = None
 
 	def _tick(self):
-		log.debug('Tick!')
+		log.debug('ticker running')
 
 		# reset the spam throttle to prevent the log dictionaries from becoming
-		# too large
+		# too large. TODO: replace with a queue
 		self._command_log = {}
 		for channel in self._reply_log:
 			self._reply_log[channel] = {}

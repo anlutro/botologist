@@ -111,6 +111,7 @@ class Client(botologist.protocol.Client):
 			callback()
 
 		log.info('Disconnecting')
+		self.quitting = True
 		self.irc_socket.close()
 		self.irc_socket = None
 
@@ -140,6 +141,8 @@ class Client(botologist.protocol.Client):
 		self.connect_thread.start()
 
 	def _connect(self):
+		self.quitting = False
+
 		if self.reconnect_timer:
 			self.reconnect_timer = None
 
@@ -159,18 +162,25 @@ class Client(botologist.protocol.Client):
 				data = self.irc_socket.recv()
 			except OSError:
 				if self.quitting:
-					log.info('socket.recv threw an exception, but quitting, '
+					log.info('socket.recv threw an OSError, but quitting, '
 						'so exiting loop', exc_info=True)
 				else:
 					log.exception('socket.recv threw an exception')
 					self.reconnect(5)
 				return
 
-			for msg in data.split('\r\n'):
+			if data == b'':
+				if self.quitting:
+					log.info('received empty binary data, but quitting, so exiting loop')
+					return
+				else:
+					raise IRCSocketError('Received empty binary data')
+
+			for msg in botologist.util.decode_lines(data):
 				if not msg:
 					continue
 
-				log.debug('RECEIVED: %s', repr(msg))
+				log.debug('[recv] %r', msg)
 
 				if self.quitting and msg.startswith('ERROR :'):
 					log.info('received an IRC ERROR, but quitting, so exiting loop')
@@ -301,7 +311,7 @@ class Client(botologist.protocol.Client):
 				len(msg), self.MAX_MSG_CHARS)
 			msg = msg[:(self.MAX_MSG_CHARS - 3)] + '...'
 
-		log.debug('SENDING: %s', repr(msg))
+		log.debug('[send] %s', repr(msg))
 		self.irc_socket.send(msg + '\r\n')
 
 	def stop(self, reason='Leaving'):
@@ -326,7 +336,7 @@ class Client(botologist.protocol.Client):
 			log.warning('Tried to quit, but irc_socket is None')
 			return
 
-		log.info('Quitting, reason: '+reason)
+		log.info('Quitting, reason: %s', reason)
 		self.quitting = True
 		self.send('QUIT :' + reason)
 
@@ -529,10 +539,7 @@ class IRCSocket:
 		while data != b'' and (data[-1] != 10 and data[-2] != 13):
 			data += self.socket.recv(bufsize)
 
-		if data == b'':
-			raise IRCSocketError('Received empty binary data')
-
-		return botologist.util.decode(data)
+		return data
 
 	def send(self, data):
 		if isinstance(data, str):
