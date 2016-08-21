@@ -1,4 +1,3 @@
 PyYAML>=3.11
 tweepy>=3.2
 requests>=2.7
-dota2api==1.3.1
