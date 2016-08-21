@@ -6,7 +6,7 @@ import sqlite3
 import dota2api
 import datetime
 import botologist.plugin
-
+from time import sleep
 
 class DotaPlugin(botologist.plugin.Plugin):
     def __init__(self, bot, channel):
@@ -54,6 +54,19 @@ class DotaPlugin(botologist.plugin.Plugin):
             our_scores=self.get_our_scores(m),
         )
 
+    def _get_latest_match_id(self, steamid):
+        try:
+            matches = self.api.get_match_history(steamid)
+        except dota2api.exceptions.APIError(e):
+            return "Failed to fetch from API: {error}".format(error=e)
+        except dota2api.exceptions.APITimeoutError:
+            return "Connection to Dota 2 API timed out."
+        latest_match = {'match_id': 'Not found.'}
+        if 'total_results' in matches and matches['total_results'] > 0:
+            latest_match = matches['matches'][0]
+        self._update_latest_match_id(steamid, latest_match['match_id'])
+        return latest_match['match_id']
+
     @botologist.plugin.command('dota')
     def dota(self, cmd):
         '''
@@ -63,19 +76,12 @@ class DotaPlugin(botologist.plugin.Plugin):
             return "Steam ID not found for {user}.".format(
                 user=str(cmd.user.nick)
             )
-        account_id = self._get_steam_id(cmd.user.nick)
-        if not account_id:
+        steamid = self._get_steam_id(cmd.user.nick)
+        if not steamid:
             return "Invalid Steam ID."
-        try:
-            matches = self.api.get_match_history(account_id)
-        except dota2api.exceptions.APIError(e):
-            return "Failed to fetch from API: {error}".format(error=e)
-        except dota2api.exceptions.APITimeoutError:
-            return "Connection to Dota 2 API timed out."
-        latest_match = {'match_id': 'Not found.'}
-        if 'total_results' in matches and matches['total_results'] > 0:
-            latest_match = matches['matches'][0]
-        return self.get_match_str(latest_match['match_id'])
+        latest_match_id = self._get_latest_match_id(steamid)
+        return self.get_match_str(latest_match_id)
+
 
     @botologist.plugin.command('steamid')
     def steamid(self, cmd):
@@ -94,6 +100,23 @@ class DotaPlugin(botologist.plugin.Plugin):
                 user=cmd.user.nick
             )
         return "Failed to update Steam ID."
+
+    @botologist.plugin.ticker()
+    def real_time_dota(self):
+        '''
+        Check if player has a new game, if so plaster the channel with it.
+        '''
+        accts = self._all_accounts()
+        steamids = [y for (x, y) in self._all_accounts()]
+        old_matchids = self._get_all_matchids()  # From DB
+        ret = []
+        for sid in steamids:
+            latest_match_id = self._get_latest_match_id(sid)  # From API
+            sleep(1)
+            log.debug("Latest: {}, Olds: [{}]".format(latest_match_id, old_matchids))
+            if latest_match_id not in old_matchids:
+                ret.append(self.get_match_str(latest_match_id))
+        return ret
 
     # SQL helper functions, the joy
     def _nick_exists(self, user):
@@ -121,3 +144,22 @@ class DotaPlugin(botologist.plugin.Plugin):
             self._remove_user(user)
         self.cur.execute('''insert into d2_users (user, steamid) values (?, ?)''', (user, steamid))
         self.conn.commit()
+
+    def _get_all_matchids(self):
+        self.cur.execute('''SELECT latest_match FROM d2_users''')
+        return [x for (x,) in self.cur.fetchall()]
+
+    def _update_latest_match_id(self, steamid, matchid):
+        '''
+        Update the latest_match field in the db.
+        '''
+        try:
+            matchid = int(matchid)
+        except ValueError:
+            raise "Match ID not an integer."
+        self.cur.execute('''SELECT id, steamid, user, latest_match FROM d2_users WHERE steamid = (?)''', (steamid,))
+        sql_ret = self.cur.fetchone()
+        old_matchid = sql_ret[3]
+        if not old_matchid or old_matchid > matchid:
+            self.cur.execute('''UPDATE d2_users SET latest_match = (?) WHERE id = (?)''', (matchid, sql_ret[0]))
+            self.conn.commit()
