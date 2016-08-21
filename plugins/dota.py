@@ -57,10 +57,10 @@ class DotaPlugin(botologist.plugin.Plugin):
     def _get_latest_match_id(self, steamid):
         try:
             matches = self.api.get_match_history(steamid)
-        except dota2api.exceptions.APIError(e):
-            return "Failed to fetch from API: {error}".format(error=e)
+        except dota2api.exceptions.APIError:
+            raise "Failed to fetch from API"
         except dota2api.exceptions.APITimeoutError:
-            return "Connection to Dota 2 API timed out."
+            raise "Connection to Dota 2 API timed out."
         latest_match = {'match_id': 'Not found.'}
         if 'total_results' in matches and matches['total_results'] > 0:
             latest_match = matches['matches'][0]
