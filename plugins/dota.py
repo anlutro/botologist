@@ -160,6 +160,6 @@ class DotaPlugin(botologist.plugin.Plugin):
         self.cur.execute('''SELECT id, steamid, user, latest_match FROM d2_users WHERE steamid = (?)''', (steamid,))
         sql_ret = self.cur.fetchone()
         old_matchid = sql_ret[3]
-        if not old_matchid or old_matchid > matchid:
+        if not old_matchid or matchid != old_matchid:
             self.cur.execute('''UPDATE d2_users SET latest_match = (?) WHERE id = (?)''', (matchid, sql_ret[0]))
             self.conn.commit()
