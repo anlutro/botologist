@@ -2,6 +2,7 @@ import logging
 log = logging.getLogger(__name__)
 
 import re
+import threading
 import html
 
 try:
