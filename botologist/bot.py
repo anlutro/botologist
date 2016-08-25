@@ -69,6 +69,7 @@ class Bot:
 		self.http_port = config.get('http_port')
 		self.http_host = config.get('http_host')
 		self.http_server = None
+		self.http_thread = None
 
 		self.error_handler = botologist.error.ErrorHandler(self)
 		self.client.error_handler = self.error_handler
@@ -271,11 +272,11 @@ class Bot:
 
 		if command_func._is_threaded:
 			log.debug('Starting thread for command %s', cmd_string)
-			thread = threading.Thread(
+			cmd_thread = threading.Thread(
 				target=self._wrap_error_handler(self._maybe_send_cmd_reply),
 				args=(command_func, command),
 			)
-			thread.start()
+			cmd_thread.start()
 		else:
 			self._maybe_send_cmd_reply(command_func, command)
 
@@ -337,11 +338,11 @@ class Bot:
 	def _start(self):
 		if self.http_port and not self.http_server:
 			log.info('Running HTTP server on %s:%s', self.http_host, self.http_port)
-			thread = threading.Thread(
+			self.http_thread = threading.Thread(
 				target=self._wrap_error_handler(botologist.http.run_http_server),
 				args=(self, self.http_host, self.http_port),
 			)
-			thread.start()
+			self.http_thread.start()
 
 		self._start_tick_timer()
 
@@ -358,6 +359,9 @@ class Bot:
 			log.info('Shutting down HTTP server')
 			self.http_server.shutdown()
 			self.http_server = None
+		if self.http_thread:
+			self.http_thread.join()
+			self.http_thread = None
 
 		if self.timer:
 			log.info('Ticker stopped')

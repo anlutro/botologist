@@ -52,7 +52,7 @@ def _find_user(channel, host, nick):
 class Client(botologist.protocol.Client):
 	MAX_MSG_CHARS = 500
 	PING_EVERY = 3 * 60 # seconds
-	PING_TIMEOUT = 10 # seconds
+	PING_TIMEOUT = 20 # seconds
 
 	def __init__(self, server_pool, nick, username=None, realname=None):
 		super().__init__(nick)
@@ -65,6 +65,7 @@ class Client(botologist.protocol.Client):
 		self.reconnect_timer = False
 		self.ping_timer = None
 		self.ping_response_timer = None
+		self.connect_thread = None
 
 		def join_channels():
 			for channel in self.channels.values():
@@ -91,12 +92,21 @@ class Client(botologist.protocol.Client):
 	def connect(self):
 		if self.irc_socket is not None:
 			self.disconnect()
-		thread = threading.Thread(
+
+		if self.connect_thread is not None:
+			log.warning('connect_thread already exists, not doing anything')
+			return
+
+		self.connect_thread = threading.Thread(
 			target=self._wrap_error_handler(self._connect)
 		)
-		thread.start()
+		self.connect_thread.start()
 
 	def disconnect(self):
+		if self.connect_thread is None:
+			log.warning('connect_thread does not exist, not doing anything')
+			return
+
 		for callback in self.on_disconnect:
 			callback()
 
@@ -104,22 +114,30 @@ class Client(botologist.protocol.Client):
 		self.irc_socket.close()
 		self.irc_socket = None
 
+		if self.connect_thread is not None:
+			self.connect_thread.join()
+			self.connect_thread = None
+
 	def reconnect(self, time=None):
 		if self.irc_socket:
 			self.disconnect()
 
+		if self.connect_thread is not None:
+			log.warning('connect_thread already exists, not doing anything')
+			return
+
 		if time:
 			log.info('Reconnecting in %d seconds', time)
-			thread = self.reconnect_timer = threading.Timer(
+			self.connect_thread = self.reconnect_timer = threading.Timer(
 				time,
 				self._wrap_error_handler(self._connect),
 			)
 		else:
-			thread = threading.Thread(
+			self.connect_thread = threading.Thread(
 				target=self._wrap_error_handler(self._connect),
 			)
 
-		thread.start()
+		self.connect_thread.start()
 
 	def _connect(self):
 		if self.reconnect_timer:
