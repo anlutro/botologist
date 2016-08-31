@@ -60,10 +60,8 @@ class DotaPlugin(botologist.plugin.Plugin):
     def _get_latest_match_id(self, steamid):
         try:
             matches = self.api.get_match_history(steamid)
-        except dota2api.exceptions.APIError:
-            raise "Failed to fetch from API"
-        except dota2api.exceptions.APITimeoutError:
-            raise "Connection to Dota 2 API timed out."
+        except Exception:
+            raise "Failed to fetch match history."
         latest_match = {'match_id': 'Not found.'}
         if 'total_results' in matches and matches['total_results'] > 0:
             latest_match = matches['matches'][0]
@@ -84,7 +82,6 @@ class DotaPlugin(botologist.plugin.Plugin):
             return "Invalid Steam ID."
         latest_match_id = self._get_latest_match_id(steamid)
         return self.get_match_str(latest_match_id)
-
 
     @botologist.plugin.command('steamid')
     def steamid(self, cmd):
