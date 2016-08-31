@@ -124,11 +124,15 @@ class DotaPlugin(botologist.plugin.Plugin):
 
     # SQL helper functions, the joy
     def _nick_exists(self, user):
-        self.cur.execute('''SELECT id FROM d2_users WHERE user = (?)''', (str(user),))
+        self.cur.execute('''SELECT id FROM d2_users WHERE user = (?)''',
+            (str(user),)
+        )
         return self.cur.fetchone()
 
     def _get_steam_id(self, user):
-        self.cur.execute('''SELECT steamid FROM d2_users WHERE user = (?)''', (str(user),))
+        self.cur.execute('''SELECT steamid FROM d2_users WHERE user = (?)''',
+            (str(user),)
+        )
         ret = self.cur.fetchone()
         if not ret:
             return 0
@@ -139,14 +143,18 @@ class DotaPlugin(botologist.plugin.Plugin):
         return self.cur.fetchall()
 
     def _remove_user(self, user):
-        self.cur.execute('''delete from d2_users where user = (?)''', (user,))
+        self.cur.execute('''delete from d2_users where user = (?)''',
+            (user,)
+        )
 
     def _add_steamid(self, user, steamid):
         user = str(user)
         steamid = int(steamid)
         if self._nick_exists(user):
             self._remove_user(user)
-        self.cur.execute('''insert into d2_users (user, steamid) values (?, ?)''', (user, steamid))
+        self.cur.execute('''insert into d2_users (user, steamid) values (?, ?)''',
+            (user, steamid)
+        )
         self.conn.commit()
 
     def _get_all_matchids(self):
@@ -161,15 +169,25 @@ class DotaPlugin(botologist.plugin.Plugin):
             matchid = int(matchid)
         except ValueError:
             raise "Match ID not an integer."
-        self.cur.execute('''SELECT id, steamid, user, latest_match FROM d2_users WHERE steamid = (?)''', (steamid,))
+        self.cur.execute('''SELECT id, steamid, user, latest_match FROM d2_users WHERE steamid = (?)''',
+            (steamid,)
+        )
         sql_ret = self.cur.fetchone()
         old_matchid = sql_ret[3]
         if not old_matchid or matchid != old_matchid:
-            self.cur.execute('''UPDATE d2_users SET latest_match = (?) WHERE id = (?)''', (matchid, sql_ret[0]))
+            self.cur.execute('''UPDATE d2_users SET latest_match = (?) WHERE id = (?)''',
+                (matchid, sql_ret[0])
+            )
             self.conn.commit()
 
     def _create_table(self):
         '''
         Create d2_users table if it doesn't exist.
         '''
-        self.cur.execute('''CREATE TABLE IF NOT EXISTS d2_users (id INTEGER PRIMARY KEY AUTOINCREMENT, steamid INTEGER, user TEXT, latest_match INTEGER)''')
+        self.cur.execute('''
+            CREATE TABLE IF NOT EXISTS d2_users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                steamid INTEGER,
+                user TEXT,
+                latest_match INTEGER)
+        ''')
