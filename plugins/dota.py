@@ -2,6 +2,7 @@ import logging
 log = logging.getLogger(__name__)
 
 import os
+import json
 import sqlite3
 import dota2api
 import datetime
@@ -60,8 +61,10 @@ class DotaPlugin(botologist.plugin.Plugin):
     def _get_latest_match_id(self, steamid):
         try:
             matches = self.api.get_match_history(steamid)
-        except Exception:
-            raise "Failed to fetch match history."
+        except json.decoder.JSONDecodeError:
+            raise "Couldn't decode JSON response"
+        except dota2api.exceptions.BaseError:
+            raise "Error with Dota2api"
         latest_match = {'match_id': 'Not found.'}
         if 'total_results' in matches and matches['total_results'] > 0:
             latest_match = matches['matches'][0]
