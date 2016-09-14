@@ -62,9 +62,11 @@ class DotaPlugin(botologist.plugin.Plugin):
         try:
             matches = self.api.get_match_history(steamid)
         except json.decoder.JSONDecodeError:
-            raise Exception("Couldn't decode JSON response")
-        except dota2api.exceptions.BaseError:
-            raise Exception("Error with Dota2api")
+            log.error("Couldn't decode JSON response")
+        except dota2api.exceptions.APITimeoutError:
+            log.error("Dota API timed out")
+        except dota2api.exceptions.APIAuthenticationError:
+            log.error("Dota API Authentication failure")
         latest_match = {'match_id': 'Not found.'}
         if 'total_results' in matches and matches['total_results'] > 0:
             latest_match = matches['matches'][0]
