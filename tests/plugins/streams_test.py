@@ -103,7 +103,7 @@ class StreamManagerTest(unittest.TestCase):
 		super().tearDown()
 
 	def test_can_add_and_remove_streams(self):
-		sm = streams.StreamManager(self.file_path)
+		sm = streams.StreamManager(self.file_path, 'token')
 		with self.assertRaises(streams.error.StreamNotFoundException):
 			sm.find_stream('asdf')
 		sm.add_stream('twitch.tv/asdf')
@@ -113,13 +113,13 @@ class StreamManagerTest(unittest.TestCase):
 			sm.find_stream('asdf')
 
 	def test_streams_are_persisted(self):
-		sm = streams.StreamManager(self.file_path)
+		sm = streams.StreamManager(self.file_path, 'token')
 		sm.add_stream('twitch.tv/asdf')
-		sm = streams.StreamManager(self.file_path)
+		sm = streams.StreamManager(self.file_path, 'token')
 		self.assertEqual('twitch.tv/asdf', sm.find_stream('asdf'))
 
 	def test_can_subscribe_to_stream(self):
-		sm = streams.StreamManager(self.file_path)
+		sm = streams.StreamManager(self.file_path, 'token')
 		sm.add_stream('twitch.tv/asdf')
 		self.assertEqual(None, sm.get_subscriptions('host.com'))
 		sm.add_subscriber('host.com', 'asdf')
@@ -128,7 +128,7 @@ class StreamManagerTest(unittest.TestCase):
 		self.assertEqual([], sm.get_subscriptions('host.com'))
 
 	def test_subscription_persists_but_is_not_public_when_stream_removed(self):
-		sm = streams.StreamManager(self.file_path)
+		sm = streams.StreamManager(self.file_path, 'token')
 		sm.add_stream('twitch.tv/asdf')
 		sm.add_subscriber('host.com', 'asdf')
 		sm.del_stream('asdf')
@@ -136,13 +136,13 @@ class StreamManagerTest(unittest.TestCase):
 		self.assertEqual([], sm.get_subscriptions('host.com'))
 
 	def test_all_online_streams(self):
-		sm = streams.StreamManager(self.file_path)
+		sm = streams.StreamManager(self.file_path, 'token')
 		sm.add_stream('twitch.tv/name')
 
 		data = {'streams': [{'channel': {'name': 'name', 'status': 'status'}}]}
 		with mock.patch(twitch_f, return_value=data) as mf:
 			ret = sm.get_online_streams()
-			mf.assert_called_with(['name'])
+			mf.assert_called_with(['name'], 'token')
 
 		self.assertEqual(1, len(ret))
 		s = ret.pop()
@@ -151,7 +151,7 @@ class StreamManagerTest(unittest.TestCase):
 		self.assertEqual('status', s.title)
 
 	def test_new_online_stream(self):
-		sm = streams.StreamManager(self.file_path)
+		sm = streams.StreamManager(self.file_path, 'token')
 		sm.add_stream('twitch.tv/name1')
 		sm.add_stream('twitch.tv/name2')
 
@@ -173,7 +173,7 @@ class StreamManagerTest(unittest.TestCase):
 			self.assertEqual(0, len(ret))
 
 	def test_rebroadcast_is_not_new_stream(self):
-		sm = streams.StreamManager(self.file_path)
+		sm = streams.StreamManager(self.file_path, 'token')
 		sm.add_stream('twitch.tv/name')
 
 		data = {'streams': []}
@@ -187,7 +187,7 @@ class StreamManagerTest(unittest.TestCase):
 			self.assertEqual([], ret)
 
 	def test_rebroadcast_namechange_is_new_stream(self):
-		sm = streams.StreamManager(self.file_path)
+		sm = streams.StreamManager(self.file_path, 'token')
 		sm.add_stream('twitch.tv/name')
 
 		data = {'streams': [{'channel': {'name': 'name', 'status': 'rebroadcast'}}]}
@@ -220,6 +220,7 @@ class StreamPluginTest(PluginTestCase):
 
 	def create_plugin(self):
 		self.bot.storage_dir = self.file_dir
+		self.bot.config['twitch_auth_token'] = 'token'
 		return streams.StreamsPlugin(self.bot, self.channel)
 
 	def test_subscriber_is_notified(self):
