@@ -137,8 +137,8 @@ class Bot:
 				raise Exception(msg) from exception
 
 		assert issubclass(plugin, botologist.plugin.Plugin)
-		log.debug('Plugin "%s" registered', name)
 		self.plugins[name] = plugin
+		log.debug('plugin %r registered', name)
 
 	def add_channel(self, channel, plugins=None, admins=None, allow_colors=True):
 		def guess_plugin_class(plugin):
@@ -148,24 +148,29 @@ class Bot:
 		if not isinstance(channel, botologist.protocol.Channel):
 			channel = self.protocol.Channel(channel)
 
+		# create a combined list of plugins to reduce code duplication and help
+		# prevent duplicate plugins. could be a set, but that would randomize
+		# the order of plugins
+		all_plugins = []
+
+		# global plugins
+		for plugin in self.global_plugins:
+			if plugin not in all_plugins:
+				all_plugins.append(plugin)
+
 		# channel-specific plugins
 		if plugins:
 			assert isinstance(plugins, list)
 			for plugin in plugins:
-				assert isinstance(plugin, str)
-				if plugin not in self.plugins:
-					plugin_class = guess_plugin_class(plugin)
-					self.register_plugin(plugin, plugin_class)
-				log.debug('Adding plugin %s to channel %s', plugin, channel.channel)
-				channel.register_plugin(self.plugins[plugin](self, channel))
+				if plugin not in all_plugins:
+					all_plugins.append(plugin)
 
-		# global plugins
-		for plugin in self.global_plugins:
+		for plugin in all_plugins:
 			assert isinstance(plugin, str)
 			if plugin not in self.plugins:
 				plugin_class = guess_plugin_class(plugin)
 				self.register_plugin(plugin, plugin_class)
-			log.debug('Adding plugin %s to channel %s', plugin, channel.channel)
+			log.debug('adding plugin %s to channel %s', plugin, channel.channel)
 			channel.register_plugin(self.plugins[plugin](self, channel))
 
 		if admins:
