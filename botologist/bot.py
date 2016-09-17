@@ -69,6 +69,7 @@ class Bot:
 		self.http_port = config.get('http_port')
 		self.http_host = config.get('http_host')
 		self.http_server = None
+		self.http_thread = None
 
 		self.error_handler = botologist.error.ErrorHandler(self)
 		self.client.error_handler = self.error_handler
@@ -136,8 +137,8 @@ class Bot:
 				raise Exception(msg) from exception
 
 		assert issubclass(plugin, botologist.plugin.Plugin)
-		log.debug('Plugin "%s" registered', name)
 		self.plugins[name] = plugin
+		log.debug('plugin %r registered', name)
 
 	def add_channel(self, channel, plugins=None, admins=None, allow_colors=True):
 		def guess_plugin_class(plugin):
@@ -147,24 +148,29 @@ class Bot:
 		if not isinstance(channel, botologist.protocol.Channel):
 			channel = self.protocol.Channel(channel)
 
+		# create a combined list of plugins to reduce code duplication and help
+		# prevent duplicate plugins. could be a set, but that would randomize
+		# the order of plugins
+		all_plugins = []
+
+		# global plugins
+		for plugin in self.global_plugins:
+			if plugin not in all_plugins:
+				all_plugins.append(plugin)
+
 		# channel-specific plugins
 		if plugins:
 			assert isinstance(plugins, list)
 			for plugin in plugins:
-				assert isinstance(plugin, str)
-				if plugin not in self.plugins:
-					plugin_class = guess_plugin_class(plugin)
-					self.register_plugin(plugin, plugin_class)
-				log.debug('Adding plugin %s to channel %s', plugin, channel.channel)
-				channel.register_plugin(self.plugins[plugin](self, channel))
+				if plugin not in all_plugins:
+					all_plugins.append(plugin)
 
-		# global plugins
-		for plugin in self.global_plugins:
+		for plugin in all_plugins:
 			assert isinstance(plugin, str)
 			if plugin not in self.plugins:
 				plugin_class = guess_plugin_class(plugin)
 				self.register_plugin(plugin, plugin_class)
-			log.debug('Adding plugin %s to channel %s', plugin, channel.channel)
+			log.debug('adding plugin %s to channel %s', plugin, channel.channel)
 			channel.register_plugin(self.plugins[plugin](self, channel))
 
 		if admins:
@@ -271,11 +277,11 @@ class Bot:
 
 		if command_func._is_threaded:
 			log.debug('Starting thread for command %s', cmd_string)
-			thread = threading.Thread(
+			cmd_thread = threading.Thread(
 				target=self._wrap_error_handler(self._maybe_send_cmd_reply),
 				args=(command_func, command),
 			)
-			thread.start()
+			cmd_thread.start()
 		else:
 			self._maybe_send_cmd_reply(command_func, command)
 
@@ -337,11 +343,11 @@ class Bot:
 	def _start(self):
 		if self.http_port and not self.http_server:
 			log.info('Running HTTP server on %s:%s', self.http_host, self.http_port)
-			thread = threading.Thread(
+			self.http_thread = threading.Thread(
 				target=self._wrap_error_handler(botologist.http.run_http_server),
 				args=(self, self.http_host, self.http_port),
 			)
-			thread.start()
+			self.http_thread.start()
 
 		self._start_tick_timer()
 
@@ -351,24 +357,27 @@ class Bot:
 			interval=self.TICK_INTERVAL,
 		)
 		self.timer.start()
-		log.debug('Ticker started')
+		log.debug('started ticker with interval %d seconds', self.TICK_INTERVAL)
 
 	def _stop(self):
 		if self.http_server:
-			log.info('Shutting down HTTP server')
+			log.info('shutting down HTTP server')
 			self.http_server.shutdown()
 			self.http_server = None
+		if self.http_thread:
+			self.http_thread.join()
+			self.http_thread = None
 
 		if self.timer:
-			log.info('Ticker stopped')
+			log.info('ticker stopped')
 			self.timer.cancel()
 			self.timer = None
 
 	def _tick(self):
-		log.debug('Tick!')
+		log.debug('ticker running')
 
 		# reset the spam throttle to prevent the log dictionaries from becoming
-		# too large
+		# too large. TODO: replace with a queue
 		self._command_log = {}
 		for channel in self._reply_log:
 			self._reply_log[channel] = {}

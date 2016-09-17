@@ -89,13 +89,14 @@ class Stream:
 class StreamManager:
 	THROTTLE = 30 # seconds
 
-	def __init__(self, stor_path):
+	def __init__(self, stor_path, twitch_auth_token):
 		self.streams = []
 		self.subs = {}
 		self._last_fetch = None
 		self._cached_streams = cache.StreamCache()
 		self.stor_path = stor_path
 		self._read()
+		self.twitch_auth_token = twitch_auth_token
 
 	def _read(self):
 		if not os.path.isfile(self.stor_path):
@@ -129,7 +130,10 @@ class StreamManager:
 		"""Return a list of Stream objects for the streams in the array of urls
 		that are currently live."""
 		twitch_streams = [s for s in self.streams if 'twitch.tv' in s]
-		twitch_streams = twitch.get_online_streams(twitch_streams)
+		twitch_streams = twitch.get_online_streams(
+			twitch_streams,
+			self.twitch_auth_token
+		)
 
 		hitbox_streams = [s for s in self.streams if 'hitbox.tv' in s]
 		hitbox_streams = hitbox.get_online_streams(hitbox_streams)
@@ -266,10 +270,12 @@ class StreamManager:
 
 class StreamsPlugin(botologist.plugin.Plugin):
 	def __init__(self, bot, channel):
+		if 'twitch_auth_token' not in bot.config:
+			raise ValueError('Must add twitch_auth_token to config.yml to use stream plugin!')
 		super().__init__(bot, channel)
 		filename = 'streams_' + channel.channel.replace('#', '') + '.json'
 		stor_path = os.path.join(bot.storage_dir, filename)
-		self.streams = StreamManager(stor_path)
+		self.streams = StreamManager(stor_path, bot.config['twitch_auth_token'])
 
 	@botologist.plugin.command('addstream')
 	@error.return_streamerror_message

@@ -178,3 +178,13 @@ class RedditeuPlugin(botologist.plugin.Plugin):
 		msgl = msg.message.lower()
 		if 'dont be late' in msgl or "don't be late" in msgl:
 			return 'same to you'
+
+	@botologist.plugin.reply()
+	def dadziel(self, msg):
+		daddy = msg.message.lower()
+		if 'dadziel' in daddy:
+			return 'https://i.imgur.com/YqXHpqn.jpg'
+
+	@botologist.plugin.command('grandpa')
+	def grandpa(self, cmd):
+		return 'https://i.imgur.com/YqXHpqn.jpg'

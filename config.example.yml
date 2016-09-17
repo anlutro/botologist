@@ -86,3 +86,7 @@ channels:
 
 # Dota 2 API key
 #dota2_apikey: …
+
+# for the streams plugin to work, provide a twitch.tv oauth token.
+# https://github.com/justintv/Twitch-API/blob/master/authentication.md
+#twitch_auth_token: asdf

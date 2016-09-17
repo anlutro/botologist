@@ -21,7 +21,7 @@ def get_hitbox_data(channels):
 		log.warning('HTTP error while fetching hitbox API data', exc_info=True)
 		return {}
 
-	if response.text == 'no_media_found':
+	if response.text == 'no_media_found' or response.text == '':
 		return {}
 
 	try:

@@ -15,10 +15,11 @@ def make_twitch_stream(data):
 	return plugins.streams.Stream(channel, 'twitch.tv/' + channel, title, game)
 
 
-def get_twitch_data(channels):
+def get_twitch_data(channels, auth_token):
 	url = 'https://api.twitch.tv/kraken/streams'
 	query_params = {'channel': ','.join(channels)}
-	response = requests.get(url, query_params)
+	headers = {'Authorization': 'OAuth %s' % auth_token}
+	response = requests.get(url, query_params, headers=headers)
 	try:
 		response.raise_for_status()
 	except requests.exceptions.HTTPError:
@@ -28,14 +29,14 @@ def get_twitch_data(channels):
 	return response.json()
 
 
-def get_online_streams(urls):
+def get_online_streams(urls, auth_token):
 	"""From a collection of URLs, get the ones that are live on twitch.tv."""
 	channels = plugins.streams.filter_urls(urls, 'twitch.tv')
 
 	if not channels:
 		return []
 
-	data = get_twitch_data(channels)
+	data = get_twitch_data(channels, auth_token)
 	streams = data.get('streams', [])
 	log.debug('%s online twitch.tv streams', len(streams))
 
