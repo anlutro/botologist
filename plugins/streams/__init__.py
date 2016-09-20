@@ -390,7 +390,7 @@ class StreamsPlugin(botologist.plugin.Plugin):
 
 	@botologist.plugin.command('filter')
 	@error.return_streamerror_message
-	def filter_on_games(self, msg):
+	def filter_on_games_cmd(self, msg):
 		'''Filter streams on specific games via regular expressions.'''
 		if len(msg.args) < 1:
 			if self.game_filter:
@@ -405,7 +405,7 @@ class StreamsPlugin(botologist.plugin.Plugin):
 
 	@botologist.plugin.command('delfilter')
 	@error.return_streamerror_message
-	def filter_on_games(self, msg):
+	def delete_filter_on_games_cmd(self, msg):
 		'''Delete the filtering of games.'''
 		if not msg.user.is_admin:
 			return None
