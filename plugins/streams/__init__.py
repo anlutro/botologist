@@ -396,8 +396,21 @@ class StreamsPlugin(botologist.plugin.Plugin):
 			if self.game_filter:
 				return 'Streams are filtered on: ' + self.game_filter.pattern
 			return 'There is no game filter active at this moment.'
+		if not msg.user.is_admin:
+			return None
 		else:
 			self.game_filter = re.compile(" ".join(msg.args))
 			return 'Now filtering on: ' + self.game_filter.pattern
 
+
+	@botologist.plugin.command('delfilter')
+	@error.return_streamerror_message
+	def filter_on_games(self, msg):
+		'''Delete the filtering of games.'''
+		if not msg.user.is_admin:
+			return None
+		if self.game_filter:
+			self.game_filter = None
+			return 'Game filter deleted!'
+		return 'There is no game filter active at this moment.'
 
