@@ -276,6 +276,7 @@ class StreamsPlugin(botologist.plugin.Plugin):
 		filename = 'streams_' + channel.channel.replace('#', '') + '.json'
 		stor_path = os.path.join(bot.storage_dir, filename)
 		self.streams = StreamManager(stor_path, bot.config['twitch_auth_token'])
+		self.game_filter = None
 
 	@botologist.plugin.command('addstream')
 	@error.return_streamerror_message
@@ -365,6 +366,10 @@ class StreamsPlugin(botologist.plugin.Plugin):
 			if stream.is_rebroadcast:
 				continue
 
+			if self.game_filter and stream.game:
+				if not self.game.filter.match(stream.game.lower()):
+					continue
+
 			highlights = []
 			for user_id, subs in self.streams.subs.items():
 				if stream.url in subs:
@@ -381,3 +386,18 @@ class StreamsPlugin(botologist.plugin.Plugin):
 			retval.append(stream_str)
 
 		return retval
+
+
+	@botologist.plugin.command('filter')
+	@error.return_streamerror_message
+	def filter_on_games(self, msg):
+		'''Filter streams on specific games via regular expressions.'''
+		if len(msg.args) < 1:
+			if self.game_filter:
+				return 'Streams are filtered on: ' + self.game_filter.pattern
+			return 'There is no game filter active at this moment.'
+		else:
+			self.game_filter = re.compile(" ".join(msg.args))
+			return 'Now filtering on: ' + self.game_filter.pattern
+
+
