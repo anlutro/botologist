@@ -149,7 +149,7 @@ class StreamManager:
 		if self.game_filter:
 			all_streams = [
 				stream for stream in all_streams
-				if stream.game and self.game_filter.match(stream.game.lower())
+				if stream.game and self.game_filter.match(stream.game)
 			]
 
 		return all_streams
