@@ -92,6 +92,7 @@ class StreamManager:
 	def __init__(self, stor_path, twitch_auth_token):
 		self.streams = []
 		self.subs = {}
+		self.game_filter = ''
 		self._last_fetch = None
 		self._cached_streams = cache.StreamCache()
 		self.stor_path = stor_path
@@ -105,6 +106,9 @@ class StreamManager:
 			data = json.loads(f.read())
 		self.streams = data.get('streams', [])
 		self.subs = data.get('subscriptions', {})
+		game_filter_pattern = data.get('game_filter', '')
+		if game_filter_pattern:
+			self.game_filter = re.compile(game_filter_pattern)
 		self._repair_subs_file()
 
 	def _repair_subs_file(self):
@@ -121,7 +125,9 @@ class StreamManager:
 			self._write()
 
 	def _write(self):
-		data = {'streams': self.streams, 'subscriptions': self.subs}
+		game_filter_pattern = self.game_filter.pattern if self.game_filter else ''
+		data = {'streams': self.streams, 'subscriptions': self.subs, 
+			'game_filter': game_filter_pattern}
 		content = json.dumps(data, indent=2)
 		with open(self.stor_path, 'w') as f:
 			f.write(content)
@@ -276,7 +282,6 @@ class StreamsPlugin(botologist.plugin.Plugin):
 		filename = 'streams_' + channel.channel.replace('#', '') + '.json'
 		stor_path = os.path.join(bot.storage_dir, filename)
 		self.streams = StreamManager(stor_path, bot.config['twitch_auth_token'])
-		self.game_filter = None
 
 	@botologist.plugin.command('addstream')
 	@error.return_streamerror_message
@@ -366,8 +371,8 @@ class StreamsPlugin(botologist.plugin.Plugin):
 			if stream.is_rebroadcast:
 				continue
 
-			if self.game_filter and stream.game:
-				if not self.game.filter.match(stream.game.lower()):
+			if self.streams.game_filter and stream.game:
+				if not self.streams.game_filter.match(stream.game.lower()):
 					continue
 
 			highlights = []
@@ -388,29 +393,29 @@ class StreamsPlugin(botologist.plugin.Plugin):
 		return retval
 
 
-	@botologist.plugin.command('filter')
+	@botologist.plugin.command('addstreamfilter')
 	@error.return_streamerror_message
 	def filter_on_games_cmd(self, msg):
 		'''Filter streams on specific games via regular expressions.'''
 		if len(msg.args) < 1:
-			if self.game_filter:
-				return 'Streams are filtered on: ' + self.game_filter.pattern
-			return 'There is no game filter active at this moment.'
+			if self.streams.game_filter:
+				return 'Streams are filtered on: ' + self.streams.game_filter.pattern
+			return 'There is no stream game filter active at this moment.'
 		if not msg.user.is_admin:
 			return None
 		else:
-			self.game_filter = re.compile(" ".join(msg.args))
-			return 'Now filtering on: ' + self.game_filter.pattern
+			self.streams.game_filter = re.compile(" ".join(msg.args))
+			return 'Now filtering streams on: ' + self.streams.game_filter.pattern
 
 
-	@botologist.plugin.command('delfilter')
+	@botologist.plugin.command('delstreamfilter')
 	@error.return_streamerror_message
 	def delete_filter_on_games_cmd(self, msg):
-		'''Delete the filtering of games.'''
+		'''Delete the filtering of certain stream games.'''
 		if not msg.user.is_admin:
 			return None
-		if self.game_filter:
-			self.game_filter = None
-			return 'Game filter deleted!'
-		return 'There is no game filter active at this moment.'
+		if self.streams.game_filter:
+			self.streams.game_filter = ''
+			return 'Stream game filter deleted!'
+		return 'There is no stream game filter active at this moment.'
 
