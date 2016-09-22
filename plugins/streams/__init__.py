@@ -92,7 +92,7 @@ class StreamManager:
 	def __init__(self, stor_path, twitch_auth_token):
 		self.streams = []
 		self.subs = {}
-		self.game_filter = ''
+		self.game_filter = None
 		self._last_fetch = None
 		self._cached_streams = cache.StreamCache()
 		self.stor_path = stor_path
@@ -106,7 +106,7 @@ class StreamManager:
 			data = json.loads(f.read())
 		self.streams = data.get('streams', [])
 		self.subs = data.get('subscriptions', {})
-		game_filter_pattern = data.get('game_filter', '')
+		game_filter_pattern = data.get('game_filter')
 		if game_filter_pattern:
 			self.game_filter = re.compile(game_filter_pattern)
 		self._repair_subs_file()
@@ -125,9 +125,9 @@ class StreamManager:
 			self._write()
 
 	def _write(self):
-		game_filter_pattern = self.game_filter.pattern if self.game_filter else ''
-		data = {'streams': self.streams, 'subscriptions': self.subs, 
-			'game_filter': game_filter_pattern}
+		data = {'streams': self.streams, 'subscriptions': self.subs, 'game_filter': None}
+		if self.game_filter:
+			data['game_filter'] = self.game_filter.pattern
 		content = json.dumps(data, indent=2)
 		with open(self.stor_path, 'w') as f:
 			f.write(content)
@@ -404,7 +404,7 @@ class StreamsPlugin(botologist.plugin.Plugin):
 		if not msg.user.is_admin:
 			return None
 		else:
-			self.streams.game_filter = re.compile(" ".join(msg.args))
+			self.streams.game_filter = re.compile(' '.join(msg.args))
 			return 'Now filtering streams on: ' + self.streams.game_filter.pattern
 
 
@@ -415,7 +415,7 @@ class StreamsPlugin(botologist.plugin.Plugin):
 		if not msg.user.is_admin:
 			return None
 		if self.streams.game_filter:
-			self.streams.game_filter = ''
+			self.streams.game_filter = None
 			return 'Stream game filter deleted!'
 		return 'There is no stream game filter active at this moment.'
 
