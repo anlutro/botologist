@@ -1,6 +1,7 @@
 import unittest
 import unittest.mock as mock
 import os.path
+import re
 
 from tests.plugins import PluginTestCase
 import plugins.streams as streams
@@ -203,6 +204,25 @@ class StreamManagerTest(unittest.TestCase):
 			self.assertTrue(isinstance(s, streams.Stream))
 			self.assertEqual('name', s.user)
 			self.assertEqual('live', s.title)
+
+	def test_filter_streams(self):
+		sm = streams.StreamManager(self.file_path, 'token', use_cache=False)
+		sm.add_stream('twitch.tv/name')
+		sm.game_filter = re.compile(r'asdf.*')
+
+		data = {'streams': [{'channel': {'name': 'name', 'status': 'title'}, 'game': 'ghjkgame'}]}
+		with mock.patch(twitch_f, return_value=data) as mf:
+			ret = sm.get_online_streams()
+			self.assertEqual(set(), ret)
+
+		data = {'streams': [{'channel': {'name': 'name', 'status': 'title'}, 'game': 'asdfgame'}]}
+		with mock.patch(twitch_f, return_value=data) as mf:
+			ret = sm.get_online_streams()
+			self.assertEqual(1, len(ret))
+			s = ret.pop()
+			self.assertTrue(isinstance(s, streams.Stream))
+			self.assertEqual('name', s.user)
+			self.assertEqual('title', s.title)
 
 class StreamPluginTest(PluginTestCase):
 	file_dir = os.path.dirname(os.path.dirname(__file__)) + '/tmp'
