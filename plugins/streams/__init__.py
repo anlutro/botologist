@@ -89,11 +89,12 @@ class Stream:
 class StreamManager:
 	THROTTLE = 30 # seconds
 
-	def __init__(self, stor_path, twitch_auth_token):
+	def __init__(self, stor_path, twitch_auth_token, use_cache=True):
 		self.streams = []
 		self.subs = {}
+		self.game_filter = None
 		self._last_fetch = None
-		self._cached_streams = cache.StreamCache()
+		self._cached_streams = cache.StreamCache() if use_cache else None
 		self.stor_path = stor_path
 		self._read()
 		self.twitch_auth_token = twitch_auth_token
@@ -105,6 +106,9 @@ class StreamManager:
 			data = json.loads(f.read())
 		self.streams = data.get('streams', [])
 		self.subs = data.get('subscriptions', {})
+		game_filter_pattern = data.get('game_filter')
+		if game_filter_pattern:
+			self.game_filter = re.compile(game_filter_pattern, re.IGNORECASE)
 		self._repair_subs_file()
 
 	def _repair_subs_file(self):
@@ -121,7 +125,9 @@ class StreamManager:
 			self._write()
 
 	def _write(self):
-		data = {'streams': self.streams, 'subscriptions': self.subs}
+		data = {'streams': self.streams, 'subscriptions': self.subs, 'game_filter': None}
+		if self.game_filter:
+			data['game_filter'] = self.game_filter.pattern
 		content = json.dumps(data, indent=2)
 		with open(self.stor_path, 'w') as f:
 			f.write(content)
@@ -138,7 +144,15 @@ class StreamManager:
 		hitbox_streams = [s for s in self.streams if 'hitbox.tv' in s]
 		hitbox_streams = hitbox.get_online_streams(hitbox_streams)
 
-		return twitch_streams + hitbox_streams
+		all_streams = twitch_streams + hitbox_streams
+
+		if self.game_filter:
+			all_streams = [
+				stream for stream in all_streams
+				if stream.game and self.game_filter.match(stream.game)
+			]
+
+		return all_streams
 
 	def add_stream(self, url):
 		"""Add a stream.
@@ -223,24 +237,32 @@ class StreamManager:
 		if not self.streams:
 			return None
 
-		now = datetime.datetime.now()
-		if self._last_fetch is not None:
-			diff = now - self._last_fetch
-			if diff.seconds < self.THROTTLE:
-				log.debug('Throttled, returning cached streams')
-				return self._cached_streams.get_all()
+		if self._cached_streams:
+			now = datetime.datetime.now()
+			if self._last_fetch is not None:
+				diff = now - self._last_fetch
+				if diff.seconds < self.THROTTLE:
+					log.debug('Throttled, returning cached streams')
+					return self._cached_streams.get_all()
 
 		try:
 			streams = self._fetch_streams()
-			self._cached_streams.push(streams)
 		except urllib.error.URLError:
 			log.warning('Could not fetch online streams!', exc_info=True)
 
-		self._last_fetch = now
+		if self._cached_streams:
+			self._cached_streams.push(streams)
+			self._last_fetch = now
+			streams = self._cached_streams.get_all()
+		else:
+			streams = set(streams)
 
-		return self._cached_streams.get_all()
+		return streams
 
 	def get_new_online_streams(self):
+		if not self._cached_streams:
+			raise RuntimeError('must enable caching to get stream diff')
+
 		if not self.streams:
 			return None
 
@@ -381,3 +403,29 @@ class StreamsPlugin(botologist.plugin.Plugin):
 			retval.append(stream_str)
 
 		return retval
+
+	@botologist.plugin.command('filterstreams')
+	@error.return_streamerror_message
+	def filter_on_games_cmd(self, msg):
+		'''Filter streams on specific games via regular expressions.'''
+		if len(msg.args) < 1:
+			if self.streams.game_filter:
+				return 'Streams are filtered on: ' + self.streams.game_filter.pattern
+			return 'There is no stream game filter active at this moment.'
+		if not msg.user.is_admin:
+			return None
+		else:
+			self.streams.game_filter = re.compile(' '.join(msg.args), re.IGNORECASE)
+			return 'Now filtering streams on: ' + self.streams.game_filter.pattern
+
+	@botologist.plugin.command('delstreamfilter')
+	@error.return_streamerror_message
+	def delete_filter_on_games_cmd(self, msg):
+		'''Delete the filtering of certain stream games.'''
+		if not msg.user.is_admin:
+			return None
+		if self.streams.game_filter:
+			self.streams.game_filter = None
+			return 'Stream game filter deleted!'
+		return 'There is no stream game filter active at this moment.'
+
