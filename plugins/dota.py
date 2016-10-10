@@ -46,7 +46,10 @@ class DotaPlugin(botologist.plugin.Plugin):
     def get_match_str(self, match_id):
         if not isinstance(match_id, int):
             return "Game not found."
-        m = self.api.get_match_details(match_id)
+        try:
+            m = self.api.get_match_details(match_id)
+        except:
+            return "Failed reach Dota 2 API."
         return "Dota 2 {match_id} {time}, score: {radiant_score}-{dire_score}, {winner} victory, duration {duration}m. {our_scores} {dotabuff}".format(
             time=datetime.datetime.fromtimestamp(m['start_time']).strftime('%b %d'),
             match_id=match_id,
@@ -59,11 +62,14 @@ class DotaPlugin(botologist.plugin.Plugin):
         )
 
     def _get_latest_match_id(self, steamid):
-        matches = self.api.get_match_history(steamid)
         latest_match = {'match_id': 'Not found.'}
-        if 'total_results' in matches and matches['total_results'] > 0:
-            latest_match = matches['matches'][0]
-        self._update_latest_match_id(steamid, latest_match['match_id'])
+        try:
+            matches = self.api.get_match_history(steamid)
+            if 'total_results' in matches and matches['total_results'] > 0:
+                latest_match = matches['matches'][0]
+                self._update_latest_match_id(steamid, latest_match['match_id'])
+        except:
+            pass
         return latest_match['match_id']
 
     @botologist.plugin.command('dota')
