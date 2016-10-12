@@ -9,7 +9,9 @@ import datetime
 import botologist.plugin
 from time import sleep
 
+
 class DotaPlugin(botologist.plugin.Plugin):
+
     def __init__(self, bot, channel):
         super().__init__(bot, channel)
         api_key = self.bot.config.get('dota2_apikey')
@@ -51,9 +53,10 @@ class DotaPlugin(botologist.plugin.Plugin):
         except:
             return "Failed reach Dota 2 API."
         return "Dota 2 {match_id} {time}, score: {radiant_score}-{dire_score}, {winner} victory, duration {duration}m. {our_scores} {dotabuff}".format(
-            time=datetime.datetime.fromtimestamp(m['start_time']).strftime('%b %d'),
+            time=datetime.datetime.fromtimestamp(
+                m['start_time']).strftime('%b %d'),
             match_id=match_id,
-            duration=m['duration']//60,
+            duration=m['duration'] // 60,
             dotabuff="http://www.dotabuff.com/matches/{}".format(match_id),
             radiant_score=m['radiant_score'],
             dire_score=m['dire_score'],
@@ -62,15 +65,13 @@ class DotaPlugin(botologist.plugin.Plugin):
         )
 
     def _get_latest_match_id(self, steamid):
-        latest_match = {'match_id': 'Not found.'}
         try:
             matches = self.api.get_match_history(steamid)
             if 'total_results' in matches and matches['total_results'] > 0:
-                latest_match = matches['matches'][0]
                 self._update_latest_match_id(steamid, latest_match['match_id'])
+                return matches['matches'][0]['match_id']
         except:
             pass
-        return latest_match['match_id']
 
     @botologist.plugin.command('dota')
     def dota(self, cmd):
@@ -117,23 +118,26 @@ class DotaPlugin(botologist.plugin.Plugin):
         for sid in steamids:
             latest_match_id = self._get_latest_match_id(sid)  # From API
             sleep(1)
-            log.debug("Latest: {}, Olds: [{}]".format(latest_match_id, old_matchids))
+            log.debug("Latest: {}, Olds: [{}]".format(
+                latest_match_id, old_matchids))
             if latest_match_id not in old_matchids:
                 ret.append(self.get_match_str(latest_match_id))
-                old_matchids.append(latest_match_id)  # If 2 players are in the same game we don't want double messages
+                # If 2 players are in the same game we don't want double
+                # messages
+                old_matchids.append(latest_match_id)
         return ret
 
     # SQL helper functions, the joy
     def _nick_exists(self, user):
         self.cur.execute('''SELECT id FROM d2_users WHERE user = (?)''',
-            (str(user),)
-        )
+                         (str(user),)
+                         )
         return self.cur.fetchone()
 
     def _get_steam_id(self, user):
         self.cur.execute('''SELECT steamid FROM d2_users WHERE user = (?)''',
-            (str(user),)
-        )
+                         (str(user),)
+                         )
         ret = self.cur.fetchone()
         if not ret:
             return 0
@@ -145,8 +149,8 @@ class DotaPlugin(botologist.plugin.Plugin):
 
     def _remove_user(self, user):
         self.cur.execute('''delete from d2_users where user = (?)''',
-            (user,)
-        )
+                         (user,)
+                         )
 
     def _add_steamid(self, user, steamid):
         user = str(user)
@@ -154,8 +158,8 @@ class DotaPlugin(botologist.plugin.Plugin):
         if self._nick_exists(user):
             self._remove_user(user)
         self.cur.execute('''insert into d2_users (user, steamid) values (?, ?)''',
-            (user, steamid)
-        )
+                         (user, steamid)
+                         )
         self.conn.commit()
 
     def _get_all_matchids(self):
@@ -171,14 +175,14 @@ class DotaPlugin(botologist.plugin.Plugin):
         except ValueError:
             raise "Match ID not an integer."
         self.cur.execute('''SELECT id, steamid, user, latest_match FROM d2_users WHERE steamid = (?)''',
-            (steamid,)
-        )
+                         (steamid,)
+                         )
         sql_ret = self.cur.fetchone()
         old_matchid = sql_ret[3]
         if not old_matchid or matchid != old_matchid:
             self.cur.execute('''UPDATE d2_users SET latest_match = (?) WHERE id = (?)''',
-                (matchid, sql_ret[0])
-            )
+                             (matchid, sql_ret[0])
+                             )
             self.conn.commit()
 
     def _create_table(self):
