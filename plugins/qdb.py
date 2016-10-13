@@ -14,7 +14,9 @@ def _get_quote_url(quote):
 
 
 def _get_qdb_data(url, query_params):
-	return requests.get(url, query_params, headers={'accept': 'application/json'}).json()
+	response = requests.get(url, query_params, headers={'accept': 'application/json'}).json()
+	response.raise_for_status()
+	return response
 
 
 def _search_for_quote(quote):
