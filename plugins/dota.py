@@ -47,8 +47,11 @@ class DotaPlugin(botologist.plugin.Plugin):
 
     def get_match_str(self, match_id):
         if not isinstance(match_id, int):
-            return "Game not found."
+            return "Problems with the Dota 2 API at the moment, try later."
         try:
+            log.debug("Attempting to fetch match_id: {match_id}".format(
+                match_id=match_id
+            ))
             m = self.api.get_match_details(match_id)
         except:
             return "Failed reach Dota 2 API."
@@ -65,13 +68,18 @@ class DotaPlugin(botologist.plugin.Plugin):
         )
 
     def _get_latest_match_id(self, steamid):
+        latest_match_id = 0
         try:
-            matches = self.api.get_match_history(steamid)
+            matches = self.api.get_match_history(account_id=steamid)
+            latest_match_id = matches['matches'][0]['match_id']
+            log.debug("Returned latest_match: {latest_match}".format(
+                latest_match=latest_match_id
+            ))
             if 'total_results' in matches and matches['total_results'] > 0:
-                self._update_latest_match_id(steamid, latest_match['match_id'])
-                return matches['matches'][0]['match_id']
+                self._update_latest_match_id(steamid, latest_match_id)
         except:
-            pass
+            log.error("Failed to api.get_match_history. Steamid: {}".format(steamid))
+        return latest_match_id
 
     @botologist.plugin.command('dota')
     def dota(self, cmd):
@@ -184,6 +192,10 @@ class DotaPlugin(botologist.plugin.Plugin):
                              (matchid, sql_ret[0])
                              )
             self.conn.commit()
+            log.debug("Updated {steamid}'s latest matchid to {matchid}".format(
+                steamid=steamid,
+                matchid=matchid)
+            )
 
     def _create_table(self):
         '''
