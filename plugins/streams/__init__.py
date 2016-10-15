@@ -390,9 +390,10 @@ class StreamsPlugin(botologist.plugin.Plugin):
 			highlights = []
 			for user_id, subs in self.streams.subs.items():
 				if stream.url in subs:
-					user = self.channel.find_user(identifier=user_id)
-					if user:
-						highlights.append(user.name)
+					highlights.extend(
+						user.nick for user in self.channel.find_users(identifier=user_id)
+						if user.nick != self.bot.nick
+					)
 			stream_str = 'New stream online: ' + stream.full_url
 			if stream.title:
 				stream_str += ' - ' + stream.title
