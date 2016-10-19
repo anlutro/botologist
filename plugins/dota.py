@@ -60,7 +60,7 @@ class DotaPlugin(botologist.plugin.Plugin):
                     # associated with the same Steam ID
                     break
         for idx, player in enumerate(players):
-            player = "\x03{colour}{player_string}\x03".format(
+            player = "\x03{colour}{player_string}\x03 ".format(
                 colour=self.colours[idx],
                 player_string=player
             )
