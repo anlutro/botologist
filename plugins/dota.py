@@ -22,6 +22,13 @@ class DotaPlugin(botologist.plugin.Plugin):
         self.conn = sqlite3.connect(db, check_same_thread=False)
         self.cur = self.conn.cursor()
         self._create_table()
+        self.colours = [
+            "06",
+            "03",
+            "04",
+            "08",
+            "02"
+        ]
 
     def _api_online(self):
         '''Checks if the API is actually working since it's down frequently.'''
@@ -34,10 +41,11 @@ class DotaPlugin(botologist.plugin.Plugin):
     def get_our_scores(self, match):
         ret = ''
         accounts = self._all_accounts()
+        players = []
         for p in match['players']:
             for user, steamid in accounts:
                 if p['account_id'] == steamid:
-                    ret += '{player_name} ({team}) {hero_name} {level} gpm:{gpm} kda:{kills}/{deaths}/{assists}'.format(
+                    players.append('{player_name} ({team}) {hero_name} {level} gpm:{gpm} kda:{kills}/{deaths}/{assists}'.format(
                         hero_name=p['hero_name'],
                         player_name=user,
                         level=p['level'],
@@ -47,10 +55,16 @@ class DotaPlugin(botologist.plugin.Plugin):
                         gpm=p['gold_per_min'],
                         xpm=p['xp_per_min'],
                         team='R' if p['player_slot'] <= 5 else 'D',
-                    )
+                    ))
                     # Don't print out duplicates if we have multiple nicknames
                     # associated with the same Steam ID
                     break
+        for idx, player in enumerate(players):
+            player = "\x03{colour}{player_string}\x03".format(
+                colour=self.colours[idx],
+                player_string=player
+            )
+            ret += player
         return ret
 
     def get_match_str(self, match_id):
