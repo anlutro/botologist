@@ -7,6 +7,7 @@ import sqlite3
 import dota2api
 import datetime
 import botologist.plugin
+import random
 from time import sleep
 
 
@@ -23,11 +24,11 @@ class DotaPlugin(botologist.plugin.Plugin):
         self.cur = self.conn.cursor()
         self._create_table()
         self.colours = [
-            "06",
-            "03",
-            "04",
-            "08",
-            "02"
+            "02",  # Blue
+            "03",  # Green
+            "04",  # Red
+            "06",  # Purple
+            "08",  # Yellow
         ]
 
     def _api_online(self):
@@ -59,6 +60,7 @@ class DotaPlugin(botologist.plugin.Plugin):
                     # Don't print out duplicates if we have multiple nicknames
                     # associated with the same Steam ID
                     break
+        random.shuffle(self.colours)
         for idx, player in enumerate(players):
             player = "\x03{colour}{player_string}\x03 ".format(
                 colour=self.colours[idx],
