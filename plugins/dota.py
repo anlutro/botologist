@@ -86,7 +86,7 @@ class DotaPlugin(botologist.plugin.Plugin):
             winner="Radiant" if m['radiant_win'] else "Dire",
             our_scores=self.get_our_scores(m),
             mode=m['game_mode_name'],
-            ranked=" RANKED!" if 'Rank' in m['lobby_name'] else 'casual'
+            ranked=" RANKED!" if 'Rank' in m['lobby_name'] else ' CASUAL!'
         )
 
     def _get_latest_match_id(self, steamid):
