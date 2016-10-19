@@ -37,7 +37,7 @@ class DotaPlugin(botologist.plugin.Plugin):
         for p in match['players']:
             for user, steamid in accounts:
                 if p['account_id'] == steamid:
-                    ret += '{player_name} ({team}) ({hero_name}, level {level}) kda:{kills}/{deaths}/{assists} xpm:{xpm} gpm:{gpm}. '.format(
+                    ret += '{player_name} ({team}) {hero_name} {level} gpm:{gpm} kda:{kills}/{deaths}/{assists}'.format(
                         hero_name=p['hero_name'],
                         player_name=user,
                         level=p['level'],
@@ -60,16 +60,19 @@ class DotaPlugin(botologist.plugin.Plugin):
             match_id=match_id
         ))
         m = self.api.get_match_details(match_id)
-        return "Dota 2 {match_id} {time}, score: {radiant_score}-{dire_score}, {winner} victory, duration {duration}m. {our_scores} {dotabuff}".format(
+        return "{mode}{ranked}: score: {radiant_score}-{dire_score}, {winner} victory, duration {duration}m. {our_scores} {dotabuff}".format(
             time=datetime.datetime.fromtimestamp(
                 m['start_time']).strftime('%b %d'),
             match_id=match_id,
             duration=m['duration'] // 60,
-            dotabuff="http://www.dotabuff.com/matches/{}".format(match_id),
+            dotabuff="http://www.dotabuff.com/matches/{match_id}".format(
+                match_id=match_id),
             radiant_score=m['radiant_score'],
             dire_score=m['dire_score'],
             winner="Radiant" if m['radiant_win'] else "Dire",
             our_scores=self.get_our_scores(m),
+            mode=m['game_mode_name'],
+            ranked=" RANKED!" if 'Rank' in m['lobby_name'] else 'casual'
         )
 
     def _get_latest_match_id(self, steamid):
