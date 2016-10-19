@@ -23,6 +23,14 @@ class DotaPlugin(botologist.plugin.Plugin):
         self.cur = self.conn.cursor()
         self._create_table()
 
+    def _api_online(self):
+        '''Checks if the API is actually working since it's down frequently.'''
+        try:
+            self.api.get_heroes()
+        except:
+            return False
+        return True
+
     def get_our_scores(self, match):
         ret = ''
         accounts = self._all_accounts()
@@ -48,13 +56,10 @@ class DotaPlugin(botologist.plugin.Plugin):
     def get_match_str(self, match_id):
         if not isinstance(match_id, int):
             return "Problems with the Dota 2 API at the moment, try later."
-        try:
-            log.debug("Attempting to fetch match_id: {match_id}".format(
-                match_id=match_id
-            ))
-            m = self.api.get_match_details(match_id)
-        except:
-            return "Failed reach Dota 2 API."
+        log.debug("Attempting to fetch match_id: {match_id}".format(
+            match_id=match_id
+        ))
+        m = self.api.get_match_details(match_id)
         return "Dota 2 {match_id} {time}, score: {radiant_score}-{dire_score}, {winner} victory, duration {duration}m. {our_scores} {dotabuff}".format(
             time=datetime.datetime.fromtimestamp(
                 m['start_time']).strftime('%b %d'),
@@ -78,7 +83,8 @@ class DotaPlugin(botologist.plugin.Plugin):
             if 'total_results' in matches and matches['total_results'] > 0:
                 self._update_latest_match_id(steamid, latest_match_id)
         except:
-            log.error("Failed to api.get_match_history. Steamid: {}".format(steamid))
+            log.error(
+                "Failed to api.get_match_history. Steamid: {}".format(steamid))
         return latest_match_id
 
     @botologist.plugin.command('dota')
@@ -86,6 +92,8 @@ class DotaPlugin(botologist.plugin.Plugin):
         '''
         Gets the latest dota match for the user requesting it.
         '''
+        if not self._api_online():
+            return False
         if not self._nick_exists(cmd.user.nick):
             return "Steam ID not found for {user}.".format(
                 user=str(cmd.user.nick)
@@ -119,6 +127,8 @@ class DotaPlugin(botologist.plugin.Plugin):
         '''
         Check if player has a new game, if so plaster the channel with it.
         '''
+        if not self._api_online():
+            return False
         accts = self._all_accounts()
         steamids = [y for (x, y) in self._all_accounts()]
         old_matchids = self._get_all_matchids()  # From DB
