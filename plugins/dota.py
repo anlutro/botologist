@@ -93,7 +93,7 @@ class DotaPlugin(botologist.plugin.Plugin):
         Gets the latest dota match for the user requesting it.
         '''
         if not self._api_online():
-            return False
+            return "Dota 2 API is offline, try in a few minutes."
         if not self._nick_exists(cmd.user.nick):
             return "Steam ID not found for {user}.".format(
                 user=str(cmd.user.nick)
