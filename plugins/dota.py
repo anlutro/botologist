@@ -123,6 +123,14 @@ class DotaPlugin(botologist.plugin.Plugin):
         latest_match_id = self._get_latest_match_id(steamid)
         return self.get_match_str(latest_match_id)
 
+    def _steam_id_exists(self, steamid):
+        '''Return boolean if steamid is API valid.'''
+        try:
+            self.api.get_match_history(account_id=int(steamid))
+        except:
+            return False
+        return True
+
     @botologist.plugin.command('steamid')
     def steamid(self, cmd):
         '''
@@ -134,11 +142,13 @@ class DotaPlugin(botologist.plugin.Plugin):
                 return "Your steam ID is: {existing}".format(
                     existing=existing_steam_id
                 )
-            return "Usage: !steamid 13371337"
+            return "Usage: !steamid 20000000"
         try:
             steamid = int(cmd.args[0])
         except ValueError:
-            return "That's not a valid Steam ID."
+            return "Your Dota 2 Steam id should be a number."
+        if not self._steam_id_exists(steamid):
+            return "That steam ID doesn't seem to match a real person."
         if not self._add_steamid(cmd.user.nick, steamid):
             return "Steam ID for {user} is now {steamid}.".format(
                 steamid=steamid,
