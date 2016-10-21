@@ -72,6 +72,9 @@ class DotaPlugin(botologist.plugin.Plugin):
     def get_match_str(self, match_id):
         if not isinstance(match_id, int):
             return "Problems with the Dota 2 API at the moment, try later."
+        if match_id == 0:
+            log.error("Invalid match ID.")
+            return None
         log.debug("Attempting to fetch match_id: {match_id}".format(
             match_id=match_id
         ))
