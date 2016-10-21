@@ -75,7 +75,11 @@ class DotaPlugin(botologist.plugin.Plugin):
         log.debug("Attempting to fetch match_id: {match_id}".format(
             match_id=match_id
         ))
-        m = self.api.get_match_details(match_id)
+        try:
+            m = self.api.get_match_details(match_id)
+        except dota2api.exceptions.APITimeoutError:
+            log.error("Dota2 API Timeout.")
+            return None
         return "{mode}{ranked}: score: {radiant_score}-{dire_score}, {winner} victory, duration {duration}m. {our_scores} {dotabuff}".format(
             time=datetime.datetime.fromtimestamp(
                 m['start_time']).strftime('%b %d'),
