@@ -129,6 +129,11 @@ class DotaPlugin(botologist.plugin.Plugin):
         Adds the user's steam id (dota version) to the sqlite db
         '''
         if len(cmd.args) != 1:
+            existing_steam_id = self._get_steam_id(cmd.user.nick)
+            if existing_steam_id:
+                return "Your steam ID is: {existing}".format(
+                    existing=existing
+                )
             return "Usage: !steamid 13371337"
         try:
             steamid = int(cmd.args[0])
