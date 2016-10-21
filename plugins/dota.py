@@ -132,7 +132,7 @@ class DotaPlugin(botologist.plugin.Plugin):
             existing_steam_id = self._get_steam_id(cmd.user.nick)
             if existing_steam_id:
                 return "Your steam ID is: {existing}".format(
-                    existing=existing
+                    existing=existing_steam_id
                 )
             return "Usage: !steamid 13371337"
         try:
