@@ -297,10 +297,12 @@ class Client(botologist.protocol.Client):
 					callback(message)
 
 	def send_msg(self, target, message):
+		if message is None:
+			return
 		if target in self.channels:
 			if not self.channels[target].allow_colors:
 				message = botologist.util.strip_irc_formatting(message)
-		if not isinstance(message, list):
+		if isinstance(message, str):
 			message = message.split('\n')
 		for privmsg in message:
 			self.send('PRIVMSG ' + target + ' :' + privmsg)
