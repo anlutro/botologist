@@ -93,8 +93,8 @@ class Client(botologist.protocol.Client):
 		if self.irc_socket is not None:
 			self.disconnect()
 
-		if self.connect_thread is not None:
-			log.warning('connect_thread already exists, not doing anything')
+		if self.connect_thread is not None and self.connect_thread.isAlive():
+			log.warning('connect_thread is already alive, not doing anything')
 			return
 
 		self.connect_thread = threading.Thread(
@@ -103,8 +103,8 @@ class Client(botologist.protocol.Client):
 		self.connect_thread.start()
 
 	def disconnect(self):
-		if self.connect_thread is None:
-			log.warning('connect_thread does not exist, not doing anything')
+		if self.connect_thread is None or not self.connect_thread.isAlive():
+			log.warning('connect_thread is not alive, not doing anything')
 			return
 
 		for callback in self.on_disconnect:
@@ -115,16 +115,12 @@ class Client(botologist.protocol.Client):
 		self.irc_socket.close()
 		self.irc_socket = None
 
-		if self.connect_thread is not None:
-			self.connect_thread.join()
-			self.connect_thread = None
-
 	def reconnect(self, time=None):
 		if self.irc_socket:
 			self.disconnect()
 
-		if self.connect_thread is not None:
-			log.warning('connect_thread already exists, not doing anything')
+		if self.connect_thread is not None and self.connect_thread.isAlive():
+			log.warning('connect_thread is already alive, not doing anything')
 			return
 
 		if time:

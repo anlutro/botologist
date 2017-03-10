@@ -188,3 +188,11 @@ class RedditeuPlugin(botologist.plugin.Plugin):
 	@botologist.plugin.command('grandpa')
 	def grandpa(self, cmd):
 		return 'https://i.imgur.com/YqXHpqn.jpg'
+
+	@botologist.plugin.reply()
+	def internet_memes(self, msg):
+		msgl = msg.message.lower()
+		if 'no way to ayy' in msgl:
+			return 'https://www.youtube.com/watch?v=tCOIZDttei4&t=1m15s'
+		elif 'no more internet memes' in msgl:
+			return 'https://www.youtube.com/watch?v=tCOIZDttei4&t=1m20s'
