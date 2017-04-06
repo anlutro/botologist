@@ -21,7 +21,7 @@ class QdbPluginTest(PluginTestCase):
 			mf.assert_called_with('https://qdb.lutro.me/random', query_params={'s':'foo'})
 			self.assertEqual('https://qdb.lutro.me/1 - bar', ret)
 
-		data = {'quote': {'id': 1, 'body': 'bar'}}
+		data = {'quote': {'id': 1, 'body': 'bar', 'approved': True}}
 		with mock.patch(f, return_value=data) as mf:
 			ret = self.cmd('qdb #1')
 			mf.assert_called_with('https://qdb.lutro.me/1', query_params=None)
