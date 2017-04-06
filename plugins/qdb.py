@@ -44,6 +44,8 @@ def _search_for_quote(quote):
 
 	if single_quote:
 		quote = data['quote']
+		if not quote['approved']:
+			return 'No quote with that ID found!'
 	else:
 		quotes = data['quotes']
 		if 'items' in quotes:
