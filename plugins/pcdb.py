@@ -41,7 +41,7 @@ class PcdbPlugin(botologist.plugin.Plugin):
 		if not comment:
 			return 'No results!'
 
-		retval = comment['body'].replace('\n', ' ')
+		retval = comment['body'].replace('\n', ' ').replace('\r', '')
 
 		if len(retval) > 400:
 			retval = retval[:394] + ' [...]'
