@@ -37,7 +37,7 @@ def get_online_streams(urls, auth_token):
 		return []
 
 	data = get_twitch_data(channels, auth_token)
-	streams = data.get('streams', [])
+	streams = data.get('streams') or []
 	log.debug('%s online twitch.tv streams', len(streams))
 
 	return [make_twitch_stream(stream) for stream in streams]
