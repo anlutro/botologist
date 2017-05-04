@@ -103,12 +103,12 @@ class Client(botologist.protocol.Client):
 		self.connect_thread.start()
 
 	def disconnect(self):
+		for callback in self.on_disconnect:
+			callback()
+
 		if self.connect_thread is None or not self.connect_thread.isAlive():
 			log.warning('connect_thread is not alive, not doing anything')
 			return
-
-		for callback in self.on_disconnect:
-			callback()
 
 		log.info('Disconnecting')
 		self.quitting = True
