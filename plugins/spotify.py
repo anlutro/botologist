@@ -5,6 +5,7 @@ import re
 
 import spotipy
 import spotipy.client
+from spotipy.oauth2 import SpotifyClientCredentials
 
 import botologist.plugin
 
@@ -51,7 +52,14 @@ class SpotifyPlugin(botologist.plugin.Plugin):
 
 	def __init__(self, bot, channel):
 		super().__init__(bot, channel)
-		self.spotify = Spotify()
+		ccm = None
+		if bot.config.get('spotify_client_id'):
+			ccm = SpotifyClientCredentials(
+				client_id=bot.config.get('spotify_client_id'),
+				client_secret=bot.config.get('spotify_client_secret'),
+			)
+		sp = spotipy.Spotify(client_credentials_manager=ccm)
+		self.spotify = Spotify(sp)
 
 	@botologist.plugin.reply(threaded=True)
 	def convert(self, msg):
