@@ -94,6 +94,8 @@ class Bot:
 		channels = config.get('channels')
 		if isinstance(channels, dict):
 			for name, channel in channels.items():
+				if channel is None:
+					channel = {}
 				self.add_channel(name, **channel)
 		elif isinstance(channels, list):
 			for channel in channels:
