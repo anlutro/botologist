@@ -42,7 +42,9 @@ class WeatherPlugin(botologist.plugin.Plugin):
 		elif status != 200:
 			return data['message']
 
-		location = '{}, {}'.format(data['name'], data['sys']['country'])
+		location = data['name']
+		if 'country' in data['sys']:
+			location += ', {}'.format(data['sys']['country'])
 		weather = data['weather'][0]['description']
 
 		retval = 'Weather in {}: {}'.format(location, weather)
