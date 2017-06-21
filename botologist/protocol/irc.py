@@ -125,14 +125,10 @@ class Client(botologist.protocol.Client):
 
 		if time:
 			log.info('Reconnecting in %d seconds', time)
-			self.connect_thread = self.reconnect_timer = threading.Timer(
-				time,
-				self._wrap_error_handler(self._connect),
-			)
+			self.connect_thread = threading.Timer(time, self._connect)
+			self.reconnect_timer = self.connect_thread
 		else:
-			self.connect_thread = threading.Thread(
-				target=self._wrap_error_handler(self._connect),
-			)
+			self.connect_thread = threading.Thread(self._connect)
 
 		self.connect_thread.start()
 
@@ -153,6 +149,8 @@ class Client(botologist.protocol.Client):
 		self.loop()
 
 	def loop(self):
+		handle_func = self._wrap_error_handler(self.handle_msg)
+
 		while self.irc_socket:
 			try:
 				data = self.irc_socket.recv()
@@ -182,7 +180,7 @@ class Client(botologist.protocol.Client):
 					log.info('received an IRC ERROR, but quitting, so exiting loop')
 					return
 
-				self.handle_msg(msg)
+				handle_func(msg)
 
 	def join_channel(self, channel):
 		assert isinstance(channel, Channel)
