@@ -66,6 +66,8 @@ if log_level < logging.WARNING:
 	logging.getLogger('requests.packages.urllib3.connectionpool') \
 		.setLevel(logging.WARNING)
 
+bot = None
+
 # initialize and run the bot
 try:
 	bot = botologist.bot.Bot(config)
@@ -83,5 +85,6 @@ try:
 except:
 	log.exception('Uncaught exception')
 	print('An exception occurred - check log for details. Exiting!')
-	bot.stop()
+	if bot:
+		bot.stop()
 	sys.exit(1)
