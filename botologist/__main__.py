@@ -66,8 +66,6 @@ if log_level < logging.WARNING:
 	logging.getLogger('requests.packages.urllib3.connectionpool') \
 		.setLevel(logging.WARNING)
 
-print('Starting chat bot...')
-
 # initialize and run the bot
 try:
 	bot = botologist.bot.Bot(config)
@@ -80,8 +78,10 @@ try:
 		with open(os.path.join(git_dir, ref)) as f:
 			bot.version = f.read().strip()[:8]
 
+	print('Starting chat bot...')
 	bot.run_forever()
 except:
 	log.exception('Uncaught exception')
 	print('An exception occurred - check log for details. Exiting!')
+	bot.stop()
 	sys.exit(1)

@@ -29,6 +29,10 @@ class Client:
 	def run_forever(self):
 		raise NotImplementedError('method run_forever must be defined')
 
+	def stop(self):
+		for callback in self.on_disconnect:
+			callback()
+
 	def _wrap_error_handler(self, func):
 		if self.error_handler:
 			return self.error_handler.wrap(func)

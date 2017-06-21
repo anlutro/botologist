@@ -359,6 +359,9 @@ class Bot:
 		self.timer.start()
 		log.debug('started ticker with interval %d seconds', self.TICK_INTERVAL)
 
+	def stop(self):
+		self.client.stop()
+
 	def _stop(self):
 		if self.http_server:
 			log.info('shutting down HTTP server')

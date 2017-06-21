@@ -311,8 +311,7 @@ class Client(botologist.protocol.Client):
 		self.irc_socket.send(msg + '\r\n')
 
 	def stop(self, reason='Leaving'):
-		for callback in self.on_disconnect:
-			callback()
+		super().stop()
 
 		if self.reconnect_timer:
 			log.info('Aborting reconnect timer')
