@@ -264,7 +264,7 @@ class Bot:
 		else:
 			matching_commands = [cmd for cmd in channel.commands
 				if cmd.startswith(cmd_string)]
-			if len(matching_commands) == 0:
+			if not matching_commands:
 				log.debug('"%s" did not match any commands in channel %s',
 					cmd_string, channel.channel)
 				return

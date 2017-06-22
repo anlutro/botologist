@@ -41,7 +41,7 @@ class Spotify:
 				return '%s - %s - %s' % self.get_track(item_id)
 			else:
 				raise ValueError('unknown item type: %r' % item_type)
-		except spotipy.client.SpotifyException as e:
+		except spotipy.client.SpotifyException:
 			log.warning('spotipy threw an exception while looking up spotify:%s:%s',
 				item_type, item_id, exc_info=True)
 			return

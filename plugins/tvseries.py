@@ -1,8 +1,8 @@
-import dateutil.parser
-import requests
-
 import logging
 log = logging.getLogger(__name__)
+
+import dateutil.parser
+import requests
 
 import botologist.plugin
 

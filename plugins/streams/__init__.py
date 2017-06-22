@@ -309,8 +309,7 @@ class StreamsPlugin(botologist.plugin.Plugin):
 			return None
 		if self.streams.add_stream(msg.args[0]):
 			return 'Stream added!'
-		else:
-			return 'Stream already added.'
+		return 'Stream already added.'
 
 	@botologist.plugin.command('delstream')
 	@error.return_streamerror_message
@@ -336,14 +335,12 @@ class StreamsPlugin(botologist.plugin.Plugin):
 			streams = self.streams.get_subscriptions(msg.user.host)
 			if streams:
 				return ', '.join(streams)
-			else:
-				return 'You are not subscribed to any streams'
+			return 'You are not subscribed to any streams'
 		else:
 			result = self.streams.add_subscriber(msg.user.host, msg.args[0])
 			if result:
 				return 'You are now subscribed to {}!'.format(result)
-			else:
-				return 'You are already subscribed to that stream.'
+			return 'You are already subscribed to that stream.'
 
 	@botologist.plugin.command('unsub')
 	@error.return_streamerror_message
@@ -354,8 +351,7 @@ class StreamsPlugin(botologist.plugin.Plugin):
 		result = self.streams.del_subscriber(msg.user.host, msg.args[0])
 		if result:
 			return 'You are no longer subscribed to {}.'.format(result)
-		else:
-			return 'You are not subscribed to that stream.'
+		return 'You are not subscribed to that stream.'
 
 	@botologist.plugin.command('streams', alias='s', threaded=True)
 	def list_streams_cmd(self, msg):
@@ -429,4 +425,3 @@ class StreamsPlugin(botologist.plugin.Plugin):
 			self.streams.game_filter = None
 			return 'Stream game filter deleted!'
 		return 'There is no stream game filter active at this moment.'
-

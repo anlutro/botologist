@@ -15,6 +15,10 @@ def get_client(config):
 
 	def _make_server_obj(cfg):
 		if isinstance(cfg, dict):
+			if 'ssl' in cfg:
+				log.warning('"ssl" config is deprecated, rename to "use_ssl"')
+				cfg['use_ssl'] = cfg['ssl']
+				del cfg['ssl']
 			return Server(**cfg)
 		elif isinstance(cfg, str):
 			return Server(cfg)
@@ -407,7 +411,7 @@ class Message(botologist.protocol.Message):
 
 
 class Server:
-	def __init__(self, address, ssl=False):
+	def __init__(self, address, use_ssl=False):
 		parts = address.split(':')
 		self.host = parts[0]
 		if len(parts) > 1:
@@ -415,7 +419,7 @@ class Server:
 		else:
 			self.port = 6667
 
-		self.ssl = ssl
+		self.use_ssl = use_ssl
 
 
 class ServerPool:
@@ -474,7 +478,7 @@ class IRCSocket:
 		self.server = server
 		self.socket = None
 		self.ssl_context = None
-		if self.server.ssl:
+		if self.server.use_ssl:
 			# https://docs.python.org/3/library/ssl.html#protocol-versions
 			self.ssl_context = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
 			self.ssl_context.options |= ssl.OP_NO_SSLv2 # pylint: disable=no-member
@@ -506,7 +510,7 @@ class IRCSocket:
 				self.socket = None
 				continue
 
-			if self.server.ssl:
+			if self.server.use_ssl:
 				log.debug('server is using SSL')
 				self.socket = self.ssl_context.wrap_socket(
 					self.socket, server_hostname=self.server.host)
