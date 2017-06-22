@@ -480,9 +480,13 @@ class IRCSocket:
 			self.ssl_context.options |= ssl.OP_NO_SSLv2 # pylint: disable=no-member
 			self.ssl_context.options |= ssl.OP_NO_SSLv3 # pylint: disable=no-member
 
-			self.ssl_context.verify_mode = ssl.CERT_REQUIRED
-			self.ssl_context.check_hostname = True
-			self.ssl_context.load_default_certs()
+			if hasattr(self.ssl_context, 'load_default_certs'):
+				self.ssl_context.verify_mode = ssl.CERT_REQUIRED
+				self.ssl_context.check_hostname = True
+				self.ssl_context.load_default_certs()
+			else:
+				log.warning('TLS connections may not be secure in Python 3.3 - upgrade to 3.4 or newer!')
+				self.ssl_context.verify_mode = ssl.CERT_OPTIONAL
 
 	def connect(self):
 		log.debug('Looking up address info for %s:%s',
