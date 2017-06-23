@@ -35,7 +35,7 @@ def get_conversion_result(*args):
 	query_params = {'q': query.lower(), 'format': 'json', 'no_html': 1}
 
 	try:
-		data = get_duckduckgo_data('http://api.duckduckgo.com', query_params)
+		data = get_duckduckgo_data('https://api.duckduckgo.com', query_params)
 	except requests.exceptions.RequestException:
 		log.warning('DuckDuckGo request failed', exc_info=True)
 		return False
