@@ -35,7 +35,7 @@ class ConversionPluginTest(PluginTestCase):
 		return_value={'AnswerType': 'conversions', 'Answer': response}
 		with mock.patch(ddg_f, return_value=return_value) as mf:
 			self.assertEqual(response, self.reply(message))
-		mf.assert_called_with('http://api.duckduckgo.com',
+		mf.assert_called_with('https://api.duckduckgo.com',
 			{'q':expected_qs,'format':'json','no_html':1})
 
 	@mock.patch(ecb_f, return_value={})
