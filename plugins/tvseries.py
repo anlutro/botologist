@@ -25,7 +25,7 @@ def get_next_episode_info(show):
 		info += ' - season %d, episode %d airs at %s' % (
 			nextepisode['season'],
 			nextepisode['number'],
-			dt.strftime('%Y-%m-%d %H:%I %Z'),
+			dt.strftime('%Y-%m-%d %H:%I %z'),
 		)
 		now = datetime.datetime.now(dt.tzinfo)
 		if dt > now:
