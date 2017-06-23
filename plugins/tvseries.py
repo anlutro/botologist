@@ -38,7 +38,7 @@ def get_next_episode_info(show):
 			elif time_left.seconds > 3600:
 				time_left_str = '%dh %dm' % (
 					round(time_left.seconds / 3600),
-					round(time_left.seconds / 60),
+					round((time_left.seconds % 3600) / 60),
 				)
 			else:
 				time_left_str = '%dm' % round(time_left.seconds / 60)
