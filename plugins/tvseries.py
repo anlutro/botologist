@@ -10,11 +10,18 @@ import botologist.plugin
 
 
 def get_next_episode_info(show):
-	query = {'q': '+'.join(show.split()), 'embed': 'nextepisode'}
+	query = {'q': show, 'embed': 'nextepisode'}
 	try:
-		data = requests.get('http://api.tvmaze.com/singlesearch/shows', query).json()
-	except (requests.exceptions.RequestException, ValueError):
+		response = requests.get('http://api.tvmaze.com/singlesearch/shows', query)
+		response.raise_for_status()
+	except requests.exceptions.RequestException:
 		log.warning('TVMaze request caused an exception', exc_info=True)
+		return None
+
+	try:
+		data = response.json()
+	except ValueError:
+		log.warning('TVMaze returned invalid JSON: %r', response.text, exc_info=True)
 		return None
 
 	info = data['name']
