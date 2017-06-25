@@ -4,7 +4,6 @@ log = logging.getLogger(__name__)
 
 import os
 import os.path
-import resource
 import sys
 import yaml
 
@@ -22,12 +21,16 @@ print('Reading config file:', config_path)
 with open(config_path, 'r') as f:
 	config = yaml.load(f.read())
 
-# set some memory limits before getting started
-mb = 1024 * 1024
-resource.setrlimit(resource.RLIMIT_DATA, (
-	config.get('memory_limit_soft', 64) * mb,
-	config.get('memory_limit_hard', 96) * mb
-))
+try:
+	import resource
+	# set some memory limits before getting started
+	mb = 1024 * 1024
+	resource.setrlimit(resource.RLIMIT_DATA, (
+		config.get('memory_limit_soft', 64) * mb,
+		config.get('memory_limit_hard', 96) * mb
+	))
+except ImportError:
+	pass # windows
 
 if 'storage_dir' in config:
 	if not config['storage_dir'].startswith('/'):
