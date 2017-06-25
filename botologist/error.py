@@ -3,9 +3,20 @@ log = logging.getLogger(__name__)
 
 from email.mime.text import MIMEText
 import os
-import pwd
 import subprocess
 import traceback
+try:
+	import pwd
+except ImportError:
+	import getpass
+	pwd = None
+
+
+def get_username():
+	if pwd:
+		return pwd.getpwuid(os.getuid())[0]
+	else:
+		return getpass.getuser()
 
 
 def send_email(email, sendmail_bin, sendmail_args=None):
@@ -47,7 +58,7 @@ class ErrorHandler:
 			email['From'] = self.bot.config.get('email_from', 'botologist')
 
 			if self.bot.config['admin_email'] is None:
-				email['To'] = pwd.getpwuid(os.getuid())[0]
+				email['To'] = get_username()
 			else:
 				email['To'] = self.bot.config['admin_email']
 
