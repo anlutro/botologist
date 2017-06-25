@@ -4,12 +4,13 @@ log = logging.getLogger(__name__)
 import datetime
 import dateutil.parser
 import requests
+import pytz
 
 import botologist.plugin
 
 
 
-def get_next_episode_info(show):
+def get_next_episode_info(show, output_timezone=pytz.timezone('UTC')):
 	query = {'q': show, 'embed': 'nextepisode'}
 	try:
 		response = requests.get('http://api.tvmaze.com/singlesearch/shows', query)
@@ -32,7 +33,7 @@ def get_next_episode_info(show):
 		info += ' - season %d, episode %d airs at %s' % (
 			nextepisode['season'],
 			nextepisode['number'],
-			dt.strftime('%Y-%m-%d %H:%M %z'),
+			dt.astimezone(tz=output_timezone).strftime('%Y-%m-%d %H:%M %z'),
 		)
 		now = datetime.datetime.now(dt.tzinfo)
 		if dt > now:
@@ -57,6 +58,10 @@ def get_next_episode_info(show):
 
 
 class TvseriesPlugin(botologist.plugin.Plugin):
+	def __init__(self, bot, channel):
+		super().__init__(bot, channel)
+		self.output_tz = pytz.timezone(self.bot.config.get('output_timezone'))
+
 	@botologist.plugin.command('nextepisode')
 	def nextepisode(self, msg):
-		return get_next_episode_info(' '.join(msg.args))
+		return get_next_episode_info(' '.join(msg.args), self.output_tz)

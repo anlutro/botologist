@@ -52,6 +52,9 @@ channels:
     plugins:
       - conversion
 
+# Controls the output timezone for datetimes in certain plugins
+output_timezone: 'Europe/Amsterdam'
+
 # uncomment these lines to enable the !mumble command
 #mumble:
 #  address: my.host.com
