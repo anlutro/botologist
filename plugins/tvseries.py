@@ -54,6 +54,7 @@ def get_next_episode_info(show, output_timezone=pytz.timezone('UTC')):
 			info += ' (in %s)' % time_left_str
 	else:
 		info += ' - no next episode :('
+
 	return info
 
 
@@ -64,4 +65,5 @@ class TvseriesPlugin(botologist.plugin.Plugin):
 
 	@botologist.plugin.command('nextepisode')
 	def nextepisode(self, msg):
-		return get_next_episode_info(' '.join(msg.args), self.output_tz)
+		info = get_next_episode_info(' '.join(msg.args), self.output_tz)
+		return info or 'No show with that name found!'
