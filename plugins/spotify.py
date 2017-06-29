@@ -22,13 +22,13 @@ class Spotify:
 		log.info('looking up spotify:%s:%s', item_type, item_id)
 		try:
 			if item_type == 'artist':
-				data = self.spotipy.artist(artist_id)
+				data = self.spotipy.artist(item_id)
 				return '%s (%s)' % (data['name'], ', '.join(data['genres']))
 			elif item_type == 'album':
-				data = self.spotipy.album(album_id)
+				data = self.spotipy.album(item_id)
 				return '%s - %s' % (_get_artist_str(data['artists']), data['name'])
 			elif item_type == 'track':
-				data = self.spotipy.track(track_id)
+				data = self.spotipy.track(item_id)
 				return '%s - %s [album: %s]' % (
 					_get_artist_str(data['artists']),
 					data['name'],
