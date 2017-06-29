@@ -29,10 +29,10 @@ class Spotify:
 				return '%s - %s' % (_get_artist_str(data['artists']), data['name'])
 			elif item_type == 'track':
 				data = self.spotipy.track(track_id)
-				return '%s - %s - %s' % (
+				return '%s - %s [album: %s]' % (
 					_get_artist_str(data['artists']),
-					data['album']['name'],
 					data['name'],
+					data['album']['name'],
 				)
 			else:
 				raise ValueError('unknown item type: %r' % item_type)
