@@ -61,7 +61,9 @@ def get_next_episode_info(show, output_timezone=pytz.timezone('UTC')):
 class TvseriesPlugin(botologist.plugin.Plugin):
 	def __init__(self, bot, channel):
 		super().__init__(bot, channel)
-		self.output_tz = pytz.timezone(self.bot.config.get('output_timezone'))
+		self.output_tz = pytz.timezone('UTC')
+		if self.bot.config.get('output_timezone'):
+			self.output_tz = pytz.timezone(self.bot.config.get('output_timezone'))
 
 	@botologist.plugin.command('nextepisode')
 	def nextepisode(self, msg):
