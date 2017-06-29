@@ -15,8 +15,8 @@ def _get_artist_str(artists):
 
 
 class Spotify:
-	def __init__(self, spotify=None):
-		self.spotipy = spotify or spotipy.Spotify()
+	def __init__(self, spotipy_instance=None):
+		self.spotipy = spotipy_instance or spotipy.Spotify()
 
 	def get_info_str(self, item_type, item_id):
 		log.info('looking up spotify:%s:%s', item_type, item_id)
