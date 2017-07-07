@@ -123,7 +123,7 @@ class ConversionPlugin(botologist.plugin.Plugin):
 	pattern = re.compile(amount_pattern + r' ?' + unit_pattern + \
 		r' (into|in|to) ' + unit_pattern, re.I)
 
-	@botologist.plugin.reply()
+	@botologist.plugin.reply(threaded=True)
 	def convert(self, msg):
 		match = self.pattern.search(msg.message)
 		if not match:
