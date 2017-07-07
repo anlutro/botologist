@@ -27,7 +27,7 @@ def format_number(number):
 
 
 def get_duckduckgo_data(url, query_params):
-	return requests.get(url, query_params).json()
+	return requests.get(url, query_params, timeout=2).json()
 
 
 def get_conversion_result(*args):
@@ -48,7 +48,7 @@ _rate_expr = re.compile(r'<Cube currency=["\']([A-Za-z]{3})["\'] rate=["\']([\d.
 def get_currency_data():
 	url = 'http://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml'
 	try:
-		response = requests.get(url)
+		response = requests.get(url, timeout=2)
 	except requests.exceptions.RequestException:
 		log.warning('ECB exchange data request failed', exc_info=True)
 		return {}
