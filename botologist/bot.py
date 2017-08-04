@@ -145,7 +145,9 @@ class Bot:
 	def add_channel(self, channel, plugins=None, admins=None, allow_colors=True):
 		def guess_plugin_class(plugin):
 			plugin_class = ''.join(part.title() for part in plugin.split('_'))
-			return 'plugins.{}.{}Plugin'.format(plugin, plugin_class)
+			if '.' not in plugin:
+				plugin = 'plugins.' + plugin
+			return '{}.{}Plugin'.format(plugin, plugin_class)
 
 		if not isinstance(channel, botologist.protocol.Channel):
 			channel = self.protocol.Channel(channel)
