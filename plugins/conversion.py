@@ -21,7 +21,7 @@ def format_number(number):
 		f_number = '{:,.2f}'.format(float(number))
 
 	if len(f_number) > 12:
-		f_number = '{:.2}'.format(number)
+		f_number = '{:.2}'.format(float(number))
 
 	return f_number
 
