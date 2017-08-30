@@ -53,7 +53,11 @@ def get_next_episode_info(show, output_timezone=pytz.timezone('UTC')):
 			log.debug('time left: %r (%s)', time_left, time_left_str)
 			info += ' (in %s)' % time_left_str
 	else:
-		info += ' - no next episode :('
+		status = data['status']
+		if status == 'Ended':
+			info += ' - cancelled :('
+		else:
+			info += ' - next episode not announced yet'
 
 	return info
 
