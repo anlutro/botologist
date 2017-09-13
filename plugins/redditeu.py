@@ -149,26 +149,6 @@ class RedditeuPlugin(botologist.plugin.Plugin):
 			return 'right I\'m sorry'
 
 	@botologist.plugin.reply()
-	def monologue_detector(self, msg):
-		if msg.user == self.monologue_lastuser:
-			self.monologue_counter += 1
-		else:
-			self.monologue_lastuser = msg.user
-			count = self.monologue_counter
-			self.monologue_counter = 1
-			if count > 15:
-				return 'AUTISM C-C-C-C-COMBO BREAKER! ({} line long monologue)'.format(count)
-
-	@botologist.plugin.kick()
-	def kick_handler(self, kicked_user, channel, user):
-		if kicked_user == self.monologue_lastuser:
-			self.monologue_lastuser = None
-			count = self.monologue_counter
-			self.monologue_counter = 1
-			if count > 15:
-				return 'AUTISM C-C-C-C-COMBO BREAKER! ({} line long monologue)'.format(count)
-
-	@botologist.plugin.reply()
 	def nooooo(self, msg):
 		if 'nooo' in msg.message.lower():
 			return 'https://vid.me/1VfD'
