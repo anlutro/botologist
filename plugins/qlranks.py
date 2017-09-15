@@ -5,28 +5,20 @@ import requests
 import requests.exceptions
 
 import botologist.plugin
+from botologist import http
 
 
-def _get_qlr_data(nick):
+async def _get_qlr_data(nick):
 	url = 'http://www.qlranks.com/api.aspx'
-	response = requests.get(url, {'nick': nick}, timeout=4)
-	return response.json()['players'][0]
+	response = await http.get(url, params={'nick': nick}, timeout=4)
+	data = await response.json()
+	return data['players'][0]
 
 
-def _get_qlr_elo(nick, modes=None):
-	"""Get someone's QLRanks ELO.
-
-	nick should be a valid Quake Live nickname. modes should be an iterable
-	(list, tuple) of game-modes to display ELO for (duel, ctf, tdm...)
-	"""
+def _get_qlr_elo(data, modes=None):
+	"""Get someone's QLRanks ELO."""
 	if modes is None:
 		modes = ('duel',)
-
-	try:
-		data = _get_qlr_data(nick)
-	except requests.exceptions.RequestException:
-		log.warning('QLRanks request caused an exception', exc_info=True)
-		return 'HTTP error, try again!'
 
 	# qlranks returns rank 0 indicating a player has no rating - if all modes
 	# have rank 0, it is safe to assume the player does not exist
@@ -52,17 +44,23 @@ def _get_qlr_elo(nick, modes=None):
 
 class QlranksPlugin(botologist.plugin.Plugin):
 	"""QLRanks plugin."""
-	@botologist.plugin.command('elo', threaded=True)
-	def get_elo(self, msg):
+	@botologist.plugin.command('elo')
+	async def get_elo(self, msg):
 		'''Get a player's ELO from qlranks.'''
 		if len(msg.args) < 1:
 			return
 
+		modes = None
 		if len(msg.args) > 1:
 			if ',' in msg.args[1]:
 				modes = msg.args[1].split(',')
 			else:
 				modes = msg.args[1:]
-			return _get_qlr_elo(msg.args[0], modes)
-		else:
-			return _get_qlr_elo(msg.args[0])
+
+		try:
+			data = await _get_qlr_data(msg.args[0])
+		except requests.exceptions.RequestException:
+			log.warning('QLRanks request caused an exception', exc_info=True)
+			return 'HTTP error, try again!'
+
+		return _get_qlr_elo(data, modes)

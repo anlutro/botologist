@@ -1,5 +1,6 @@
+import asyncio
 import unittest
-import os.path
+from inspect import iscoroutinefunction
 
 import botologist.bot as bot
 import botologist.protocol.irc as irc
@@ -34,10 +35,16 @@ class PluginTestCase(unittest.TestCase):
 		user.is_admin = is_admin
 		return user
 
+	def _call(self, func, *args, **kwargs):
+		if iscoroutinefunction(func):
+			future = asyncio.ensure_future(func(*args, **kwargs))
+			return asyncio.get_event_loop().run_until_complete(future)
+		return func(*args, **kwargs)
+
 	def reply(self, message, **kwargs):
 		message = self._create_msg(message, **kwargs)
 		for reply in self.plugin.replies:
-			ret = reply(message)
+			ret = self._call(reply, message)
 			if ret:
 				return ret
 
@@ -45,14 +52,14 @@ class PluginTestCase(unittest.TestCase):
 		message = self._create_msg(message, **kwargs)
 		command = bot.CommandMessage(message)
 		func = self.plugin.commands[command.command]
-		return func(command)
+		return self._call(func, command)
 
 	def join(self, nick, is_admin=False, channel=None):
 		user = self._create_user(nick, is_admin)
 		if channel and not isinstance(channel, irc.Channel):
 			channel = irc.Channel(channel)
 		for join in self.plugin.joins:
-			ret = join(user, channel)
+			ret = self._call(join, user, channel)
 			if ret:
 				return ret
 
@@ -72,10 +79,11 @@ class PluginTestCase(unittest.TestCase):
 				ret = None
 
 				if not handler._http_path:
-					ret = handler(path=path, **kwargs)
-				else:
-					if handler._http_path == path:
-						ret = handler(**kwargs)
+					kwargs['path'] = path
+					path = None
+
+				if handler._http_path == path:
+					ret = self._call(handler, **kwargs)
 
 				if ret:
 					return ret

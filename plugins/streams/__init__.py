@@ -10,7 +10,7 @@ import urllib.parse
 
 import botologist.http
 import botologist.plugin
-from plugins.streams import twitch, hitbox, error, cache
+from plugins.streams import twitch, error, cache
 
 
 def filter_urls(urls, service):
@@ -67,10 +67,8 @@ class Stream:
 		"""Normalize a stream URL."""
 		if 'twitch.tv' in url:
 			url = url[url.index('twitch.tv'):]
-		elif 'hitbox.tv' in url:
-			url = url[url.index('hitbox.tv'):]
 		else:
-			raise error.InvalidStreamException('Only twitch and hitbox URLs allowed')
+			raise error.InvalidStreamException('Only twitch URLs allowed')
 
 		segments = url.split('/')
 
@@ -132,19 +130,16 @@ class StreamManager:
 		with open(self.stor_path, 'w') as f:
 			f.write(content)
 
-	def _fetch_streams(self):
+	async def _fetch_streams(self):
 		"""Return a list of Stream objects for the streams in the array of urls
 		that are currently live."""
 		twitch_streams = [s for s in self.streams if 'twitch.tv' in s]
-		twitch_streams = twitch.get_online_streams(
+		twitch_streams = await twitch.get_online_streams(
 			twitch_streams,
 			self.twitch_auth_token
 		)
 
-		hitbox_streams = [s for s in self.streams if 'hitbox.tv' in s]
-		hitbox_streams = hitbox.get_online_streams(hitbox_streams)
-
-		all_streams = twitch_streams + hitbox_streams
+		all_streams = twitch_streams
 
 		if self.game_filter:
 			all_streams = [
@@ -173,7 +168,7 @@ class StreamManager:
 	def find_stream(self, url):
 		url = url.lower()
 
-		if 'twitch.tv' in url or 'hitbox.tv' in url:
+		if 'twitch.tv' in url:
 			url = Stream.normalize_url(url)
 
 		streams = [s for s in self.streams if url in s]
@@ -233,7 +228,7 @@ class StreamManager:
 
 		return [stream for stream in self.subs[host] if stream in self.streams]
 
-	def get_online_streams(self):
+	async def get_online_streams(self):
 		if not self.streams:
 			return None
 
@@ -246,7 +241,7 @@ class StreamManager:
 					return self._cached_streams.get_all()
 
 		try:
-			streams = self._fetch_streams()
+			streams = await self._fetch_streams()
 		except urllib.error.URLError:
 			log.warning('Could not fetch online streams!', exc_info=True)
 			if self._cached_streams:
@@ -262,7 +257,7 @@ class StreamManager:
 
 		return streams
 
-	def get_new_online_streams(self):
+	async def get_new_online_streams(self):
 		if not self._cached_streams:
 			raise RuntimeError('must enable caching to get stream diff')
 
@@ -270,7 +265,7 @@ class StreamManager:
 			return None
 
 		try:
-			streams = self._fetch_streams()
+			streams = await self._fetch_streams()
 		except urllib.error.URLError:
 			log.warning('Could not fetch new online streams!', exc_info=True)
 			return False
@@ -356,10 +351,10 @@ class StreamsPlugin(botologist.plugin.Plugin):
 			return 'You are no longer subscribed to {}.'.format(result)
 		return 'You are not subscribed to that stream.'
 
-	@botologist.plugin.command('streams', alias='s', threaded=True)
-	def list_streams_cmd(self, msg):
+	@botologist.plugin.command('streams', alias='s')
+	async def list_streams_cmd(self, msg):
 		'''Show currently online streams.'''
-		streams = self.streams.get_online_streams()
+		streams = await self.streams.get_online_streams()
 		if not streams:
 			return 'No streams online!'
 
@@ -373,8 +368,8 @@ class StreamsPlugin(botologist.plugin.Plugin):
 		return ' - '.join(stream_strings)
 
 	@botologist.plugin.ticker()
-	def check_new_streams_tick(self):
-		streams = self.streams.get_new_online_streams()
+	async def check_new_streams_tick(self):
+		streams = await self.streams.get_new_online_streams()
 
 		if not streams:
 			log.debug('No new online streams')

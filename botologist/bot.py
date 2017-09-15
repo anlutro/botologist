@@ -1,6 +1,8 @@
 import logging
 log = logging.getLogger(__name__)
 
+from inspect import iscoroutinefunction
+import asyncio
 import datetime
 import threading
 import importlib
@@ -49,7 +51,8 @@ class Bot:
 	SPAM_THROTTLE = 2
 
 	def __init__(self, config):
-		protocol_module = 'botologist.protocol.{}'.format(config.get('protocol', 'local'))
+		protocol = config.get('protocol', 'local')
+		protocol_module = 'botologist.protocol.{}'.format(protocol)
 		self.protocol = importlib.import_module(protocol_module)
 		self.client = self.protocol.get_client(config)
 
@@ -105,6 +108,22 @@ class Bot:
 					name = channel
 					channel = {}
 				self.add_channel(name, **channel)
+
+	@property
+	def is_async(self):
+		return self.client.is_async
+
+	@property
+	def is_threaded(self):
+		return self.client.is_threaded
+
+	@property
+	def loop(self):
+		return self.client.loop
+
+	@property
+	def executor(self):
+		return self.client.executor
 
 	@property
 	def nick(self):
@@ -255,20 +274,25 @@ class Bot:
 
 		channel = self.client.channels[message.target]
 		assert isinstance(channel, botologist.protocol.Channel)
+		message.channel = channel
 
 		if message.message.startswith(self.CMD_PREFIX):
-			return self._handle_command(message, channel)
+			func = self._handle_command
+		else:
+			func = self._handle_replies
+		self._invoke_async(func, message)
 
-		# otherwise, call the channel's repliers
-		response = self._call_repliers(channel, message)
+	def _invoke_async(self, func, *args, **kwargs):
+		if self.is_async:
+			self.loop.create_task(func(*args, **kwargs))
+		else:
+			self.executor.submit(func, *args, **kwargs)
 
-		if response:
-			self.send_msg(message.target, response)
-
-	def _handle_command(self, message, channel):
+	async def _handle_command(self, message):
 		# if the message starts with the command prefix, check for mathing
 		# command and fire its callback
 		cmd_string = message.words[0][1:].lower()
+		channel = message.channel
 
 		if cmd_string in channel.commands:
 			command = CommandMessage(message)
@@ -289,55 +313,60 @@ class Bot:
 			command.command = self.CMD_PREFIX + matching_commands[0]
 			command_func = channel.commands[matching_commands[0]]
 
-		if command_func._is_threaded:
-			log.debug('Starting thread for command %s', cmd_string)
-			cmd_thread = threading.Thread(
-				target=self._wrap_error_handler(self._maybe_send_cmd_reply),
-				args=(command_func, command),
-			)
-			cmd_thread.start()
-		else:
-			self._maybe_send_cmd_reply(command_func, command)
-
-	def _maybe_send_cmd_reply(self, command_func, message):
 		# check for spam
 		now = datetime.datetime.now()
-		if message.command in self._command_log and not message.user.is_admin:
-			diff = now - self._command_log[message.command]
-			if self._last_command == (message.user.identifier, message.command, message.args):
+		if command.command in self._command_log and not command.user.is_admin:
+			diff = now - self._command_log[command.command]
+			if self._last_command == (command.user.identifier, command.command, command.args):
 				threshold = self.SPAM_THROTTLE * 3
 			else:
 				threshold = self.SPAM_THROTTLE
 			if diff.seconds < threshold:
-				log.info('Command throttled: %s', message.command)
+				log.info('Command throttled: %s', command.command)
 				return
 
 		# log the command call for spam throttling
-		self._last_command = (message.user.identifier, message.command, message.args)
-		self._command_log[message.command] = now
+		self._last_command = (command.user.identifier, command.command, command.args)
+		self._command_log[command.command] = now
 
-		response = command_func(message)
+		if iscoroutinefunction(command_func):
+			response = await command_func(command)
+		else:
+			response = command_func(command)
 		if response:
 			self.send_msg(message.target, response)
 
-	def _call_repliers(self, channel, message):
+	async def _handle_replies(self, message):
+		channel = message.channel
 		now = datetime.datetime.now()
-		final_replies = []
-
-		# iterate through reply callbacks
 		for reply_func in channel.replies:
-			replies = reply_func(message)
+			if iscoroutinefunction(reply_func):
+				replies = await reply_func(message)
+			else:
+				replies = reply_func(message)
 
 			if not replies:
 				continue
+			if isinstance(replies, str):
+				replies = [replies]
 
-			if isinstance(replies, list):
-				final_replies = final_replies + replies
-			else:
-				final_replies.append(replies)
+			if not message.user.is_admin:
+				for reply in replies:
+					# throttle spam - prevents the same reply from being sent
+					# more than once in a row within the throttle threshold
+					if message.channel not in self._reply_log:
+						self._reply_log[message.channel] = {}
 
-		if not message.user.is_admin:
-			for reply in final_replies:
+					if reply in self._reply_log[message.channel]:
+						diff = now - self._reply_log[message.channel][reply]
+						if diff.seconds < self.SPAM_THROTTLE:
+							log.info('reply throttled: %r', reply)
+							replies.remove(reply)
+
+					# log the reply for spam throttling
+					self._reply_log[message.channel][reply] = now
+
+			for reply in replies:
 				# throttle spam - prevents the same reply from being sent
 				# more than once in a row within the throttle threshold
 				if channel.name not in self._reply_log:
@@ -346,13 +375,14 @@ class Bot:
 				if reply in self._reply_log[channel.name]:
 					diff = now - self._reply_log[channel.name][reply]
 					if diff.seconds < self.SPAM_THROTTLE:
-						log.info('Reply throttled: "%s"', reply)
-						final_replies.remove(reply)
+						log.info('reply throttled: %r', reply)
+						replies.remove(reply)
 
 				# log the reply for spam throttling
 				self._reply_log[channel.name][reply] = now
 
-		return final_replies
+		for reply in replies:
+			self.send_msg(message.channel, reply)
 
 	def _start(self):
 		if self.http_port and not self.http_server:
@@ -366,11 +396,16 @@ class Bot:
 		self._start_tick_timer()
 
 	def _start_tick_timer(self):
-		self.timer = threading.Timer(
-			function=self._wrap_error_handler(self._tick),
-			interval=self.TICK_INTERVAL,
-		)
-		self.timer.start()
+		if self.is_async:
+			self.loop.create_task(self._atick())
+		elif self.is_threaded:
+			self.timer = threading.Timer(
+				function=self._wrap_error_handler(self._tick),
+				interval=self.TICK_INTERVAL,
+			)
+			self.timer.start()
+		else:
+			log.error("couldn't start ticker - not async and not threaded!")
 		log.debug('started ticker with interval %d seconds', self.TICK_INTERVAL)
 
 	def stop(self):
@@ -389,6 +424,10 @@ class Bot:
 			log.info('ticker stopped')
 			self.timer.cancel()
 			self.timer = None
+
+	async def _atick(self):
+		await asyncio.sleep(self.TICK_INTERVAL)
+		self._tick()
 
 	def _tick(self):
 		log.debug('ticker running')

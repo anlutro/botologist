@@ -1,5 +1,6 @@
+import asynctest
 import unittest
-import unittest.mock as mock
+import pytest
 import os.path
 import re
 
@@ -7,7 +8,7 @@ from tests.plugins import PluginTestCase
 import plugins.streams as streams
 
 twitch_f = 'plugins.streams.twitch.get_twitch_data'
-hitbox_f = 'plugins.streams.hitbox.get_hitbox_data'
+
 
 class StreamTest(unittest.TestCase):
 	def test_equals(self):
@@ -20,13 +21,6 @@ class StreamTest(unittest.TestCase):
 		self.assertEqual('foobar', s.user)
 		self.assertEqual('twitch.tv/foobar', s.url)
 		self.assertEqual('http://twitch.tv/foobar', s.full_url)
-
-	def test_from_hitbox_data(self):
-		data = {'media_user_name': 'foobar'}
-		s = streams.hitbox.make_hitbox_stream(data)
-		self.assertEqual('foobar', s.user)
-		self.assertEqual('hitbox.tv/foobar', s.url)
-		self.assertEqual('http://hitbox.tv/foobar', s.full_url)
 
 	def test_normalize_url(self):
 		f = streams.Stream.normalize_url
@@ -90,7 +84,8 @@ class StreamCacheTest(unittest.TestCase):
 		self.assertFalse('a' in sc)
 		self.assertFalse('b' in sc)
 
-class StreamManagerTest(unittest.TestCase):
+
+class StreamManagerTest(object):
 	file_path = os.path.dirname(os.path.dirname(__file__)) + '/tmp/stream_test.json'
 
 	def setUp(self):
@@ -136,14 +131,15 @@ class StreamManagerTest(unittest.TestCase):
 		self.assertEqual(['twitch.tv/asdf'], sm.subs['host.com'])
 		self.assertEqual([], sm.get_subscriptions('host.com'))
 
-	def test_all_online_streams(self):
+	@pytest.mark.asyncio
+	async def test_all_online_streams(self):
 		sm = streams.StreamManager(self.file_path, 'token')
 		sm.add_stream('twitch.tv/name')
 
 		data = {'streams': [{'channel': {'name': 'name', 'status': 'status'}}]}
-		with mock.patch(twitch_f, return_value=data) as mf:
-			ret = sm.get_online_streams()
-			mf.assert_called_with(['name'], 'token')
+		with asynctest.patch(twitch_f, return_value=data) as mf:
+			ret = await sm.get_online_streams()
+		mf.assert_called_with(['name'], 'token')
 
 		self.assertEqual(1, len(ret))
 		s = ret.pop()
@@ -151,78 +147,84 @@ class StreamManagerTest(unittest.TestCase):
 		self.assertEqual('name', s.user)
 		self.assertEqual('status', s.title)
 
-	def test_new_online_stream(self):
+	@pytest.mark.asyncio
+	async def test_new_online_stream(self):
 		sm = streams.StreamManager(self.file_path, 'token')
 		sm.add_stream('twitch.tv/name1')
 		sm.add_stream('twitch.tv/name2')
 
 		data = {'streams': [{'channel': {'name': 'name1', 'status': 'status1'}}]}
-		with mock.patch(twitch_f, return_value=data) as mf:
-			ret = sm.get_new_online_streams()
-			self.assertEqual([], ret)
+		with asynctest.patch(twitch_f, return_value=data):
+			ret = await sm.get_new_online_streams()
+		self.assertEqual([], ret)
 
 		data['streams'].append({'channel': {'name': 'name2', 'status': 'status2'}})
-		with mock.patch(twitch_f, return_value=data) as mf:
-			ret = sm.get_new_online_streams()
-			self.assertEqual(1, len(ret))
-			s = ret.pop()
-			self.assertTrue(isinstance(s, streams.Stream))
-			self.assertEqual('name2', s.user)
-			self.assertEqual('status2', s.title)
+		with asynctest.patch(twitch_f, return_value=data):
+			ret = await sm.get_new_online_streams()
+		self.assertEqual(1, len(ret))
+		s = ret.pop()
+		self.assertTrue(isinstance(s, streams.Stream))
+		self.assertEqual('name2', s.user)
+		self.assertEqual('status2', s.title)
 
-			ret = sm.get_new_online_streams()
-			self.assertEqual(0, len(ret))
+		with asynctest.patch(twitch_f, return_value=data):
+			ret = await sm.get_new_online_streams()
+		self.assertEqual(0, len(ret))
 
-	def test_rebroadcast_is_not_new_stream(self):
+	@pytest.mark.asyncio
+	async def test_rebroadcast_is_not_new_stream(self):
 		sm = streams.StreamManager(self.file_path, 'token')
 		sm.add_stream('twitch.tv/name')
 
 		data = {'streams': []}
-		with mock.patch(twitch_f, return_value=data) as mf:
-			ret = sm.get_new_online_streams()
-			self.assertEqual([], ret)
+		with asynctest.patch(twitch_f, return_value=data):
+			ret = await sm.get_new_online_streams()
+		self.assertEqual([], ret)
 
 		data['streams'].append({'channel': {'name': 'name', 'status': 'rebroadcast'}})
-		with mock.patch(twitch_f, return_value=data) as mf:
-			ret = sm.get_new_online_streams()
-			self.assertEqual([], ret)
+		with asynctest.patch(twitch_f, return_value=data):
+			ret = await sm.get_new_online_streams()
+		self.assertEqual([], ret)
 
-	def test_rebroadcast_namechange_is_new_stream(self):
+	@pytest.mark.asyncio
+	async def test_rebroadcast_namechange_is_new_stream(self):
 		sm = streams.StreamManager(self.file_path, 'token')
 		sm.add_stream('twitch.tv/name')
 
 		data = {'streams': [{'channel': {'name': 'name', 'status': 'rebroadcast'}}]}
-		with mock.patch(twitch_f, return_value=data) as mf:
-			ret = sm.get_new_online_streams()
-			self.assertEqual([], ret)
+		with asynctest.patch(twitch_f, return_value=data):
+			ret = await sm.get_new_online_streams()
+		self.assertEqual([], ret)
 
 		data['streams'].append({'channel': {'name': 'name', 'status': 'live'}})
-		with mock.patch(twitch_f, return_value=data) as mf:
-			ret = sm.get_new_online_streams()
-			self.assertEqual(1, len(ret))
-			s = ret.pop()
-			self.assertTrue(isinstance(s, streams.Stream))
-			self.assertEqual('name', s.user)
-			self.assertEqual('live', s.title)
+		with asynctest.patch(twitch_f, return_value=data):
+			ret = await sm.get_new_online_streams()
+		self.assertEqual(1, len(ret))
+		s = ret.pop()
+		self.assertTrue(isinstance(s, streams.Stream))
+		self.assertEqual('name', s.user)
+		self.assertEqual('live', s.title)
 
-	def test_filter_streams(self):
+	@pytest.mark.asyncio
+	async def test_filter_streams(self):
 		sm = streams.StreamManager(self.file_path, 'token', use_cache=False)
 		sm.add_stream('twitch.tv/name')
 		sm.game_filter = re.compile(r'asdf.*')
 
 		data = {'streams': [{'channel': {'name': 'name', 'status': 'title'}, 'game': 'ghjkgame'}]}
-		with mock.patch(twitch_f, return_value=data) as mf:
-			ret = sm.get_online_streams()
-			self.assertEqual(set(), ret)
+		with asynctest.patch(twitch_f, return_value=data):
+			ret = await sm.get_online_streams()
+		self.assertEqual(set(), ret)
 
 		data = {'streams': [{'channel': {'name': 'name', 'status': 'title'}, 'game': 'asdfgame'}]}
-		with mock.patch(twitch_f, return_value=data) as mf:
-			ret = sm.get_online_streams()
-			self.assertEqual(1, len(ret))
-			s = ret.pop()
-			self.assertTrue(isinstance(s, streams.Stream))
-			self.assertEqual('name', s.user)
-			self.assertEqual('title', s.title)
+		with asynctest.patch(twitch_f, return_value=data):
+			ret = await sm.get_online_streams()
+		self.assertEqual(1, len(ret))
+		s = ret.pop()
+		self.assertTrue(isinstance(s, streams.Stream))
+		self.assertEqual('name', s.user)
+		self.assertEqual('title', s.title)
+
 
 class StreamPluginTest(PluginTestCase):
 	file_dir = os.path.dirname(os.path.dirname(__file__)) + '/tmp'
@@ -249,11 +251,11 @@ class StreamPluginTest(PluginTestCase):
 		self.cmd('sub twitch.tv/name', source='user!ident@host.com')
 
 		data = {'streams': []}
-		with mock.patch(twitch_f, return_value=data) as mf:
-			ret = self.plugin.check_new_streams_tick()
+		with asynctest.patch(twitch_f, return_value=data):
+			ret = self._call(self.plugin.check_new_streams_tick)
 			self.assertEqual(None, ret)
 
 		data['streams'].append({'channel': {'name': 'name', 'status': 'status'}})
-		with mock.patch(twitch_f, return_value=data) as mf:
-			ret = self.plugin.check_new_streams_tick()
+		with asynctest.patch(twitch_f, return_value=data):
+			ret = self._call(self.plugin.check_new_streams_tick)
 			self.assertEqual(['New stream online: http://twitch.tv/name - status (user)'], ret)

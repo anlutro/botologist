@@ -1,7 +1,38 @@
 import logging
 log = logging.getLogger(__name__)
 
+import aiohttp
+import async_timeout
 import http.server
+
+
+_session = None
+def get_session():
+	global _session
+	if _session is None:
+		_session = aiohttp.ClientSession()
+	return _session
+
+
+async def get(*args, **kwargs):
+	return await request(*args, **kwargs)
+
+
+async def post(*args, **kwargs):
+	return await request(*args, **kwargs)
+
+
+async def request(url, method='GET', timeout=10, data=None, json=None, params=None):
+	async with get_session() as session:
+		with async_timeout.timeout(timeout):
+			async with session.request(
+				method=method,
+				url=url,
+				data=data,
+				json=json,
+				params=params,
+			) as response:
+				return response
 
 
 class RequestHandler(http.server.BaseHTTPRequestHandler):

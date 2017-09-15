@@ -16,8 +16,8 @@ class TwitterPlugin(botologist.plugin.Plugin):
 		self.api = None
 		self.last_fetch = None
 
-	@botologist.plugin.reply(threaded=True)
-	def twitter(self, msg):
+	@botologist.plugin.reply()
+	async def twitter(self, msg):
 		if 'twitter.com/' not in msg.message:
 			return
 

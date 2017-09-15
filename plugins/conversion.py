@@ -3,10 +3,9 @@ log = logging.getLogger(__name__)
 
 import datetime
 import re
-import requests
-import requests.exceptions
 
 import botologist.plugin
+from botologist import http
 
 
 def format_number(number):
@@ -26,16 +25,17 @@ def format_number(number):
 	return f_number
 
 
-def get_duckduckgo_data(url, query_params):
-	return requests.get(url, query_params, timeout=2).json()
+async def get_duckduckgo_data(url, query_params):
+	resp = await http.get(url, query_params, timeout=2)
+	return await resp.json()
 
 
-def get_conversion_result(query):
+async def get_conversion_result(query):
 	query_params = {'q': query.lower(), 'format': 'json', 'no_html': 1}
 
 	try:
-		data = get_duckduckgo_data('https://api.duckduckgo.com', query_params)
-	except requests.exceptions.RequestException:
+		data = await get_duckduckgo_data('https://api.duckduckgo.com', query_params)
+	except:
 		log.warning('DuckDuckGo request failed', exc_info=True)
 		return False
 
@@ -44,11 +44,11 @@ def get_conversion_result(query):
 
 
 _rate_expr = re.compile(r'<Cube currency=["\']([A-Za-z]{3})["\'] rate=["\']([\d.]+)["\']/>')
-def get_currency_data():
+async def get_currency_data():
 	url = 'http://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml'
 	try:
-		response = requests.get(url, timeout=2)
-	except requests.exceptions.RequestException:
+		response = await http.get(url, timeout=2)
+	except:
 		log.warning('ECB exchange data request failed', exc_info=True)
 		return {}
 
@@ -72,8 +72,8 @@ class Currency:
 		return cls.currency_data.keys()
 
 	@classmethod
-	def convert(cls, amount, from_cur, to_cur):
-		cls.load()
+	async def convert(cls, amount, from_cur, to_cur):
+		await cls.load()
 
 		try:
 			amount = float(amount)
@@ -107,12 +107,12 @@ class Currency:
 		return None
 
 	@classmethod
-	def load(cls):
+	async def load(cls):
 		now = datetime.datetime.now()
 		if cls.last_fetch:
 			diff = now - cls.last_fetch
 		if not cls.last_fetch or diff.seconds > 3600:
-			cls.currency_data = get_currency_data()
+			cls.currency_data = await get_currency_data()
 			cls.last_fetch = now
 
 
@@ -126,8 +126,8 @@ def _conversion_regex():
 class ConversionPlugin(botologist.plugin.Plugin):
 	regex = _conversion_regex()
 
-	@botologist.plugin.reply(threaded=True)
-	def convert(self, msg):
+	@botologist.plugin.reply()
+	async def convert(self, msg):
 		match = self.regex.search(msg.message)
 		if not match:
 			return
@@ -155,7 +155,7 @@ class ConversionPlugin(botologist.plugin.Plugin):
 		if ',' in conv_to:
 			retvals = []
 			for conv_to in conv_to.split(','):
-				result = Currency.convert(real_amount, conv_from, conv_to)
+				result = await Currency.convert(real_amount, conv_from, conv_to)
 				if result:
 					format_result = format_number(result)
 					retvals.append('{} {}'.format(format_result, conv_to))
@@ -167,7 +167,7 @@ class ConversionPlugin(botologist.plugin.Plugin):
 					', '.join(retvals),
 				)
 		else:
-			result = Currency.convert(real_amount, conv_from, conv_to)
+			result = await Currency.convert(real_amount, conv_from, conv_to)
 			if result:
 				format_amount = format_number(real_amount)
 				format_result = format_number(result)
@@ -178,6 +178,6 @@ class ConversionPlugin(botologist.plugin.Plugin):
 		# this format is a bit hard-coded to duckduckgo
 		parts = (real_amount, conv_from, match.group(3), conv_to)
 		query = ' '.join(str(part) for part in parts)
-		result = get_conversion_result(query)
+		result = await get_conversion_result(query)
 		if result:
 			return result

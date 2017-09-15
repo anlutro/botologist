@@ -5,6 +5,9 @@ import botologist.plugin
 
 
 class Client:
+	is_async = False
+	is_threaded = False
+
 	def __init__(self, name):
 		self.name = name
 		self.channels = {}
@@ -21,6 +24,8 @@ class Client:
 		return self.name
 
 	def add_channel(self, channel):
+		if not isinstance(channel, Channel):
+			channel = Channel(channel)
 		self.channels[channel.name] = channel
 
 	def _parse_messages(self, message):
@@ -35,6 +40,9 @@ class Client:
 
 	def run_forever(self):
 		raise NotImplementedError('method run_forever must be defined')
+
+	def invoke_callback(self, callback, *args, **kwargs):
+		return callback(*args, **kwargs)
 
 	def stop(self):
 		for callback in self.on_disconnect:

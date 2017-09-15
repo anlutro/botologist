@@ -1,3 +1,4 @@
+import asynctest
 import unittest.mock as mock
 from tests.plugins import PluginTestCase
 
@@ -11,8 +12,8 @@ class ConversionPluginTest(PluginTestCase):
 		Currency.currency_data = None
 		return ConversionPlugin(self.bot, self.channel)
 
-	@mock.patch(ddg_f, return_value={ 'AnswerType': 'conversions', 'Answer': 'TEST' })
-	@mock.patch(ecb_f, return_value={ 'NOK': 8.00, 'DKK': 6.00 })
+	@asynctest.patch(ddg_f, return_value={'AnswerType': 'conversions', 'Answer': 'TEST'})
+	@asynctest.patch(ecb_f, return_value={'NOK': 8.00, 'DKK': 6.00})
 	def test_converts_currencies(self, currency_mock, convert_mock):
 		self.assertEqual('10 eur = 80 nok', self.reply('10 eur into nok'))
 		self.assertEqual('10 eur = 60 dkk', self.reply('10 eur into dkk'))
@@ -33,12 +34,12 @@ class ConversionPluginTest(PluginTestCase):
 		if response == 'DEFAULT':
 			response = message + ' reply'
 		return_value={'AnswerType': 'conversions', 'Answer': response}
-		with mock.patch(ddg_f, return_value=return_value) as mf:
+		with asynctest.patch(ddg_f, return_value=return_value) as mf:
 			self.assertEqual(response, self.reply(message))
 		mf.assert_called_with('https://api.duckduckgo.com',
 			{'q':expected_qs,'format':'json','no_html':1})
 
-	@mock.patch(ecb_f, return_value={})
+	@asynctest.patch(ecb_f, return_value={})
 	def test_converts_units(self, currency_mock):
 		self.check_convert_reply('100kg into stones', '100 kg into stones')
 		self.check_convert_reply('100 kg into stones', '100 kg into stones')

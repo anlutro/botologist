@@ -4,6 +4,7 @@ log = logging.getLogger(__name__)
 import requests
 import requests.exceptions
 import plugins.streams
+from botologist import http
 
 
 def make_twitch_stream(data):
@@ -15,28 +16,22 @@ def make_twitch_stream(data):
 	return plugins.streams.Stream(channel, 'twitch.tv/' + channel, title, game)
 
 
-def get_twitch_data(channels, auth_token):
+async def get_twitch_data(channels, auth_token):
 	url = 'https://api.twitch.tv/kraken/streams'
 	query_params = {'channel': ','.join(channels)}
 	headers = {'Authorization': 'OAuth %s' % auth_token}
-	try:
-		response = requests.get(url, query_params, headers=headers)
-		response.raise_for_status()
-	except requests.exceptions.RequestException:
-		log.warning('error requesting twitch data', exc_info=True)
-		return {}
-
-	return response.json()
+	response = await http.get(url, params=query_params, headers=headers)
+	return await response.json()
 
 
-def get_online_streams(urls, auth_token):
+async def get_online_streams(urls, auth_token):
 	"""From a collection of URLs, get the ones that are live on twitch.tv."""
 	channels = plugins.streams.filter_urls(urls, 'twitch.tv')
 
 	if not channels:
 		return []
 
-	data = get_twitch_data(channels, auth_token)
+	data = await get_twitch_data(channels, auth_token)
 	streams = data.get('streams') or []
 	log.debug('%s online twitch.tv streams', len(streams))
 

@@ -14,7 +14,7 @@ class KothPlugin(botologist.plugin.Plugin):
 		self.queue = None
 
 	@botologist.plugin.command('koth')
-	def cmd(self, cmd):
+	def koth(self, cmd):
 		if not cmd.args or cmd.args[0] == 'list':
 			return self.list()
 		if cmd.user.is_admin:
