@@ -30,8 +30,7 @@ def get_duckduckgo_data(url, query_params):
 	return requests.get(url, query_params, timeout=2).json()
 
 
-def get_conversion_result(*args):
-	query = ' '.join([str(arg) for arg in args])
+def get_conversion_result(query):
 	query_params = {'q': query.lower(), 'format': 'json', 'no_html': 1}
 
 	try:
@@ -117,15 +116,19 @@ class Currency:
 			cls.last_fetch = now
 
 
-class ConversionPlugin(botologist.plugin.Plugin):
+def _conversion_regex():
 	amount_pattern = r'((?:[\d][\d,. ]*?|[\.][\d]*?)[km]??)'
 	unit_pattern = r'((?:(?:square|cubic) )?[a-z.,]+)'
-	pattern = re.compile(amount_pattern + r' ?' + unit_pattern + \
-		r' (into|in|to) ' + unit_pattern, re.I)
+	pattern = amount_pattern + r' ?' + unit_pattern + r' (into|in|to) ' + unit_pattern
+	return re.compile(pattern, re.I)
+
+
+class ConversionPlugin(botologist.plugin.Plugin):
+	regex = _conversion_regex()
 
 	@botologist.plugin.reply(threaded=True)
 	def convert(self, msg):
-		match = self.pattern.search(msg.message)
+		match = self.regex.search(msg.message)
 		if not match:
 			return
 
@@ -158,17 +161,23 @@ class ConversionPlugin(botologist.plugin.Plugin):
 					retvals.append('{} {}'.format(format_result, conv_to))
 			if retvals:
 				format_amount = format_number(real_amount)
-				return '{} {} = {}'.format(format_amount, conv_from,
-					', '.join(retvals))
+				return '{} {} = {}'.format(
+					format_amount,
+					conv_from,
+					', '.join(retvals),
+				)
 		else:
 			result = Currency.convert(real_amount, conv_from, conv_to)
 			if result:
 				format_amount = format_number(real_amount)
 				format_result = format_number(result)
-				return '{} {} = {} {}'.format(format_amount,
-					conv_from, format_result, conv_to)
+				return '{} {} = {} {}'.format(
+					format_amount, conv_from, format_result, conv_to
+				)
 
-		result = get_conversion_result(real_amount,
-			conv_from, match.group(3), conv_to)
+		# this format is a bit hard-coded to duckduckgo
+		parts = (real_amount, conv_from, match.group(3), conv_to)
+		query = ' '.join(str(part) for part in parts)
+		result = get_conversion_result(query)
 		if result:
 			return result
