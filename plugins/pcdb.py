@@ -2,6 +2,8 @@ import requests
 
 import botologist.plugin
 
+# Not very scalable solution
+redis_storage_item = None
 
 class PCDB:
 	comments = []
@@ -35,8 +37,10 @@ class PcdbPlugin(botologist.plugin.Plugin):
 
 		if cmd.args:
 			comment = PCDB.search(' '.join(cmd.args))
+			redis_storage_item = comment
 		else:
 			comment = PCDB.get_random()
+			redis_storage_item = comment
 
 		if not comment:
 			return 'No results!'
@@ -48,5 +52,26 @@ class PcdbPlugin(botologist.plugin.Plugin):
 
 		if include_url:
 			retval += ' - '+comment['source_url']
+
+		return retval
+	
+	
+	@botologist.plugin.command('pcdbprev', alias=['previous', 'prev', 'p'])
+	def get_pcdb_prev(self, cmd):
+		include_url = False
+		if cmd.args and cmd.args[-1] in ('+url', '--url', '-u'):
+			include_url = True
+			cmd.args.pop()
+
+		if not redis_storage_item:
+			return 'No previous search! Do one!'
+
+		retval = redis_storage_item['body'].replace('\n', ' ').replace('\r', '')
+
+		if len(retval) > 400:
+			retval = retval[:394] + ' [...]'
+
+		if include_url:
+			retval += ' - '+redis_storage_item['source_url']
 
 		return retval
