@@ -30,6 +30,7 @@ class PcdbPlugin(botologist.plugin.Plugin):
 
 	@botologist.plugin.command('pcdb', alias=['random', 'r'])
 	def get_pcdb_random(self, cmd):
+		global redis_storage_item
 		include_url = False
 		if cmd.args and cmd.args[-1] in ('+url', '--url', '-u'):
 			include_url = True
