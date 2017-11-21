@@ -239,7 +239,7 @@ class Client(botologist.protocol.Client):
 
 			# response to WHO command
 			elif words[1] == '352':
-				channel = self.channels[words[3]].lstrip(':')
+				channel = self.channels[words[3].lstrip(':')]
 				host = words[5]
 				nick = words[7]
 				if not channel.find_user(identifier=host, name=nick):
