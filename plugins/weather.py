@@ -25,7 +25,7 @@ class WeatherPlugin(botologist.plugin.Plugin):
 		if len(cmd.args) < 1:
 			return 'Usage: !weather city'
 
-		city = '-'.join(cmd.args)
+		city = '+'.join(cmd.args)
 		url = 'http://api.openweathermap.org/data/2.5/weather'
 		query_params = {'q': city, 'units': 'metric', 'APPID': self.api_key}
 
