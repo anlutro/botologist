@@ -232,13 +232,14 @@ class Client(botologist.protocol.Client):
 				if user.nick == self.nick:
 					self.send('WHO '+channel)
 				else:
-					self.channels[words[2]].add_user(user)
+					channel = words[2].lstrip(':')
+					self.channels[channel].add_user(user)
 					for callback in self.on_join:
-						callback(self.channels[words[2]], user)
+						callback(self.channels[channel], user)
 
 			# response to WHO command
 			elif words[1] == '352':
-				channel = self.channels[words[3]]
+				channel = self.channels[words[3]].lstrip(':')
 				host = words[5]
 				nick = words[7]
 				if not channel.find_user(identifier=host, name=nick):
@@ -257,12 +258,12 @@ class Client(botologist.protocol.Client):
 						channel_user.name = new_nick
 
 			elif words[1] == 'PART':
-				channel = self.channels[words[2]]
+				channel = self.channels[words[2].lstrip(':')]
 				log.debug('User %s parted from channel %s', host, channel)
 				channel.remove_user(name=nick, identifier=host)
 
 			elif words[1] == 'KICK':
-				channel = self.channels[words[2]]
+				channel = self.channels[words[2].lstrip(':')]
 				user = _find_user(channel, host, nick)
 				kicked_nick = words[3]
 				kicked_user = _find_user(channel, None, kicked_nick)
@@ -280,7 +281,7 @@ class Client(botologist.protocol.Client):
 					channel.remove_user(name=nick, identifier=host)
 
 			elif words[1] == 'PRIVMSG':
-				channel = self.channels.get(words[2])
+				channel = self.channels.get(words[2].lstrip(':'))
 				user = _find_user(channel, host, nick)
 				message = Message.from_privmsg(msg, user)
 				message.channel = channel
