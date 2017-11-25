@@ -7,7 +7,7 @@ log = logging.getLogger(__name__)
 
 class PCDB:
 	comments = []
-	url = 'https://www.porncomment.com'
+	url = 'https://porncomment.com'
 
 	@classmethod
 	def search(cls, search_for):
