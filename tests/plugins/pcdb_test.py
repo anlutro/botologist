@@ -2,7 +2,7 @@ import unittest.mock as mock
 from tests.plugins import PluginTestCase
 
 
-class QdbPluginTest(PluginTestCase):
+class PcdbPluginTest(PluginTestCase):
 	def create_plugin(self):
 		from plugins.pcdb import PcdbPlugin
 		return PcdbPlugin(self.bot, self.channel)

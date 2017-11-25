@@ -13,6 +13,7 @@ class PCDB:
 			cls.url,
 			{'search': search_for},
 			headers={'accept': 'application/json'},
+			timeout=2,
 		)
 		comments = response.json()['comments']
 		if comments:
@@ -24,6 +25,7 @@ class PCDB:
 			response = requests.get(
 				cls.url,
 				headers={'accept': 'application/json'},
+				timeout=2,
 			)
 			cls.comments = response.json()['comments']
 		return cls.comments.pop()
