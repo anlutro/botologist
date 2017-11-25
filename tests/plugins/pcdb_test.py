@@ -18,7 +18,7 @@ class PcdbPluginTest(PluginTestCase):
 		with self.mock_get(['foobar']) as mock_get:
 			ret = self.cmd('pcdb')
 			mock_get.assert_called_once_with(
-				'https://www.porncomment.com',
+				'https://porncomment.com',
 				headers={'accept': 'application/json'},
 			)
 			self.assertEqual(ret, 'foobar')
@@ -27,7 +27,7 @@ class PcdbPluginTest(PluginTestCase):
 		with self.mock_get(['foobar']) as mock_get:
 			ret = self.cmd('pcdb foo bar')
 			mock_get.assert_called_once_with(
-				'https://www.porncomment.com',
+				'https://porncomment.com',
 				{'search': 'foo bar'},
 				headers={'accept': 'application/json'},
 			)
