@@ -1,6 +1,8 @@
+import logging
 import requests
-
 import botologist.plugin
+
+log = logging.getLogger(__name__)
 
 
 class PCDB:
@@ -55,10 +57,14 @@ class PcdbPlugin(botologist.plugin.Plugin):
 			include_url = True
 			cmd.args.pop()
 
-		if cmd.args:
-			comment = PCDB.search(' '.join(cmd.args))
-		else:
-			comment = PCDB.get_random()
+		try:
+			if cmd.args:
+				comment = PCDB.search(' '.join(cmd.args))
+			else:
+				comment = PCDB.get_random()
+		except:
+			log.warning('exception fetching from PCDB', exc_info=True)
+			return 'Error while fetching comment!'
 
 		if not comment:
 			return 'No results!'
