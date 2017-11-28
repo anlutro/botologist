@@ -413,6 +413,7 @@ class StreamsPlugin(botologist.plugin.Plugin):
 			return None
 		else:
 			self.streams.game_filter = re.compile(' '.join(msg.args), re.IGNORECASE)
+			self.streams._write()
 			return 'Now filtering streams on: ' + self.streams.game_filter.pattern
 
 	@botologist.plugin.command('delstreamfilter')
