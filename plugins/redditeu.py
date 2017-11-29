@@ -17,7 +17,7 @@ class Bitcoin:
 		'rolls of vitamin E toilet paper', 'one-night trips to Rhodos',
 		('WISPY BEARDED POT SMOKING FAT FAGCUNT BITCOIN WORSHIPPERS WHO OBSESS '
 		 'OVER ME AND MAKE A SPORT OUT OF DRIVING ME INSANE AAAAAAAAAAAAAAAAAAA'
-		 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',),
+		 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'),
  		 'nazi salutes', 'syka blyats', 'pizza rolls', 'raziel whiskers',
 		 'hardon colliders', 'apple phones', 'null pointer references',
 		 'gigabytes', 'nodejs libraries', 'windows reinstalls', 'BSODs',
