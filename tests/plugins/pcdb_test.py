@@ -17,21 +17,23 @@ class PcdbPluginTest(PluginTestCase):
 	def test_gives_random_with_no_args(self):
 		with self.mock_get(['foobar']) as mock_get:
 			ret = self.cmd('pcdb')
-			mock_get.assert_called_once_with(
-				'https://porncomment.com',
-				headers={'accept': 'application/json'},
-			)
-			self.assertEqual(ret, 'foobar')
+		mock_get.assert_called_once_with(
+			'https://porncomment.com',
+			headers={'accept': 'application/json'},
+			timeout=2,
+		)
+		self.assertEqual(ret, 'foobar')
 
 	def test_searches_when_given_args(self):
 		with self.mock_get(['foobar']) as mock_get:
 			ret = self.cmd('pcdb foo bar')
-			mock_get.assert_called_once_with(
-				'https://porncomment.com',
-				{'search': 'foo bar'},
-				headers={'accept': 'application/json'},
-			)
-			self.assertEqual(ret, 'foobar')
+		mock_get.assert_called_once_with(
+			'https://porncomment.com',
+			{'search': 'foo bar'},
+			headers={'accept': 'application/json'},
+			timeout=2
+		)
+		self.assertEqual(ret, 'foobar')
 
 	def test_keeps_previous_result_in_memory(self):
 		with self.mock_get(['foobar']):
