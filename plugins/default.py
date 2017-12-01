@@ -48,7 +48,7 @@ class DefaultPlugin(botologist.plugin.Plugin):
 		if not discord_cfg:
 			return None
 		retstr = 'Discord (http://discordapp.com) - invite link: {invite_url}'
-		return retstr.format(**mumble_cfg)
+		return retstr.format(**discord_cfg)
 
 	@botologist.plugin.reply()
 	def tableflip(self, msg):
