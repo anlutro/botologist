@@ -61,6 +61,10 @@ output_timezone: 'Europe/Amsterdam'
 #  port: 64738
 #  password: p4sSw0rD
 
+# uncomment these lines to enable the !discord command
+#discord:
+#  invite_url: https://discord.gg/some_invite
+
 # uncomment these lines if you want to use the twitter plugin
 #twitter_api:
 #  consumer_key: 'consumer_key'

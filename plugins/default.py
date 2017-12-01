@@ -41,6 +41,15 @@ class DefaultPlugin(botologist.plugin.Plugin):
 			retstr += ' - password: {password}'
 		return retstr.format(**mumble_cfg)
 
+	@botologist.plugin.command('discord')
+	def discord(self, msg):
+		'''If a discord invite link has been added to the bot's config, show the details.'''
+		discord_cfg = self.bot.config.get('discord')
+		if not discord_cfg:
+			return None
+		retstr = 'Discord (http://discordapp.com) - invite link: {invite_url}'
+		return retstr.format(**discord_cfg)
+
 	@botologist.plugin.reply()
 	def tableflip(self, msg):
 		if '(╯°□°)╯︵ ┻━┻' in msg.message:
