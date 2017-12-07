@@ -1,9 +1,12 @@
+from freezegun import freeze_time
 import unittest.mock as mock
+
 from tests.plugins import PluginTestCase
 
 f = 'plugins.owleague.get_owl_data'
 
 
+@freeze_time('2017-12-08 10:00:00')
 class OwleaguePluginTest(PluginTestCase):
 	def create_plugin(self):
 		from plugins.owleague import OwleaguePlugin
@@ -31,7 +34,7 @@ class OwleaguePluginTest(PluginTestCase):
 		}
 		with mock.patch(f, return_value=data):
 			ret = self.cmd('owl')
-		self.assertEqual(ret, 'Live now: team1 vs team2 -- Next match: team3 vs team4 at 2017-12-10 15:00 +0000 -- https://overwatchleague.com')
+		self.assertEqual(ret, 'Live now: team1 vs team2 -- Next match: team3 vs team4 at 2017-12-10 15:00 +0000 (in 2d 5h) -- https://overwatchleague.com')
 
 	def test_returns_next_match(self):
 		data = {
@@ -49,7 +52,7 @@ class OwleaguePluginTest(PluginTestCase):
 		}
 		with mock.patch(f, return_value=data):
 			ret = self.cmd('owl')
-		self.assertEqual(ret, 'Next match: team1 vs team2 at 2017-12-10 15:00 +0000 -- https://overwatchleague.com')
+		self.assertEqual(ret, 'Next match: team1 vs team2 at 2017-12-10 15:00 +0000 (in 2d 5h) -- https://overwatchleague.com')
 
 	def test_ticker_returns_when_match_goes_live(self):
 		data = {

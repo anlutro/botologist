@@ -1,16 +1,12 @@
 import logging
-log = logging.getLogger(__name__)
-
-import datetime
-import dateutil.parser
 import requests
-import pytz
-
+from botologist.util import parse_dt, time_until
 import botologist.plugin
 
+log = logging.getLogger(__name__)
 
 
-def get_next_episode_info(show, output_timezone=pytz.timezone('UTC')):
+def get_next_episode_info(show, tz=pytz.timezone('UTC')):
 	query = {'q': show, 'embed': 'nextepisode'}
 	try:
 		response = requests.get('http://api.tvmaze.com/singlesearch/shows', query)
@@ -29,29 +25,15 @@ def get_next_episode_info(show, output_timezone=pytz.timezone('UTC')):
 	nextepisode = data.get('_embedded', {}).get('nextepisode')
 	if nextepisode:
 		log.debug('next episode data: %r', nextepisode)
-		dt = dateutil.parser.parse(nextepisode['airstamp'])
+		dt = parse_dt(nextepisode['airstamp'], output_timezone)
 		info += ' - season %d, episode %d airs at %s' % (
-			nextepisode['season'],
-			nextepisode['number'],
-			dt.astimezone(tz=output_timezone).strftime('%Y-%m-%d %H:%M %z'),
+		    nextepisode['season'],
+		    nextepisode['number'],
+		    dt.strftime('%Y-%m-%d %H:%M %z'),
 		)
-		now = datetime.datetime.now(dt.tzinfo)
-		if dt > now:
-			time_left = dt - now
-			if time_left.days > 0:
-				time_left_str = '%dd %dh' % (
-					time_left.days,
-					round(time_left.seconds / 3600),
-				)
-			elif time_left.seconds > 3600:
-				time_left_str = '%dh %dm' % (
-					round(time_left.seconds / 3600),
-					round((time_left.seconds % 3600) / 60),
-				)
-			else:
-				time_left_str = '%dm' % round(time_left.seconds / 60)
-			log.debug('time left: %r (%s)', time_left, time_left_str)
-			info += ' (in %s)' % time_left_str
+		time_until_str = time_until(dt)
+		if time_until_str:
+			info += ' (in %s)' % time_until_str
 	else:
 		status = data['status']
 		if status == 'Ended':
@@ -65,11 +47,9 @@ def get_next_episode_info(show, output_timezone=pytz.timezone('UTC')):
 class TvseriesPlugin(botologist.plugin.Plugin):
 	def __init__(self, bot, channel):
 		super().__init__(bot, channel)
-		self.output_tz = pytz.timezone('UTC')
-		if self.bot.config.get('output_timezone'):
-			self.output_tz = pytz.timezone(self.bot.config.get('output_timezone'))
+		self.tz = self.bot.config.get('output_timezone', 'UTC')
 
 	@botologist.plugin.command('nextepisode')
 	def nextepisode(self, msg):
-		info = get_next_episode_info(' '.join(msg.args), self.output_tz)
+		info = get_next_episode_info(' '.join(msg.args), self.tz)
 		return info or 'No show with that name found!'

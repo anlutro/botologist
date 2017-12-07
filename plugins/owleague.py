@@ -1,6 +1,5 @@
-import dateutil.parser
 import requests
-import pytz
+from botologist.util import parse_dt, time_until
 import botologist.plugin
 
 
@@ -16,8 +15,12 @@ def get_match_info(match_data):
 
 
 def get_match_time(match_data, tz=None):
-	dt = dateutil.parser.parse(match_data['startDate'])
-	return dt.astimezone(tz=tz).strftime('%Y-%m-%d %H:%M %z')
+	dt = parse_dt(match_data['startDate'], tz)
+	info = dt.strftime('%Y-%m-%d %H:%M %z')
+	time_until_str = time_until(dt)
+	if time_until_str:
+		info += ' (in %s)' % time_until_str
+	return info
 
 
 def get_current_match_info(data):
@@ -43,7 +46,7 @@ class OwleaguePlugin(botologist.plugin.Plugin):
 	def __init__(self, bot, channel):
 		super().__init__(bot, channel)
 		self.prev_state = None
-		self.tz = pytz.timezone(self.bot.config.get('output_timezone', 'UTC'))
+		self.tz = self.bot.config.get('output_timezone', 'UTC')
 
 	def _get_info_str(self, ticker):
 		data = get_owl_data()
