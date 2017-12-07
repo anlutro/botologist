@@ -6,7 +6,7 @@ import botologist.plugin
 log = logging.getLogger(__name__)
 
 
-def get_next_episode_info(show, tz=pytz.timezone('UTC')):
+def get_next_episode_info(show, tz='UTC'):
 	query = {'q': show, 'embed': 'nextepisode'}
 	try:
 		response = requests.get('http://api.tvmaze.com/singlesearch/shows', query)
@@ -25,7 +25,7 @@ def get_next_episode_info(show, tz=pytz.timezone('UTC')):
 	nextepisode = data.get('_embedded', {}).get('nextepisode')
 	if nextepisode:
 		log.debug('next episode data: %r', nextepisode)
-		dt = parse_dt(nextepisode['airstamp'], output_timezone)
+		dt = parse_dt(nextepisode['airstamp'], tz)
 		info += ' - season %d, episode %d airs at %s' % (
 		    nextepisode['season'],
 		    nextepisode['number'],
