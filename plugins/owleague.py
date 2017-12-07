@@ -50,9 +50,11 @@ class OwleaguePlugin(botologist.plugin.Plugin):
 
 		if ticker and not cur_match:
 			return
-		info = ' -- '.join((cur_match, next_match))
-		if ticker and info == self.prev_state:
+
+		info = ' -- '.join([m for m in (cur_match, next_match) if m])
+		if ticker and (info == self.prev_state):
 			return
+
 		self.prev_state = info
 
 		return info + ' -- https://overwatchleague.com'
