@@ -50,16 +50,14 @@ class OwleaguePlugin(botologist.plugin.Plugin):
 		cur_match = get_current_match_info(data)
 		next_match = get_next_match_info(data, tz=self.tz)
 
-		if ticker and not cur_match:
+		skip = ticker and (cur_match == self.prev_state or not cur_match)
+		self.prev_state = cur_match
+		if skip:
 			return
 
-		info = ' -- '.join([m for m in (cur_match, next_match) if m])
-		if ticker and (info == self.prev_state):
-			return
-
-		self.prev_state = info
-
-		return info + ' -- https://overwatchleague.com'
+		match_infos = [m for m in (cur_match, next_match) if m] or \
+			['No matches live or scheduled']
+		return ' -- '.join(match_infos + ['https://overwatchleague.com'])
 
 	@botologist.plugin.ticker()
 	def ticker(self):
