@@ -41,9 +41,7 @@ class OwleaguePlugin(botologist.plugin.Plugin):
 	def __init__(self, bot, channel):
 		super().__init__(bot, channel)
 		self.prev_state = None
-		self.tz = pytz.timezone('UTC')
-		if self.bot.config.get('output_timezone'):
-			self.tz = pytz.timezone(self.bot.config['output_timezone'])
+		self.tz = pytz.timezone(self.bot.config.get('output_timezone', 'UTC'))
 
 	def _get_info_str(self, ticker):
 		data = get_owl_data()
