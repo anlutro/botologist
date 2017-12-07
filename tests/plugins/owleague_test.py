@@ -51,6 +51,32 @@ class OwleaguePluginTest(PluginTestCase):
 			ret = self.cmd('owl')
 		self.assertEqual(ret, 'Next match: team1 vs team2 at 2017-12-10 15:00 +0000 -- https://overwatchleague.com')
 
+	def test_ticker_returns_when_match_goes_live(self):
+		data = {
+			'data': {
+				'liveMatch': {
+					'liveStatus': 'UPCOMING',
+					'startDate': '2017-12-10T15:00:00Z+00:00',
+					'competitors': [
+						{'name': 'team1'},
+						{'name': 'team2'},
+					],
+				},
+				'nextMatch': {}
+			}
+		}
+
+		with mock.patch(f, return_value=data):
+			ret1 = self.plugin.ticker()
+
+		data['data']['liveMatch']['liveStatus'] = 'LIVE'
+
+		with mock.patch(f, return_value=data):
+			ret2 = self.plugin.ticker()
+
+		self.assertFalse(ret1)
+		self.assertTrue(ret2)
+
 	def test_ticker_does_not_repeat_itself(self):
 		data = {
 			'data': {
