@@ -54,6 +54,17 @@ class OwleaguePluginTest(PluginTestCase):
 			ret = self.cmd('owl')
 		self.assertEqual(ret, 'Next match: team1 vs team2 at 2017-12-10 15:00 +0000 (in 2d 5h) -- https://overwatchleague.com')
 
+	def test_returns_nothing_when_no_matches(self):
+		data = {
+			'data': {
+				'liveMatch': {},
+				'nextMatch': {}
+			}
+		}
+		with mock.patch(f, return_value=data):
+			ret = self.cmd('owl')
+		self.assertEqual(ret, 'No matches live or scheduled -- https://overwatchleague.com')
+
 	def test_ticker_returns_when_match_goes_live(self):
 		data = {
 			'data': {

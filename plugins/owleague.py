@@ -25,7 +25,7 @@ def get_match_time(match_data, tz=None):
 
 def get_current_match_info(data):
 	match = data.get('data', {}).get('liveMatch', {})
-	if not match or match['liveStatus'] != 'LIVE':
+	if not match or match.get('liveStatus') != 'LIVE':
 		return
 	return 'Live now: %s' % get_match_info(match)
 
@@ -34,7 +34,7 @@ def get_next_match_info(data, tz=None):
 	match = data.get('data', {}).get('nextMatch', {})
 	if not match:
 		match = data.get('data', {}).get('liveMatch', {})
-		if not match['liveStatus'] == 'UPCOMING':
+		if not match or match.get('liveStatus') != 'UPCOMING':
 			return
 	return 'Next match: %s at %s' % (
 		get_match_info(match),
