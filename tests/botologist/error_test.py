@@ -34,5 +34,5 @@ class ErrorHandlerTest(unittest.TestCase):
 					raise RuntimeError('test')
 				except:
 					handler.handle_error()
-		self.assertEqual(1, handler.bot._send_msg.call_count)
+		self.assertEqual(1, handler.bot.send_msg.call_count)
 		self.assertEqual(1, send_email.call_count)

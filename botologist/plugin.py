@@ -4,7 +4,7 @@ log = logging.getLogger(__name__)
 import botologist.bot
 
 
-def command(command, alias=None, threaded=False):
+def command(cmd_name, alias=None, threaded=False):
 	"""Plugin command decorator."""
 	if alias is None:
 		alias = []
@@ -12,7 +12,7 @@ def command(command, alias=None, threaded=False):
 		alias = [alias]
 
 	def wrapper(func):
-		func._command = command
+		func._command = cmd_name
 		func._command_aliases = alias
 		func._is_threaded = threaded
 		return func
@@ -123,24 +123,24 @@ class Plugin(metaclass=PluginMetaclass):
 
 		# pylint: disable=no-member
 		self.commands = {}
-		for command, callback in self._commands.items():
-			self.commands[command] = getattr(self, callback)
+		for cmd_name, callback in self._commands.items():
+			self.commands[cmd_name] = getattr(self, callback)
 
 		self.joins = []
-		for join in self._joins:
-			self.joins.append(getattr(self, join))
+		for join_fn in self._joins:
+			self.joins.append(getattr(self, join_fn))
 
 		self.kicks = []
-		for kick in self._kicks:
-			self.kicks.append(getattr(self, kick))
+		for kick_fn in self._kicks:
+			self.kicks.append(getattr(self, kick_fn))
 
 		self.replies = []
-		for reply in self._replies:
-			self.replies.append(getattr(self, reply))
+		for reply_fn in self._replies:
+			self.replies.append(getattr(self, reply_fn))
 
 		self.tickers = []
-		for ticker in self._tickers:
-			self.tickers.append(getattr(self, ticker))
+		for ticker_fn in self._tickers:
+			self.tickers.append(getattr(self, ticker_fn))
 
 		self.http_handlers = []
 		for http_handler in self._http_handlers:
@@ -148,7 +148,7 @@ class Plugin(metaclass=PluginMetaclass):
 		# pylint: enable=no-member
 
 		log.debug('Instantiating plugin %s for channel %s',
-			self.__class__.__name__, channel.channel)
+			self.__class__.__name__, channel.name)
 
 		self.bot = bot
 		self.channel = channel

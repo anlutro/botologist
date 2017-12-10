@@ -23,6 +23,13 @@ class Client:
 	def add_channel(self, channel):
 		self.channels[channel.name] = channel
 
+	def _parse_messages(self, message):
+		if isinstance(message, bytes):
+			message = message.decode('utf-8')
+		if isinstance(message, str):
+			message = message.split('\n')
+		return message
+
 	def send_msg(self, target, message):
 		raise NotImplementedError('method send_msg must be defined')
 
@@ -55,6 +62,7 @@ class Channel:
 
 	@property
 	def channel(self):
+		log.warning('Channel.channel is deprecated! use Channel.name instead')
 		return self.name
 
 	def register_plugin(self, plugin):
@@ -89,12 +97,15 @@ class Channel:
 
 	def find_users(self, user=None, name=None, identifier=None):
 		assert user or name or identifier
-		users = []
 
 		if user:
 			identifier = user.identifier
 			name = user.name
-			user = None
+
+		return self._find_users(name, identifier)
+
+	def _find_users(self, name, identifier):
+		users = []
 
 		if identifier and name:
 			for user in self.users:

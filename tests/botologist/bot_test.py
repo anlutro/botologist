@@ -44,13 +44,13 @@ class BotTest(unittest.TestCase):
 		bot.admins = ['baz']
 		bot.client.channels['#chan'] = channel
 		def assert_reply(input, output):
-			bot._send_msg = mock.MagicMock()
+			bot.send_msg = mock.MagicMock()
 			bot._handle_privmsg(irc.Message('foo!bar@baz', '#chan', input))
 			if output:
-				bot._send_msg.assert_called_with(output, '#chan')
+				bot.send_msg.assert_called_with('#chan', output)
 			else:
-				bot._send_msg.assert_not_called()
-			bot._send_msg.close()
+				bot.send_msg.assert_not_called()
+			bot.send_msg.close()
 		assert_reply('!b', None)
 		assert_reply('!a', 'test: !asdf')
 		assert_reply('!as', 'test: !asdf')

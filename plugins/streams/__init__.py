@@ -295,7 +295,7 @@ class StreamsPlugin(botologist.plugin.Plugin):
 		if 'twitch_auth_token' not in bot.config:
 			raise ValueError('Must add twitch_auth_token to config.yml to use stream plugin!')
 		super().__init__(bot, channel)
-		filename = 'streams_' + channel.channel.replace('#', '') + '.json'
+		filename = 'streams_' + channel.name.replace('#', '') + '.json'
 		stor_path = os.path.join(bot.storage_dir, filename)
 		self.streams = StreamManager(stor_path, bot.config['twitch_auth_token'])
 

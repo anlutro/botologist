@@ -268,7 +268,7 @@ class Client(botologist.protocol.Client):
 				kicked_nick = words[3]
 				kicked_user = _find_user(channel, None, kicked_nick)
 				log.debug('User %s was kicked by %s from channel %s',
-					kicked_nick, user.nick, channel.channel)
+					kicked_nick, user.nick, channel.name)
 				channel.remove_user(name=kicked_nick)
 				for callback in self.on_kick:
 					callback(channel, kicked_user, user)
@@ -296,12 +296,13 @@ class Client(botologist.protocol.Client):
 					callback(message)
 
 	def send_msg(self, target, message):
+		if isinstance(target, Channel):
+			target = target.name
 		if target in self.channels:
 			if not self.channels[target].allow_colors:
 				message = botologist.util.strip_irc_formatting(message)
-		if not isinstance(message, list):
-			message = message.split('\n')
-		for privmsg in message:
+		messages = self._parse_messages(message)
+		for privmsg in messages:
 			self.send('PRIVMSG ' + target + ' :' + privmsg)
 
 	def send(self, msg):

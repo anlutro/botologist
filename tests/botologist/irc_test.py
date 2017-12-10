@@ -18,9 +18,9 @@ class IrcServerTest(unittest.TestCase):
 class IrcChannelTest(unittest.TestCase):
 	def test_init(self):
 		chan = Channel('#foobar')
-		self.assertEqual('#foobar', chan.channel)
+		self.assertEqual('#foobar', chan.name)
 		chan = Channel('foobar')
-		self.assertEqual('#foobar', chan.channel)
+		self.assertEqual('#foobar', chan.name)
 
 	def test_add_user(self):
 		chan = Channel('#foobar')

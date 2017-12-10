@@ -116,5 +116,4 @@ class QdbPlugin(botologist.plugin.Plugin):
 		quote = data['quote']
 		if quote['approved']:
 			return 'New quote approved! ' + _get_quote_url(quote)
-		else:
-			return 'Quote pending approval!'
+		return 'Quote pending approval!'

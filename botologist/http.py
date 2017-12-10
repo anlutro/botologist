@@ -64,7 +64,7 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
 							ret = handler(**kwargs)
 
 					if ret:
-						self.bot._send_msg(ret, channel.channel)
+						self.bot.send_msg(channel.name, ret)
 
 	def log_message(self, string, *args):
 		log.info(string, *args)

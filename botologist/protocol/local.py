@@ -40,8 +40,10 @@ class Client(protocol.Client):
 		except (KeyboardInterrupt, EOFError):
 			print()
 
-	def send_msg(self, target, msg):
-		print('<< {}'.format(msg))
+	def send_msg(self, target, message):
+		messages = self._parse_messages(message)
+		for msg in messages:
+			print('<< {}'.format(msg))
 
 
 class Channel(protocol.Channel):

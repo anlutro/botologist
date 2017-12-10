@@ -174,7 +174,7 @@ class Bot:
 			if plugin not in self.plugins:
 				plugin_class = guess_plugin_class(plugin)
 				self.register_plugin(plugin, plugin_class)
-			log.debug('adding plugin %s to channel %s', plugin, channel.channel)
+			log.debug('adding plugin %s to channel %s', plugin, channel.name)
 			channel.register_plugin(self.plugins[plugin](self, channel))
 
 		if admins:
@@ -184,18 +184,28 @@ class Bot:
 		channel.allow_colors = allow_colors
 		self.client.add_channel(channel)
 
-	def _send_msg(self, msgs, targets):
+	def send_msg(self, targets, messages):
+		"""
+		Send one or more message to one or more targets (users or channels).
+
+		Args:
+		  targets (str|list): The user(s)/channel(s) to send to.
+		  messages (str|list): The message(s) to send.
+		"""
 		if targets == '*':
 			targets = (channel for channel in self.client.channels)
-		elif not isinstance(targets, list) and not isinstance(targets, set):
+		elif not isinstance(targets, (list, set, tuple)):
 			targets = set([targets])
 
-		if not isinstance(msgs, list) and not isinstance(msgs, set):
-			msgs = set([msgs])
+		if not isinstance(messages, (list, set, tuple)):
+			messages = set([messages])
 
-		for msg in msgs:
-			for target in targets:
-				self.client.send_msg(target, msg)
+		for target in targets:
+			self.client.send_msg(target, messages)
+
+	def _send_msg(self, msgs, targets):
+		log.warning('Bot._send_msg is deprecated! Use send_msg instead!')
+		self.send_msg(targets, msgs)
 
 	def _handle_join(self, channel, user):
 		assert isinstance(channel, botologist.protocol.Channel)
@@ -207,7 +217,7 @@ class Bot:
 		for join_func in channel.joins:
 			response = join_func(user, channel)
 			if response:
-				self._send_msg(response, channel.channel)
+				self.send_msg(channel.name, response)
 				return
 
 	def _handle_kick(self, channel, kicked_user, user):
@@ -221,7 +231,7 @@ class Bot:
 		for kick_func in channel.kicks:
 			response = kick_func(kicked_user, channel, user)
 			if response:
-				self._send_msg(response, channel.channel)
+				self.send_msg(channel.name, response)
 				return
 
 	def _handle_privmsg(self, message):
@@ -253,7 +263,7 @@ class Bot:
 		response = self._call_repliers(channel, message)
 
 		if response:
-			self._send_msg(response, message.target)
+			self.send_msg(message.target, response)
 
 	def _handle_command(self, message, channel):
 		# if the message starts with the command prefix, check for mathing
@@ -268,11 +278,11 @@ class Bot:
 				if cmd.startswith(cmd_string)]
 			if not matching_commands:
 				log.debug('"%s" did not match any commands in channel %s',
-					cmd_string, channel.channel)
+					cmd_string, channel.name)
 				return
 			elif len(matching_commands) != 1:
 				log.debug('"%s" matched more than 1 command in channel %s',
-					cmd_string, channel.channel)
+					cmd_string, channel.name)
 				return
 
 			command = CommandMessage(message)
@@ -308,7 +318,7 @@ class Bot:
 
 		response = command_func(message)
 		if response:
-			self._send_msg(response, message.target)
+			self.send_msg(message.target, response)
 
 	def _call_repliers(self, channel, message):
 		now = datetime.datetime.now()
@@ -330,17 +340,17 @@ class Bot:
 			for reply in final_replies:
 				# throttle spam - prevents the same reply from being sent
 				# more than once in a row within the throttle threshold
-				if channel.channel not in self._reply_log:
-					self._reply_log[channel.channel] = {}
+				if channel.name not in self._reply_log:
+					self._reply_log[channel.name] = {}
 
-				if reply in self._reply_log[channel.channel]:
-					diff = now - self._reply_log[channel.channel][reply]
+				if reply in self._reply_log[channel.name]:
+					diff = now - self._reply_log[channel.name][reply]
 					if diff.seconds < self.SPAM_THROTTLE:
 						log.info('Reply throttled: "%s"', reply)
 						final_replies.remove(reply)
 
 				# log the reply for spam throttling
-				self._reply_log[channel.channel][reply] = now
+				self._reply_log[channel.name][reply] = now
 
 		return final_replies
 
@@ -394,7 +404,7 @@ class Bot:
 				for ticker in channel.tickers:
 					result = ticker()
 					if result:
-						self._send_msg(result, channel.channel)
+						self.send_msg(channel.name, result)
 		finally:
 			self._start_tick_timer()
 

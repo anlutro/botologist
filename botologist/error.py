@@ -15,8 +15,7 @@ except ImportError:
 def get_username():
 	if pwd:
 		return pwd.getpwuid(os.getuid())[0]
-	else:
-		return getpass.getuser()
+	return getpass.getuser()
 
 
 def send_email(email, sendmail_bin, sendmail_args=None):
@@ -57,7 +56,7 @@ class ErrorHandler:
 
 		self.prev_error = medium_msg
 
-		self.bot._send_msg(medium_msg, self.bot.get_admin_nicks())
+		self.bot.send_msg(self.bot.get_admin_nicks(), medium_msg)
 
 		if 'admin_email' in self.bot.config:
 			email = MIMEText(long_msg)

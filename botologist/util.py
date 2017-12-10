@@ -1,15 +1,15 @@
 from datetime import datetime, tzinfo
-import dateutil.parser
-import html
 import logging
-import pytz
 import re
-
+import html
 try:
 	unescape_html = html.unescape # pylint: disable=no-member
 except AttributeError:
 	import html.parser
 	unescape_html = html.parser.HTMLParser().unescape
+
+import dateutil.parser
+import pytz
 
 log = logging.getLogger(__name__)
 
