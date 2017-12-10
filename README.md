@@ -27,7 +27,7 @@ Activate the virtualenv:
 
 Install requirements (you only have to do this once):
 
-	$ pip install -r requirements.txt
+	$ pip install -r requirements/base.txt
 
 Copy `config.example.yml` to `config.yml` and edit it to your likings, then run the bot:
 
@@ -110,9 +110,11 @@ When a shortened link (is.gd, t.co, goo.gl etc) is posted, the real URL will be 
 
 ## Development
 
-To run tests, `./run tests`. Note that not all parts of the code is under test, so do try to actually run the bot with your new functionaliy before you decide it's a success.
+Install dev dependencies with `pip install -r requirements/dev.txt`.
 
-To run code linting, first make sure pylint is installed in your virtualenv with `pip install pylint`. To run linting, run `./run lint`. Optionally, you can lint only a single module, for example `./run lint plugins.default` Note that linting will show some false positives, but important ones should show up in red.
+To run tests, `pytest`. Note that not all parts of the code is under test, so do try to actually run the bot with your new functionaliy before you decide it's a success.
+
+To run code linting, use `pylint`. You have to specify which module to lint, so to lint everything, do `pylint botologist plugins`. Note that linting will show some false positives, but important ones should show up in red.
 
 ### Pull requests
 
@@ -133,9 +135,9 @@ When you've made one pull request, making the next one is simpler:
 
 `botologist/__main__.py` is the main entry point for running the bot. It reads the config file, sets up logging, instantiates the Bot object and starts the bot's IRC connection.
 
-The `botologist/irc.py` module contains IRC abstractions with classes such as Server, Connection, Client and so on.
+`botologist/protocol` contains multiple protocol or client abstractions. These allow the bot to work with multiple chat protocols, though for now there's only 2: local (for testing locally) and IRC.
 
-The `botologist/bot.py` module contains 1 main class: `botologist.bot.Bot` - which extends `botologist.irc.Client` and adds bot-like features such as keeping track of what users are present in channels, as well as the ability to add commands, replies and timed repeating tasks via plugins.
+The `botologist/bot.py` module contains 1 main class: `botologist.bot.Bot` - which wraps the protocol client object and adds bot-like features such as keeping track of what users are present in channels, as well as the ability to add commands, replies and timed repeating tasks via plugins.
 
 The core plugin classes and functionality is defined in `botologist/plugin.py`. Various plugins extend the `botologist.plugin.Plugin` class to provide a plugin. Plugins can be associated with channels via the `config.yml` file.
 
