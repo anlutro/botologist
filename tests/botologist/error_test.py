@@ -24,3 +24,15 @@ class ErrorHandlerTest(unittest.TestCase):
 		self.assertEqual('Traceback (most recent call last):\n'
 			'  File "'+__file__+'", line 19, in test_error_message_is_formatted_correctly\n'
 			'    raise RuntimeError(\'test\')\nRuntimeError: test', long_msg)
+
+	def test_same_error_is_not_messaged_and_emailed_twice(self):
+		handler = error.ErrorHandler(mock.Mock())
+		handler.bot.config = {'admin_email': 'root'}
+		with mock.patch('botologist.error.send_email') as send_email:
+			for i in range(2):
+				try:
+					raise RuntimeError('test')
+				except:
+					handler.handle_error()
+		self.assertEqual(1, handler.bot._send_msg.call_count)
+		self.assertEqual(1, send_email.call_count)

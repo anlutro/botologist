@@ -42,6 +42,8 @@ def format_error(message=None):
 
 
 class ErrorHandler:
+	prev_error = None
+
 	def __init__(self, bot):
 		self.bot = bot
 
@@ -49,6 +51,11 @@ class ErrorHandler:
 		medium_msg, long_msg = format_error(message)
 
 		log.exception(medium_msg)
+
+		if medium_msg == self.prev_error:
+			return
+
+		self.prev_error = medium_msg
 
 		self.bot._send_msg(medium_msg, self.bot.get_admin_nicks())
 
