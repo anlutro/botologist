@@ -1,6 +1,11 @@
+import logging
+
 import requests
+
 from botologist.util import parse_dt, time_until
 import botologist.plugin
+
+log = logging.getLogger(__name__)
 
 
 def get_owl_data():
@@ -49,7 +54,14 @@ class OwleaguePlugin(botologist.plugin.Plugin):
 		self.tz = self.bot.config.get('output_timezone', 'UTC')
 
 	def _get_info_str(self, ticker):
-		data = get_owl_data()
+		try:
+			data = get_owl_data()
+		except requests.exceptions.RequestException as exc:
+			log.warning('exception getting OWL data', exc_info=True)
+			if ticker:
+				return
+			return 'Problem fetching OWL data: %s' % exc
+
 		cur_match = get_current_match_info(data)
 		next_match = get_next_match_info(data, tz=self.tz)
 
