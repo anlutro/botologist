@@ -22,8 +22,8 @@ def get_twitch_data(channels, auth_token):
 	response = requests.get(url, query_params, headers=headers)
 	try:
 		response.raise_for_status()
-	except requests.exceptions.HTTPError:
-		log.warning('HTTP error while fetching twitch API data', exc_info=True)
+	except requests.exceptions.RequestException:
+		log.warning('error requesting twitch data', exc_info=True)
 		return {}
 
 	return response.json()
