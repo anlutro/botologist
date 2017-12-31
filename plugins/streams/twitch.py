@@ -19,8 +19,8 @@ def get_twitch_data(channels, auth_token):
 	url = 'https://api.twitch.tv/kraken/streams'
 	query_params = {'channel': ','.join(channels)}
 	headers = {'Authorization': 'OAuth %s' % auth_token}
-	response = requests.get(url, query_params, headers=headers)
 	try:
+		response = requests.get(url, query_params, headers=headers)
 		response.raise_for_status()
 	except requests.exceptions.RequestException:
 		log.warning('error requesting twitch data', exc_info=True)
