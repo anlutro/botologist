@@ -26,8 +26,8 @@ try:
 	# set some memory limits before getting started
 	mb = 1024 * 1024
 	resource.setrlimit(resource.RLIMIT_DATA, (
-		config.get('memory_limit_soft', 64) * mb,
-		config.get('memory_limit_hard', 96) * mb
+		config.get('memory_limit_soft', 128) * mb,
+		config.get('memory_limit_hard', 256) * mb
 	))
 except ImportError:
 	pass # windows
