@@ -249,6 +249,9 @@ class StreamManager:
 			streams = self._fetch_streams()
 		except urllib.error.URLError:
 			log.warning('Could not fetch online streams!', exc_info=True)
+			if self._cached_streams:
+				return self._cached_streams.get_all()
+			return []
 
 		if self._cached_streams:
 			self._cached_streams.push(streams)
