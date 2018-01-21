@@ -9,7 +9,7 @@ log = logging.getLogger(__name__)
 
 
 def get_owl_data():
-	resp = requests.get('https://overwatchleague.com/en-gb/api/live-match?locale=en-gb')
+	resp = requests.get('https://api.overwatchleague.com/live-match')
 	resp.raise_for_status()
 	return resp.json()
 
