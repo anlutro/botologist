@@ -1,5 +1,6 @@
 from datetime import datetime, tzinfo
 import logging
+import math
 import html
 try:
 	unescape_html = html.unescape # pylint: disable=no-member
@@ -28,17 +29,20 @@ def time_until(dt: datetime):
 		dt = dateutil.parser.parse(dt)
 	now = datetime.now(dt.tzinfo)
 	if dt > now:
-		time_left = dt - now
-		if time_left.days > 0:
-			time_left_str = '%dd %dh' % (
-				time_left.days,
-				round(time_left.seconds / 3600),
-			)
-		elif time_left.seconds > 3600:
-			time_left_str = '%dh %dm' % (
-				round(time_left.seconds / 3600),
-				round((time_left.seconds % 3600) / 60),
-			)
-		else:
-			time_left_str = '%dm' % round(time_left.seconds / 60)
-		return time_left_str
+		total_seconds = (dt - now).total_seconds()
+		seconds_left = total_seconds
+		days = max(0, math.floor(seconds_left / (3600 * 24)))
+		seconds_left -= 3600 * 24 * days
+		hours = max(0, math.floor(seconds_left / 3600))
+		seconds_left -= 3600 * hours
+		minutes = max(0, math.floor(seconds_left / 60))
+
+		parts = []
+		if days > 0:
+			parts.append('%dd' % days)
+		if hours > 0:
+			parts.append('%dh' % hours)
+		if days == 0 and minutes > 0:
+			parts.append('%dm' % minutes)
+		if parts:
+			return ' '.join(parts)
