@@ -55,7 +55,7 @@ class DefaultPlugin(botologist.plugin.Plugin):
 		if '(╯°□°)╯︵ ┻━┻' in msg.message:
 			return random.choice([
 				'┬─┬ ノ( ゜-゜ノ)',
-				'ノ┬─┬ノ ︵ ( \o°o)\'
+				'ノ┬─┬ノ ︵ ( \\o°o)\\'
 				])
 
 	@botologist.plugin.command('coinflip')
