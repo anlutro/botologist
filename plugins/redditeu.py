@@ -113,6 +113,17 @@ class RedditeuPlugin(botologist.plugin.Plugin):
 				return "There's a chance it's " + user.name
 		return 'Michael not found!'
 
+	@botologist.plugin.command('simon')
+	def who_is_simon(self, cmd):
+		'''Find out what nick Simon is hiding under.'''
+		channel = self.bot.client.channels.get(cmd.message.target)
+		if not channel:
+			return
+		for user in channel.users:
+			if '0x57.co' in user.host:
+				return 'Simon is ' + user.name
+		return 'Simon not found!'
+
 	@botologist.plugin.command('time')
 	def the_time(self, cmd):
 		'''If you need to know what the time really is. For really reals.'''
