@@ -72,15 +72,15 @@ class OwleaguePlugin(botologist.plugin.Plugin):
 			not cur_match
 		)
 
+		log.debug('prev_state=%r; prev_match=%r; data=%r',
+			self.prev_state, self.prev_match, data)
+
 		self.prev_state = cur_match
 		if cur_match:
 			self.prev_match = cur_match
 
 		if skip:
 			return
-
-		log.debug('prev_state=%r prev_match=%r data=%r',
-			self.prev_state, self.prev_match, data)
 
 		match_infos = [m for m in (cur_match, next_match) if m] or \
 			['No matches live or scheduled']
