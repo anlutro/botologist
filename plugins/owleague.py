@@ -72,8 +72,9 @@ class OwleaguePlugin(botologist.plugin.Plugin):
 			not cur_match
 		)
 
-		log.debug('prev_state=%r; prev_match=%r; data=%r',
-			self.prev_state, self.prev_match, data)
+		if not skip:
+			log.debug('prev_state=%r; prev_match=%r; data=%r',
+				self.prev_state, self.prev_match, data)
 
 		self.prev_state = cur_match
 		if cur_match:
