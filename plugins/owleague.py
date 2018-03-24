@@ -79,6 +79,9 @@ class OwleaguePlugin(botologist.plugin.Plugin):
 		if skip:
 			return
 
+		log.debug('prev_state=%r prev_match=%r data=%r',
+			self.prev_state, self.prev_match, data)
+
 		match_infos = [m for m in (cur_match, next_match) if m] or \
 			['No matches live or scheduled']
 		return ' -- '.join(match_infos + ['https://overwatchleague.com'])
