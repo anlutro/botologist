@@ -5,3 +5,4 @@ requests>=2.7,<3
 spotipy>=2.4,<3
 python-dateutil>=2.6,<3
 pytz>=2017.2
+cachecontrol>=0.12,<0.13

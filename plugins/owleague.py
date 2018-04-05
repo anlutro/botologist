@@ -1,11 +1,13 @@
 import logging
 
 import requests
+import cachecontrol
 
 from botologist.util import parse_dt, time_until
 import botologist.plugin
 
 log = logging.getLogger(__name__)
+session = cachecontrol.CacheControl(requests.session())
 
 
 def get_owl_data():
@@ -16,7 +18,7 @@ def get_owl_data():
 	while attempts < 3 and (resp is None or resp.headers.get('x-cache-status') == 'EXPIRED'):
 		attempts += 1
 		log.debug('owl api request attempt number %d', attempts)
-		resp = requests.get('https://api.overwatchleague.com/live-match')
+		resp = session.get('https://api.overwatchleague.com/live-match')
 		resp.raise_for_status()
 	return resp.json().get('data', {})
 

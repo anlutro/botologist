@@ -9,7 +9,7 @@ f = 'plugins.owleague.get_owl_data'
 
 def test_get_owl_data_retries_when_cache_expired():
 	def assert_request_attempts(attempts):
-		with mock.patch('requests.get', side_effect=side_effect) as mock_request:
+		with mock.patch('plugins.owleague.session.get', side_effect=side_effect) as mock_request:
 			get_owl_data()
 		assert len(mock_request.mock_calls) == attempts
 
