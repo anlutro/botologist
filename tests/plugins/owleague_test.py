@@ -14,22 +14,20 @@ class OwleaguePluginTest(PluginTestCase):
 
 	def test_returns_current_and_next_match(self):
 		data = {
-			'data': {
-				'liveMatch': {
-					'liveStatus': 'LIVE',
-					'competitors': [
-						{'name': 'team1'},
-						{'name': 'team2'},
-					],
-				},
-				'nextMatch': {
-					'liveStatus': 'UPCOMING',
-					'startDate': '2017-12-10T15:00:00Z+00:00',
-					'competitors': [
-						{'name': 'team3'},
-						{'name': 'team4'},
-					],
-				}
+			'liveMatch': {
+				'liveStatus': 'LIVE',
+				'competitors': [
+					{'name': 'team1'},
+					{'name': 'team2'},
+				],
+			},
+			'nextMatch': {
+				'liveStatus': 'UPCOMING',
+				'startDate': '2017-12-10T15:00:00Z+00:00',
+				'competitors': [
+					{'name': 'team3'},
+					{'name': 'team4'},
+				],
 			}
 		}
 		with mock.patch(f, return_value=data):
@@ -38,17 +36,15 @@ class OwleaguePluginTest(PluginTestCase):
 
 	def test_returns_next_match(self):
 		data = {
-			'data': {
-				'liveMatch': {
-					'liveStatus': 'UPCOMING',
-					'startDate': '2017-12-10T15:00:00Z+00:00',
-					'competitors': [
-						{'name': 'team1'},
-						{'name': 'team2'},
-					],
-				},
-				'nextMatch': {}
-			}
+			'liveMatch': {
+				'liveStatus': 'UPCOMING',
+				'startDate': '2017-12-10T15:00:00Z+00:00',
+				'competitors': [
+					{'name': 'team1'},
+					{'name': 'team2'},
+				],
+			},
+			'nextMatch': {}
 		}
 		with mock.patch(f, return_value=data):
 			ret = self.cmd('owl')
@@ -56,10 +52,8 @@ class OwleaguePluginTest(PluginTestCase):
 
 	def test_returns_nothing_when_no_matches(self):
 		data = {
-			'data': {
-				'liveMatch': {},
-				'nextMatch': {}
-			}
+			'liveMatch': {},
+			'nextMatch': {}
 		}
 		with mock.patch(f, return_value=data):
 			ret = self.cmd('owl')
@@ -67,23 +61,21 @@ class OwleaguePluginTest(PluginTestCase):
 
 	def test_ticker_returns_when_match_goes_live(self):
 		data = {
-			'data': {
-				'liveMatch': {
-					'liveStatus': 'UPCOMING',
-					'startDate': '2017-12-10T15:00:00Z+00:00',
-					'competitors': [
-						{'name': 'team1'},
-						{'name': 'team2'},
-					],
-				},
-				'nextMatch': {}
-			}
+			'liveMatch': {
+				'liveStatus': 'UPCOMING',
+				'startDate': '2017-12-10T15:00:00Z+00:00',
+				'competitors': [
+					{'name': 'team1'},
+					{'name': 'team2'},
+				],
+			},
+			'nextMatch': {}
 		}
 
 		with mock.patch(f, return_value=data):
 			ret1 = self.plugin.ticker()
 
-		data['data']['liveMatch']['liveStatus'] = 'LIVE'
+		data['liveMatch']['liveStatus'] = 'LIVE'
 
 		with mock.patch(f, return_value=data):
 			ret2 = self.plugin.ticker()
@@ -93,22 +85,20 @@ class OwleaguePluginTest(PluginTestCase):
 
 	def test_ticker_does_not_repeat_itself(self):
 		data = {
-			'data': {
-				'liveMatch': {
-					'liveStatus': 'LIVE',
-					'competitors': [
-						{'name': 'team1'},
-						{'name': 'team2'},
-					],
-				},
-				'nextMatch': {
-					'liveStatus': 'UPCOMING',
-					'startDate': '2017-12-10T15:00:00Z+00:00',
-					'competitors': [
-						{'name': 'team3'},
-						{'name': 'team4'},
-					],
-				}
+			'liveMatch': {
+				'liveStatus': 'LIVE',
+				'competitors': [
+					{'name': 'team1'},
+					{'name': 'team2'},
+				],
+			},
+			'nextMatch': {
+				'liveStatus': 'UPCOMING',
+				'startDate': '2017-12-10T15:00:00Z+00:00',
+				'competitors': [
+					{'name': 'team3'},
+					{'name': 'team4'},
+				],
 			}
 		}
 		with mock.patch(f, return_value=data):
@@ -119,29 +109,27 @@ class OwleaguePluginTest(PluginTestCase):
 
 	def test_ticker_does_not_trigger_on_next_match_time_change(self):
 		data = {
-			'data': {
-				'liveMatch': {
-					'liveStatus': 'LIVE',
-					'competitors': [
-						{'name': 'team1'},
-						{'name': 'team2'},
-					],
-				},
-				'nextMatch': {
-					'liveStatus': 'UPCOMING',
-					'startDate': '2017-12-10T15:00:00Z+00:00',
-					'competitors': [
-						{'name': 'team3'},
-						{'name': 'team4'},
-					],
-				}
+			'liveMatch': {
+				'liveStatus': 'LIVE',
+				'competitors': [
+					{'name': 'team1'},
+					{'name': 'team2'},
+				],
+			},
+			'nextMatch': {
+				'liveStatus': 'UPCOMING',
+				'startDate': '2017-12-10T15:00:00Z+00:00',
+				'competitors': [
+					{'name': 'team3'},
+					{'name': 'team4'},
+				],
 			}
 		}
 
 		with mock.patch(f, return_value=data):
 			ret1 = self.plugin.ticker()
 
-		data['data']['nextMatch']['startDate'] = '2017-12-10T16:00:00Z+00:00'
+		data['nextMatch']['startDate'] = '2017-12-10T16:00:00Z+00:00'
 
 		with mock.patch(f, return_value=data):
 			ret2 = self.plugin.ticker()
@@ -151,32 +139,30 @@ class OwleaguePluginTest(PluginTestCase):
 
 	def test_ticker_updates_when_match_changes(self):
 		data = {
-			'data': {
-				'liveMatch': {
-					'liveStatus': 'LIVE',
-					'competitors': [
-						{'name': 'team1'},
-						{'name': 'team2'},
-					],
-				},
-				'nextMatch': {
-					'liveStatus': 'UPCOMING',
-					'startDate': '2017-12-10T15:00:00Z+00:00',
-					'competitors': [
-						{'name': 'team3'},
-						{'name': 'team4'},
-					],
-				}
+			'liveMatch': {
+				'liveStatus': 'LIVE',
+				'competitors': [
+					{'name': 'team1'},
+					{'name': 'team2'},
+				],
+			},
+			'nextMatch': {
+				'liveStatus': 'UPCOMING',
+				'startDate': '2017-12-10T15:00:00Z+00:00',
+				'competitors': [
+					{'name': 'team3'},
+					{'name': 'team4'},
+				],
 			}
 		}
 
 		with mock.patch(f, return_value=data):
 			ret1 = self.plugin.ticker()
 
-		data['data']['liveMatch']['competitors'][0]['name'] = 'team3'
-		data['data']['liveMatch']['competitors'][1]['name'] = 'team4'
-		data['data']['nextMatch']['competitors'][0]['name'] = 'team5'
-		data['data']['nextMatch']['competitors'][1]['name'] = 'team6'
+		data['liveMatch']['competitors'][0]['name'] = 'team3'
+		data['liveMatch']['competitors'][1]['name'] = 'team4'
+		data['nextMatch']['competitors'][0]['name'] = 'team5'
+		data['nextMatch']['competitors'][1]['name'] = 'team6'
 
 		with mock.patch(f, return_value=data):
 			ret2 = self.plugin.ticker()

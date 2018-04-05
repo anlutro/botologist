@@ -11,7 +11,7 @@ log = logging.getLogger(__name__)
 def get_owl_data():
 	resp = requests.get('https://api.overwatchleague.com/live-match')
 	resp.raise_for_status()
-	return resp.json()
+	return resp.json().get('data', {})
 
 
 def get_match_info(match_data):
@@ -29,16 +29,16 @@ def get_match_time(match_data, tz=None):
 
 
 def get_current_match_info(data):
-	match = data.get('data', {}).get('liveMatch', {})
+	match = data.get('liveMatch', {})
 	if not match or match.get('liveStatus') != 'LIVE':
 		return
 	return 'Live now: %s' % get_match_info(match)
 
 
 def get_next_match_info(data, tz=None):
-	match = data.get('data', {}).get('nextMatch', {})
+	match = data.get('nextMatch', {})
 	if not match:
-		match = data.get('data', {}).get('liveMatch', {})
+		match = data.get('liveMatch', {})
 		if not match or match.get('liveStatus') != 'UPCOMING':
 			return
 	return 'Next match: %s at %s' % (
