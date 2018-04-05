@@ -10,7 +10,7 @@ else
 fi
 
 if [ "$arg" = "-t" ] || [ "$arg" = "test" ] || [ "$arg" = "tests" ] || [ "$arg" = "tests/" ]; then
-	$python -m unittest discover -s . -p '*_test.py'
+	pytest
 	exit $?
 fi
 
