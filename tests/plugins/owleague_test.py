@@ -2,14 +2,30 @@ from freezegun import freeze_time
 import unittest.mock as mock
 
 from tests.plugins import PluginTestCase
+from plugins.owleague import get_owl_data, OwleaguePlugin
 
 f = 'plugins.owleague.get_owl_data'
+
+
+def test_get_owl_data_retries_when_cache_expired():
+	def assert_request_attempts(attempts):
+		with mock.patch('requests.get', side_effect=side_effect) as mock_request:
+			get_owl_data()
+		assert len(mock_request.mock_calls) == attempts
+
+	side_effect = [mock.Mock(headers={'x-cache-status': 'HIT'})]
+	assert_request_attempts(1)
+	side_effect.insert(0, mock.Mock(headers={'x-cache-status': 'EXPIRED'}))
+	assert_request_attempts(2)
+	side_effect.insert(0, mock.Mock(headers={'x-cache-status': 'EXPIRED'}))
+	assert_request_attempts(3)
+	side_effect.insert(0, mock.Mock(headers={'x-cache-status': 'EXPIRED'}))
+	assert_request_attempts(3)
 
 
 @freeze_time('2017-12-08 10:00:00')
 class OwleaguePluginTest(PluginTestCase):
 	def create_plugin(self):
-		from plugins.owleague import OwleaguePlugin
 		return OwleaguePlugin(self.bot, self.channel)
 
 	def test_returns_current_and_next_match(self):
