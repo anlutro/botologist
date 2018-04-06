@@ -10,7 +10,6 @@ import botologist.plugin
 
 url_shorteners = r'|'.join((
 	r'https?://bit\.ly',
-	r'https?://goo\.gl',
 	r'https?://is\.gd',
 	r'https?://redd\.it',
 	r'https?://t\.co',

@@ -184,11 +184,6 @@ class RedditeuPlugin(botologist.plugin.Plugin):
 				return 'AUTISM C-C-C-C-COMBO BREAKER! ({} line long monologue)'.format(count)
 
 	@botologist.plugin.reply()
-	def nooooo(self, msg):
-		if 'nooo' in msg.message.lower():
-			return 'https://vid.me/1VfD'
-
-	@botologist.plugin.reply()
 	def guys(self, msg):
 		msgl = msg.message.lower()
 		if 'dont be late' in msgl or "don't be late" in msgl:
