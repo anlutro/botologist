@@ -59,8 +59,9 @@ def get_next_match_info(data, tz=None):
 class OwleaguePlugin(botologist.plugin.Plugin):
 	def __init__(self, bot, channel):
 		super().__init__(bot, channel)
+		self.cur_state = None
+		self.cur_match = None
 		self.prev_match = None
-		self.prev_state = None
 		self.tz = self.bot.config.get('output_timezone', 'UTC')
 
 	def _get_info_str(self, ticker):
@@ -76,18 +77,20 @@ class OwleaguePlugin(botologist.plugin.Plugin):
 		next_match = get_next_match_info(data, tz=self.tz)
 
 		skip = ticker and (
-			cur_match == self.prev_state or
+			cur_match == self.cur_state or
+			cur_match == self.cur_match or
 			cur_match == self.prev_match or
 			not cur_match
 		)
 
 		if not skip:
-			log.debug('prev_state=%r; prev_match=%r; data=%r',
-				self.prev_state, self.prev_match, data)
+			log.debug('cur_state=%r; cur_match=%r; prev_match=%r; data=%r',
+				self.cur_state, self.cur_match, self.prev_match, data)
 
-		self.prev_state = cur_match
+		self.cur_state = cur_match
 		if cur_match:
-			self.prev_match = cur_match
+			self.prev_match = self.cur_match
+			self.cur_match = cur_match
 
 		if skip:
 			return
