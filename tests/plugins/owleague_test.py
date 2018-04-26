@@ -188,49 +188,42 @@ class OwleaguePluginTest(PluginTestCase):
 		self.assertNotEqual(ret1, ret2)
 
 	def test_ticker_does_not_flap(self):
-		data1 = {
+		data = [{
 			'liveMatch': {
 				'liveStatus': 'LIVE',
 				'competitors': [
-					{'name': 'team1'},
-					{'name': 'team2'},
+					{'name': 'team%d' % (i + 1)},
+					{'name': 'team%d' % (i + 2)},
 				],
 			},
 			'nextMatch': {
 				'liveStatus': 'UPCOMING',
-				'startDate': '2017-12-10T15:00:00Z+00:00',
+				'startDate': '2017-12-10T%d:00:00Z+00:00' % (15 + i * 2),
 				'competitors': [
-					{'name': 'team3'},
-					{'name': 'team4'},
+					{'name': 'team%d' % (i + 3)},
+					{'name': 'team%d' % (i + 4)},
 				],
 			}
-		}
-		data2 = {
-			'liveMatch': {
-				'liveStatus': 'LIVE',
-				'competitors': [
-					{'name': 'team3'},
-					{'name': 'team4'},
-				],
-			},
-			'nextMatch': {
-				'liveStatus': 'UPCOMING',
-				'startDate': '2017-12-10T18:00:00Z+00:00',
-				'competitors': [
-					{'name': 'team5'},
-					{'name': 'team6'},
-				],
-			}
-		}
-		with mock.patch(f, return_value=data1):
-			ret1 = self.plugin.ticker()
-		with mock.patch(f, return_value=data2):
-			ret2 = self.plugin.ticker()
-		with mock.patch(f, return_value=data1):
-			ret3 = self.plugin.ticker()
-		with mock.patch(f, return_value=data2):
-			ret4 = self.plugin.ticker()
-		self.assertTrue(ret1)
-		self.assertTrue(ret2)
-		self.assertFalse(ret3)
-		self.assertFalse(ret4)
+		} for i in range(0, 3)]
+
+		with mock.patch(f, return_value=data[0]):
+			ret = self.plugin.ticker()
+			self.assertIsNotNone(ret)
+			self.assertIn('team1 vs team2', ret)
+		with mock.patch(f, return_value=data[1]):
+			self.assertIsNotNone(self.plugin.ticker())
+			self.assertIn('team3 vs team4', ret)
+		with mock.patch(f, return_value=data[0]):
+			self.assertIsNone(self.plugin.ticker())
+		with mock.patch(f, return_value=data[1]):
+			self.assertIsNone(self.plugin.ticker())
+		with mock.patch(f, return_value=data[0]):
+			self.assertIsNone(self.plugin.ticker())
+			self.assertIsNone(self.plugin.ticker())
+		with mock.patch(f, return_value=data[1]):
+			self.assertIsNone(self.plugin.ticker())
+			self.assertIsNone(self.plugin.ticker())
+		with mock.patch(f, return_value=data[2]):
+			ret = self.plugin.ticker()
+			self.assertIsNotNone(ret)
+			self.assertIn('team3 vs team4', ret)

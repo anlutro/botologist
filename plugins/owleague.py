@@ -88,7 +88,7 @@ class OwleaguePlugin(botologist.plugin.Plugin):
 				self.cur_state, self.cur_match, self.prev_match, data)
 
 		self.cur_state = cur_match
-		if cur_match:
+		if cur_match and cur_match != self.cur_match:
 			self.prev_match = self.cur_match
 			self.cur_match = cur_match
 
