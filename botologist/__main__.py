@@ -19,7 +19,7 @@ if len(sys.argv) > 1:
 
 print('Reading config file:', config_path)
 with open(config_path, 'r') as f:
-	config = yaml.load(f.read())
+	config = yaml.safe_load(f.read())
 
 try:
 	import resource
