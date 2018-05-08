@@ -31,7 +31,7 @@ Install requirements (you only have to do this once):
 
 Copy `config.example.yml` to `config.yml` and edit it to your likings, then run the bot:
 
-	$ ./run
+	$ python -m botologist
 
 ## Plugins
 
