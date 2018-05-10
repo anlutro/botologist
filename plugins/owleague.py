@@ -1,25 +1,16 @@
 import logging
 
 import requests
-import cachecontrol
 
 from botologist.util import parse_dt, time_until
 import botologist.plugin
 
 log = logging.getLogger(__name__)
-session = cachecontrol.CacheControl(requests.session())
 
 
 def get_owl_data():
-	attempts = 0
-	resp = None
-	# the owl api has a weird tendency to sometimes return outdated data. a
-	# symptom of this *seems* to be the x-cache-status header, but not sure.
-	while attempts < 3 and (resp is None or resp.headers.get('x-cache-status') == 'EXPIRED'):
-		attempts += 1
-		log.debug('owl api request attempt number %d', attempts)
-		resp = session.get('https://api.overwatchleague.com/live-match')
-		resp.raise_for_status()
+	resp = requests.get('https://api.overwatchleague.com/live-match')
+	resp.raise_for_status()
 	return resp.json().get('data', {})
 
 
