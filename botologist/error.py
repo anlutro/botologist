@@ -1,7 +1,5 @@
-import logging
-log = logging.getLogger(__name__)
-
 from email.mime.text import MIMEText
+import logging
 import os
 import subprocess
 import traceback
@@ -10,6 +8,10 @@ try:
 except ImportError:
 	import getpass
 	pwd = None
+
+from raven import Client
+
+log = logging.getLogger(__name__)
 
 
 def get_username():
@@ -45,6 +47,9 @@ class ErrorHandler:
 
 	def __init__(self, bot):
 		self.bot = bot
+		self.raven = None
+		if 'sentry' in bot.config:
+			self.raven = Client(**bot.config['sentry'])
 
 	def handle_error(self, message=None):
 		medium_msg, long_msg = format_error(message)
@@ -78,5 +83,7 @@ class ErrorHandler:
 			try:
 				func(*args, **kwargs)
 			except:
+				if self.raven:
+					self.raven.captureException()
 				self.handle_error()
 		return wrapped
