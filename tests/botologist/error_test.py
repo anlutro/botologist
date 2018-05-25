@@ -26,7 +26,7 @@ class ErrorHandlerTest(unittest.TestCase):
 			'    raise RuntimeError(\'test\')\nRuntimeError: test', long_msg)
 
 	def test_same_error_is_not_messaged_and_emailed_twice(self):
-		handler = error.ErrorHandler(mock.Mock())
+		handler = error.ErrorHandler(mock.MagicMock())
 		handler.bot.config = {'admin_email': 'root'}
 		with mock.patch('botologist.error.send_email') as send_email:
 			for i in range(2):
