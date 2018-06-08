@@ -24,7 +24,7 @@ def find_shortened_urls(message):
 
 
 def get_location(url):
-	response = requests.head(url)
+	response = requests.head(url, timeout=4)
 	if response.status_code != 301 and response.status_code != 302:
 		return response.url
 	return response.headers['location']

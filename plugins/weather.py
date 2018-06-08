@@ -8,7 +8,7 @@ import botologist.plugin
 
 
 def get_owm_data(url, query_params):
-	return requests.get(url, query_params).json()
+	return requests.get(url, query_params, timeout=4).json()
 
 
 class WeatherPlugin(botologist.plugin.Plugin):

@@ -9,7 +9,8 @@ log = logging.getLogger(__name__)
 def get_next_episode_info(show, tz='UTC'):
 	query = {'q': show, 'embed': 'nextepisode'}
 	try:
-		response = requests.get('http://api.tvmaze.com/singlesearch/shows', query)
+		response = requests.get('http://api.tvmaze.com/singlesearch/shows',
+			query, timeout=4)
 		response.raise_for_status()
 	except requests.exceptions.RequestException:
 		log.warning('TVMaze request caused an exception', exc_info=True)
