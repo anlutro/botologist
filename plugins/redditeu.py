@@ -186,7 +186,7 @@ class RedditeuPlugin(botologist.plugin.Plugin):
 	@botologist.plugin.reply()
 	def nooooo(self, msg):
 		if 'nooo' in msg.message.lower():
-			return 'http://files.lutro.me/noooo.webm'
+			return 'https://www.youtube.com/watch?v=WWaLxFIVX1s'
 
 	@botologist.plugin.reply()
 	def guys(self, msg):
