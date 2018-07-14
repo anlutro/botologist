@@ -211,3 +211,84 @@ class OwleaguePluginTest(PluginTestCase):
 			ret = self.plugin.ticker()
 			self.assertIsNotNone(ret)
 			self.assertIn('team3 vs team4', ret)
+
+	def test_ticker_does_not_flap_between_live_and_not_live(self):
+		live_data = {
+			'liveMatch': {
+				'liveStatus': 'LIVE',
+				'competitors': [
+					{'name': 'team1'},
+					{'name': 'team2'},
+				],
+			},
+			'nextMatch': {
+				'liveStatus': 'UPCOMING',
+				'startDate': '2017-12-10T15:00:00Z+00:00',
+				'competitors': [
+					{'name': 'team1'},
+					{'name': 'team2'},
+				],
+			}
+		}
+		upcoming_data = {
+			'liveMatch': {},
+			'nextMatch': {
+				'liveStatus': 'UPCOMING',
+				'startDate': '2017-12-10T15:00:00Z+00:00',
+				'competitors': [
+					{'name': 'team1'},
+					{'name': 'team2'},
+				],
+			}
+		}
+
+		with mock.patch(f, return_value=live_data):
+			ret = self.plugin.ticker()
+			self.assertIsNotNone(ret)
+			self.assertIn('team1 vs team2', ret)
+		with mock.patch(f, return_value=upcoming_data):
+			self.assertIsNone(self.plugin.ticker())
+		with mock.patch(f, return_value=live_data):
+			self.assertIsNone(self.plugin.ticker())
+
+	def test_ticker_resets_after_several_not_live_results(self):
+		live_data = {
+			'liveMatch': {
+				'liveStatus': 'LIVE',
+				'competitors': [
+					{'name': 'team1'},
+					{'name': 'team2'},
+				],
+			},
+			'nextMatch': {
+				'liveStatus': 'UPCOMING',
+				'startDate': '2017-12-10T15:00:00Z+00:00',
+				'competitors': [
+					{'name': 'team1'},
+					{'name': 'team2'},
+				],
+			}
+		}
+		upcoming_data = {
+			'liveMatch': {},
+			'nextMatch': {
+				'liveStatus': 'UPCOMING',
+				'startDate': '2017-12-10T15:00:00Z+00:00',
+				'competitors': [
+					{'name': 'team1'},
+					{'name': 'team2'},
+				],
+			}
+		}
+
+		with mock.patch(f, return_value=live_data):
+			ret = self.plugin.ticker()
+			self.assertIsNotNone(ret)
+			self.assertIn('team1 vs team2', ret)
+		with mock.patch(f, return_value=upcoming_data):
+			self.assertIsNone(self.plugin.ticker())
+		with mock.patch(f, return_value=upcoming_data):
+			self.assertIsNone(self.plugin.ticker())
+		with mock.patch(f, return_value=live_data):
+			self.assertIsNotNone(ret)
+			self.assertIn('team1 vs team2', ret)
