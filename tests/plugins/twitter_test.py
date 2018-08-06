@@ -13,7 +13,7 @@ class TwitterPluginTest(PluginTestCase):
 	def test_calls_api(self):
 		tweet = mock.MagicMock()
 		tweet.author.screen_name = 'author'
-		tweet.text = 'text'
+		tweet.full_text = 'text'
 		self.api.get_status = mock.MagicMock(return_value=tweet)
 
 		ret = self.reply('https://twitter.com/author/status/625945123789119488')
