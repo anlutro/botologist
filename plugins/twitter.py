@@ -42,10 +42,10 @@ class TwitterPlugin(botologist.plugin.Plugin):
 				return
 		self.last_fetch = now
 
-		tweet = self.api.get_status(tweet_id)
+		tweet = self.api.get_status(tweet_id, tweet_mode='extended')
 
 		author = tweet.author.screen_name
-		body = tweet.text.replace('\n', ' ')
+		body = tweet.full_text.replace('\n', ' ')
 		body = botologist.util.unescape_html(body)
 
 		return '[{author}] {body}'.format(author='@'+author, body=body)
