@@ -93,7 +93,7 @@ def get_owl_matches(tz=None):
 	data = get_owl_data()
 	if data.get('liveMatch', {}).get('liveStatus') == 'LIVE':
 		live_match = Match.from_data(data['liveMatch'])
-		next_match = Match.from_data(data['nextMatch'])
+		next_match = Match.from_data(data.get('nextMatch', {}))
 	elif data.get('liveMatch', {}).get('liveStatus') == 'UPCOMING':
 		next_match = Match.from_data(data['liveMatch'])
 	return live_match, next_match
