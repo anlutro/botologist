@@ -2,7 +2,7 @@ from freezegun import freeze_time
 import unittest.mock as mock
 
 from tests.plugins import PluginTestCase
-from plugins.owleague import OwleaguePlugin
+from plugins.owleague import OwleaguePlugin, Team, Match
 
 f = 'plugins.owleague.get_owl_data'
 
@@ -292,3 +292,36 @@ class OwleaguePluginTest(PluginTestCase):
 		with mock.patch(f, return_value=live_data):
 			self.assertIsNotNone(ret)
 			self.assertIn('team1 vs team2', ret)
+
+	def test_does_not_flap_between_locales(self):
+		data = {
+			'liveMatch': {
+				'liveStatus': 'LIVE',
+				'competitors': [
+					{'id': 1, 'name': 'team1'},
+					{'id': 2, 'name': 'team2'},
+				],
+			},
+			'nextMatch': {
+				'liveStatus': 'UPCOMING',
+				'startDate': '2017-12-10T15:00:00Z+00:00',
+				'competitors': [
+					{'id': 3, 'name': 'team3'},
+					{'id': 4, 'name': 'team4'},
+				],
+			}
+		}
+
+		with mock.patch(f, return_value=data):
+			ret1 = self.plugin.ticker()
+
+		data['liveMatch']['competitors'][0]['name'] = 'lag1'
+		data['liveMatch']['competitors'][1]['name'] = 'lag2'
+		data['nextMatch']['competitors'][0]['name'] = 'lag3'
+		data['nextMatch']['competitors'][1]['name'] = 'lag3'
+
+		with mock.patch(f, return_value=data):
+			ret2 = self.plugin.ticker()
+
+		self.assertTrue(ret1)
+		self.assertFalse(ret2)

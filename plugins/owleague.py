@@ -19,37 +19,84 @@ def get_owl_data():
 	return resp.json().get('data', {})
 
 
-def get_match_info(match_data):
-	teams = match_data['competitors']
-	return '%s vs %s' % (teams[0]['name'], teams[1]['name'])
+class Team:
+	def __init__(self, id, name):
+		self.id = id
+		self.name = name
+
+	@classmethod
+	def from_data(cls, data):
+		return cls(data.get('id'), data['name'])
+
+	def __str__(self):
+		return self.name
+
+	def __hash__(self):
+		return self.id
+
+	def __eq__(self, other):
+		if self.id and other.id:
+			return self.id == other.id
+		return self.name == other.name
 
 
-def get_match_time(match_data, tz=None):
-	dt = parse_dt(match_data['startDate'], tz)
-	info = dt.strftime('%Y-%m-%d %H:%M %z')
-	time_until_str = time_until(dt)
-	if time_until_str:
-		info += ' (in %s)' % time_until_str
-	return info
+class Match:
+	LIVE = object()
+
+	def __init__(self, team_a, team_b, time=None):
+		self.team_a = team_a
+		self.team_b = team_b
+		self.time = time
+
+	@property
+	def time_until(self):
+		return time_until(self.time)
+
+	@classmethod
+	def from_data(cls, data, tz=None):
+		if not data:
+			return None
+		if data.get('liveStatus') == 'LIVE':
+			time = Match.LIVE
+		else:
+			time = parse_dt(data['startDate'], tz)
+		teams = (Team.from_data(team_data) for team_data in data['competitors'])
+		return cls(*teams, time=time)
+
+	def __str__(self):
+		s = '%s vs %s' % (self.team_a, self.team_b)
+		if not self.time is Match.LIVE:
+			time_until_str = time_until(self.time)
+			if time_until_str:
+				s += ' at %s (in %s)' % (
+					self.time.strftime('%Y-%m-%d %H:%M %z'),
+					time_until_str,
+				)
+		return s
+
+	def __hash__(self):
+		return hash((self.team_a, self.team_b, self.time))
+
+	def __eq__(self, other):
+		if not isinstance(other, Match):
+			return False
+		return all((
+			self.team_a == other.team_a,
+			self.team_b == other.team_b,
+			self.time == other.time,
+		))
 
 
-def get_current_match_info(data):
-	match = data.get('liveMatch', {})
-	if not match or match.get('liveStatus') != 'LIVE':
-		return
-	return 'Live now: %s' % get_match_info(match)
-
-
-def get_next_match_info(data, tz=None):
-	match = data.get('nextMatch', {})
-	if not match:
-		match = data.get('liveMatch', {})
-		if not match or match.get('liveStatus') != 'UPCOMING':
-			return
-	return 'Next match: %s at %s' % (
-		get_match_info(match),
-		get_match_time(match, tz=tz),
-	)
+def get_owl_matches(tz=None):
+	live_match = None
+	next_match = None
+	data = get_owl_data()
+	if data.get('liveMatch', {}).get('liveStatus') == 'LIVE':
+		live_match = Match.from_data(data['liveMatch'])
+		next_match = Match.from_data(data['nextMatch'])
+	elif data.get('liveMatch', {}).get('liveStatus') == 'UPCOMING':
+		next_match = Match.from_data(data['liveMatch'])
+	return live_match, next_match
 
 
 class OwleaguePlugin(botologist.plugin.Plugin):
@@ -62,15 +109,12 @@ class OwleaguePlugin(botologist.plugin.Plugin):
 
 	def _get_info_str(self, ticker):
 		try:
-			data = get_owl_data()
+			cur_match, next_match = get_owl_matches(tz=self.tz)
 		except requests.exceptions.RequestException as exc:
 			log.warning('exception getting OWL data', exc_info=True)
 			if ticker:
 				return
 			return 'Problem fetching OWL data: %s' % exc
-
-		cur_match = get_current_match_info(data)
-		next_match = get_next_match_info(data, tz=self.tz)
 
 		skip = ticker and (
 			cur_match == self.cur_state or
@@ -80,8 +124,8 @@ class OwleaguePlugin(botologist.plugin.Plugin):
 		)
 
 		if not skip:
-			log.debug('cur_state=%r; cur_match=%r; prev_match=%r; data=%r',
-				self.cur_state, self.cur_match, self.prev_match, data)
+			log.debug('cur_state=%r; cur_match=%r; prev_match=%r',
+				self.cur_state, self.cur_match, self.prev_match)
 
 		self.cur_state = cur_match
 		if cur_match and cur_match != self.cur_match:
@@ -94,8 +138,13 @@ class OwleaguePlugin(botologist.plugin.Plugin):
 		if skip:
 			return
 
-		match_infos = [m for m in (cur_match, next_match) if m] or \
-			['No matches live or scheduled']
+		match_infos = []
+		if cur_match:
+			match_infos.append('Live now: %s' % cur_match)
+		if next_match:
+			match_infos.append('Next match: %s' % next_match)
+		if not match_infos:
+			match_infos = ['No matches live or scheduled']
 		return ' -- '.join(match_infos + ['https://overwatchleague.com'])
 
 	@botologist.plugin.ticker()
