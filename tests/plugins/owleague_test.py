@@ -2,7 +2,7 @@ from freezegun import freeze_time
 import unittest.mock as mock
 
 from tests.plugins import PluginTestCase
-from plugins.owleague import OwleaguePlugin, Team, Match
+from plugins.owleague import OwleaguePlugin
 
 f = 'plugins.owleague.get_owl_data'
 
