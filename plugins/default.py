@@ -53,7 +53,10 @@ class DefaultPlugin(botologist.plugin.Plugin):
 	@botologist.plugin.reply()
 	def tableflip(self, msg):
 		if '(╯°□°)╯︵ ┻━┻' in msg.message:
-			return '┬─┬ ノ( ゜-゜ノ)'
+			return random.choice([
+				'┬─┬ ノ( ゜-゜ノ)',
+				'ノ┬─┬ノ ︵ ( \\o°o)\\'
+				])
 
 	@botologist.plugin.command('coinflip')
 	def coinflip(self, cmd):
