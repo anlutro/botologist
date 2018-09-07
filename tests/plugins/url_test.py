@@ -11,3 +11,10 @@ class UrlPluginTest(PluginTestCase):
 		with mock.patch('plugins.url.get_location', return_value=url):
 			ret = self.reply('asdad http://t.co/asdf sfgdgf')
 		self.assertEqual(['http://t.co/asdf => http://www.foobar.com'], ret)
+
+	def test_gets_title_of_youtube_url(self):
+		fake_response = mock.Mock()
+		fake_response.text = '<title>fake title</title>'
+		with mock.patch('requests.get', return_value=fake_response):
+			ret = self.reply('asdad https://youtu.be/asdf sfgdgf')
+		self.assertEqual(['https://youtu.be/asdf: fake title'], ret)

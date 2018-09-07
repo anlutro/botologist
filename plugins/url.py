@@ -18,8 +18,8 @@ url_shorteners = r'|'.join((
 short_url_regex = re.compile(r'((' + url_shorteners + r')\/[a-zA-Z0-9/]+)')
 
 
-def find_shortened_urls(message):
-	matches = short_url_regex.findall(message)
+def find_shortened_urls(text):
+	matches = short_url_regex.findall(text)
 	return [match[0] for match in matches]
 
 
@@ -28,6 +28,7 @@ def get_location(url):
 	if response.status_code != 301 and response.status_code != 302:
 		return response.url
 	return response.headers['location']
+
 
 def unshorten_url(url):
 	try:
@@ -43,16 +44,41 @@ def unshorten_url(url):
 	return url
 
 
+def unshorten_urls(text):
+	ret = []
+	for url in find_shortened_urls(text):
+		real_url = unshorten_url(url)
+		if real_url:
+			ret.append('{} => {}'.format(url, real_url))
+	return ret
+
+
+titlazable_url_regex = re.compile(r'(' + r'|'.join((
+	r'https?:\/\/youtu\.be\/[a-zA-Z0-9_-]+',
+	r'https?:\/\/(www\.)?youtube\.com\/watch[^\s]+',
+)) + r')')
+
+def find_titlazible_urls(text):
+	matches = titlazable_url_regex.findall(text)
+	return [match[0] for match in matches]
+
+
+def show_link_titles(text):
+	ret = []
+	for url in find_titlazible_urls(text):
+		resp = requests.get(url)
+		match = re.search(r'\<title\>([^<]+)\<\/title\>', resp.text)
+		if match:
+			title = match.group(1).strip()
+			ret.append('{}: {}'.format(url, title))
+	return ret
+
+
 class UrlPlugin(botologist.plugin.Plugin):
 	@botologist.plugin.reply()
 	def reply(self, msg):
-		urls = find_shortened_urls(msg.message)
 		ret = []
-
-		for url in urls:
-			real_url = unshorten_url(url)
-			if real_url:
-				ret.append('{} => {}'.format(url, real_url))
-
+		ret.extend(unshorten_urls(msg.message))
+		ret.extend(show_link_titles(msg.message))
 		if ret:
 			return ret
