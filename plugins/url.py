@@ -66,7 +66,7 @@ def find_titlazible_urls(text):
 def show_link_titles(text):
 	ret = []
 	for url in find_titlazible_urls(text):
-		resp = requests.get(url)
+		resp = requests.get(url, timeout=3)
 		match = re.search(r'\<title\>([^<]+)\<\/title\>', resp.text)
 		if match:
 			title = match.group(1).strip()
