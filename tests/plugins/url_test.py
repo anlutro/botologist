@@ -17,4 +17,4 @@ class UrlPluginTest(PluginTestCase):
 		fake_response.text = '<title>fake title</title>'
 		with mock.patch('requests.get', return_value=fake_response):
 			ret = self.reply('asdad https://youtu.be/asdf sfgdgf')
-		self.assertEqual(['https://youtu.be/asdf: fake title'], ret)
+		self.assertEqual(['fake title (https://youtu.be/asdf)'], ret)
