@@ -1,4 +1,5 @@
 import logging
+
 log = logging.getLogger(__name__)
 
 import requests
@@ -8,61 +9,63 @@ import botologist.plugin
 
 
 def _get_qlr_data(nick):
-	url = 'http://www.qlranks.com/api.aspx'
-	response = requests.get(url, {'nick': nick}, timeout=4)
-	return response.json()['players'][0]
+    url = "http://www.qlranks.com/api.aspx"
+    response = requests.get(url, {"nick": nick}, timeout=4)
+    return response.json()["players"][0]
 
 
 def _get_qlr_elo(nick, modes=None):
-	"""Get someone's QLRanks ELO.
+    """Get someone's QLRanks ELO.
 
 	nick should be a valid Quake Live nickname. modes should be an iterable
 	(list, tuple) of game-modes to display ELO for (duel, ctf, tdm...)
 	"""
-	if modes is None:
-		modes = ('duel',)
+    if modes is None:
+        modes = ("duel",)
 
-	try:
-		data = _get_qlr_data(nick)
-	except requests.exceptions.RequestException:
-		log.warning('QLRanks request caused an exception', exc_info=True)
-		return 'HTTP error, try again!'
+    try:
+        data = _get_qlr_data(nick)
+    except requests.exceptions.RequestException:
+        log.warning("QLRanks request caused an exception", exc_info=True)
+        return "HTTP error, try again!"
 
-	# qlranks returns rank 0 indicating a player has no rating - if all modes
-	# have rank 0, it is safe to assume the player does not exist
-	unranked = [mode['rank'] == 0 for mode in data.values() if isinstance(mode, dict)]
-	if all(unranked):
-		return 'Player not found or no games played: ' + data.get('nick', 'unknown')
+        # qlranks returns rank 0 indicating a player has no rating - if all modes
+        # have rank 0, it is safe to assume the player does not exist
+    unranked = [mode["rank"] == 0 for mode in data.values() if isinstance(mode, dict)]
+    if all(unranked):
+        return "Player not found or no games played: " + data.get("nick", "unknown")
 
-	retval = data['nick']
+    retval = data["nick"]
 
-	# convert to set to prevent duplicates
-	for mode in set(modes):
-		if mode not in data:
-			return 'Unknown mode: ' + mode
+    # convert to set to prevent duplicates
+    for mode in set(modes):
+        if mode not in data:
+            return "Unknown mode: " + mode
 
-		if data[mode]['rank'] == 0:
-			retval += ' - {mode}: unranked'.format(mode=mode)
-		else:
-			retval += ' - {mode}: {elo} (rank {rank:,})'.format(
-				mode=mode, elo=data[mode]['elo'], rank=data[mode]['rank'])
+        if data[mode]["rank"] == 0:
+            retval += " - {mode}: unranked".format(mode=mode)
+        else:
+            retval += " - {mode}: {elo} (rank {rank:,})".format(
+                mode=mode, elo=data[mode]["elo"], rank=data[mode]["rank"]
+            )
 
-	return retval
+    return retval
 
 
 class QlranksPlugin(botologist.plugin.Plugin):
-	"""QLRanks plugin."""
-	@botologist.plugin.command('elo', threaded=True)
-	def get_elo(self, msg):
-		'''Get a player's ELO from qlranks.'''
-		if len(msg.args) < 1:
-			return
+    """QLRanks plugin."""
 
-		if len(msg.args) > 1:
-			if ',' in msg.args[1]:
-				modes = msg.args[1].split(',')
-			else:
-				modes = msg.args[1:]
-			return _get_qlr_elo(msg.args[0], modes)
-		else:
-			return _get_qlr_elo(msg.args[0])
+    @botologist.plugin.command("elo", threaded=True)
+    def get_elo(self, msg):
+        """Get a player's ELO from qlranks."""
+        if len(msg.args) < 1:
+            return
+
+        if len(msg.args) > 1:
+            if "," in msg.args[1]:
+                modes = msg.args[1].split(",")
+            else:
+                modes = msg.args[1:]
+            return _get_qlr_elo(msg.args[0], modes)
+        else:
+            return _get_qlr_elo(msg.args[0])
