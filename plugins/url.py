@@ -70,7 +70,7 @@ def show_link_titles(text):
 		match = re.search(r'\<title\>([^<]+)\<\/title\>', resp.text)
 		if match:
 			title = match.group(1).strip()
-			ret.append('{}: {}'.format(url, title))
+			ret.append('{title} ({url})'.format(url=url, title=title))
 	return ret
 
 
