@@ -33,8 +33,10 @@ class AlreadySubscribedException(StreamException):
 
 
 def return_streamerror_message(func):
-    """Decorator that automatically catches stream exceptions and returns the
-	exception's string representation."""
+    """
+    Decorator that automatically catches stream exceptions
+    and returns the exception's string representation.
+    """
 
     @functools.wraps(func)
     def wrapper(*args, **kwargs):

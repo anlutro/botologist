@@ -13,10 +13,11 @@ class DefaultPlugin(botologist.plugin.Plugin):
 
     @botologist.plugin.command("commands", alias=["cmd", "help"])
     def show_help(self, msg):
-        """Show all commands, or show information about a specific command.
+        """
+        Show all commands, or show information about a specific command.
 
-		Examples: !commands - !help !commands
-		"""
+        Examples: !commands - !help !commands
+        """
         if msg.args:
             command = msg.args[0].lstrip(self.bot.CMD_PREFIX)
             if command not in self.channel.commands:
@@ -67,10 +68,11 @@ class DefaultPlugin(botologist.plugin.Plugin):
 
     @botologist.plugin.command("roll")
     def roll(self, cmd):
-        """Roll one or more die.
+        """
+        Roll one or more die.
 
-		Examples: !roll 6 - !roll 2d12
-		"""
+        Examples: !roll 6 - !roll 2d12
+        """
         if cmd.args:
             match = self.roll_pattern.match(cmd.args[0])
         if not cmd.args or not match:

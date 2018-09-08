@@ -69,8 +69,10 @@ class KothPlugin(botologist.plugin.Plugin):
         return "Last in queue: {} - queue empty!".format(user.nick)
 
     def close(self):
-        """Prevent people from signing up for the king of the hill event, but
-		without stopping the event."""
+        """
+        Prevent people from signing up for the king of the hill event,
+        but without stopping the event.
+        """
         if not self.is_active:
             return "No king of the hill active!"
         if not self.signups_open:

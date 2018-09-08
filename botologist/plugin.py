@@ -77,12 +77,13 @@ class PluginMetaclass(type):
     """Metaclass for the Plugin class."""
 
     def __init__(cls, name, bases, attrs):
-        """Initialize the metaclass, setting up the plugin's attributes.
+        """
+        Initialize the metaclass, setting up the plugin's attributes.
 
-		This method scans the class definition for methods decorated with
-		@command(command), @reply or @ticker, and adds them to the commands,
-		replies or tickers property, respectively.
-		"""
+        This method scans the class definition for methods decorated with
+        @command(command), @reply or @ticker, and adds them to the commands,
+        replies or tickers property, respectively.
+        """
 
         cls._commands = {}
         cls._joins = []

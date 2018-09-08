@@ -15,11 +15,12 @@ def _get_qlr_data(nick):
 
 
 def _get_qlr_elo(nick, modes=None):
-    """Get someone's QLRanks ELO.
+    """
+    Get someone's QLRanks ELO.
 
-	nick should be a valid Quake Live nickname. modes should be an iterable
-	(list, tuple) of game-modes to display ELO for (duel, ctf, tdm...)
-	"""
+    nick should be a valid Quake Live nickname. modes should be an iterable
+    (list, tuple) of game-modes to display ELO for (duel, ctf, tdm...)
+    """
     if modes is None:
         modes = ("duel",)
 

@@ -138,8 +138,10 @@ class StreamManager:
             f.write(content)
 
     def _fetch_streams(self):
-        """Return a list of Stream objects for the streams in the array of urls
-		that are currently live."""
+        """
+        Return a list of Stream objects for the streams in the array of urls
+        that are currently live.
+        """
         twitch_streams = [s for s in self.streams if "twitch.tv" in s]
         twitch_streams = twitch.get_online_streams(
             twitch_streams, self.twitch_auth_token
@@ -160,11 +162,12 @@ class StreamManager:
         return all_streams
 
     def add_stream(self, url):
-        """Add a stream.
+        """
+        Add a stream.
 
-		Returns true on success, false if the stream has already been added, and
-		throws some sort of exception if anything else goes wrong.
-		"""
+        Returns true on success, false if the stream has already been added, and
+        throws some sort of exception if anything else goes wrong.
+        """
         url = Stream.normalize_url(url)
 
         if url in self.streams:

@@ -14,12 +14,13 @@ import botologist.util
 
 
 class CommandMessage:
-    """Representation of an IRC message that is a command.
+    """
+    Representation of an IRC message that is a command.
 
-	When a user sends a message to the bot that is a bot command, an instance
-	of this class should be constructed and will be passed to the command
-	handler to figure out a response.
-	"""
+    When a user sends a message to the bot that is a bot command, an instance
+    of this class should be constructed and will be passed to the command
+    handler to figure out a response.
+    """
 
     def __init__(self, message):
         assert isinstance(message, botologist.protocol.Message)
@@ -190,12 +191,12 @@ class Bot:
 
     def send_msg(self, targets, messages):
         """
-		Send one or more message to one or more targets (users or channels).
+        Send one or more message to one or more targets (users or channels).
 
-		Args:
-		  targets (str|list): The user(s)/channel(s) to send to.
-		  messages (str|list): The message(s) to send.
-		"""
+        Args:
+          targets (str|list): The user(s)/channel(s) to send to.
+          messages (str|list): The message(s) to send.
+        """
         if targets == "*":
             targets = (channel for channel in self.client.channels)
         elif not isinstance(targets, (list, set, tuple)):
