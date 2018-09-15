@@ -16,7 +16,7 @@ class ErrorHandlerTest(unittest.TestCase):
             '  File "'
             + __file__
             + '", line 9, in test_exception_is_formatted_correctly\n'
-            "    raise RuntimeError(\"test\")\nRuntimeError: test",
+            '    raise RuntimeError("test")\nRuntimeError: test',
             long_msg,
         )
 
@@ -32,7 +32,7 @@ class ErrorHandlerTest(unittest.TestCase):
             '  File "'
             + __file__
             + '", line 25, in test_error_message_is_formatted_correctly\n'
-            "    raise RuntimeError(\"test\")\nRuntimeError: test",
+            '    raise RuntimeError("test")\nRuntimeError: test',
             long_msg,
         )
 
