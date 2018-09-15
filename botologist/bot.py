@@ -133,6 +133,19 @@ class Bot:
         self.started = datetime.datetime.now()
         self.client.run_forever()
 
+    def get_uptime_human_readable(self):
+        if not self.started:
+            return None
+
+        now = datetime.datetime.now()
+        diff = now - self.started
+        hours, remainder = divmod(diff.seconds, 3600)
+        minutes, seconds = divmod(remainder, 60)
+        ret = "{}h {}m {}s".format(hours, minutes, seconds)
+        if diff.days > 0:
+            ret = "{}d ".format(diff.days) + ret
+        return ret
+
     def register_plugin(self, name, plugin):
         if isinstance(plugin, str):
             parts = plugin.split(".")

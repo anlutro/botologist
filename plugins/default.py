@@ -1,4 +1,3 @@
-import datetime
 import inspect
 import random
 import re
@@ -111,14 +110,7 @@ class DefaultPlugin(botologist.plugin.Plugin):
     @botologist.plugin.command("uptime")
     def uptime(self, msg):
         """Show the uptime of the bot."""
-        now = datetime.datetime.now()
-        diff = now - self.bot.started
-        hours, remainder = divmod(diff.seconds, 3600)
-        minutes, seconds = divmod(remainder, 60)
-        ret = "{}h {}m {}s".format(hours, minutes, seconds)
-        if diff.days > 0:
-            ret = "{}d ".format(diff.days) + ret
-        return ret
+        return self.bot.get_uptime_human_readable()
 
     @botologist.plugin.command("downtime")
     def downtime(self, msg):
