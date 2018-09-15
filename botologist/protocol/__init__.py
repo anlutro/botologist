@@ -6,9 +6,10 @@ import botologist.plugin
 
 
 class Client:
-    def __init__(self, name):
+    def __init__(self, name, bot=None):
         self.name = name
         self.channels = {}
+        self.bot = bot
 
         self.error_handler = None
         self.on_connect = []

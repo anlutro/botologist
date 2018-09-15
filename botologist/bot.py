@@ -56,7 +56,7 @@ class Bot:
             config.get("protocol", "local")
         )
         self.protocol = importlib.import_module(protocol_module)
-        self.client = self.protocol.get_client(config)
+        self.client = self.protocol.get_client(config, bot=self)
 
         self.config = config
         self.storage_dir = config["storage_dir"]
@@ -137,14 +137,8 @@ class Bot:
         if not self.started:
             return None
 
-        now = datetime.datetime.now()
-        diff = now - self.started
-        hours, remainder = divmod(diff.seconds, 3600)
-        minutes, seconds = divmod(remainder, 60)
-        ret = "{}h {}m {}s".format(hours, minutes, seconds)
-        if diff.days > 0:
-            ret = "{}d ".format(diff.days) + ret
-        return ret
+        diff = datetime.datetime.now() - self.started
+        return botologist.util.timedelta_human_readable(diff)
 
     def register_plugin(self, name, plugin):
         if isinstance(plugin, str):

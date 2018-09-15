@@ -37,7 +37,7 @@ def decode_lines(bytestring):
             yield line
 
 
-def get_client(config):
+def get_client(config, bot=None):
     nick = config.get("nick", "botologist")
 
     def _make_server_obj(cfg):
@@ -67,6 +67,7 @@ def get_client(config):
         nick=nick,
         username=config.get("username", nick),
         realname=config.get("realname", nick),
+        bot=bot,
     )
 
 
@@ -85,8 +86,8 @@ class Client(botologist.protocol.Client):
     PING_EVERY = 3 * 60  # seconds
     PING_TIMEOUT = 20  # seconds
 
-    def __init__(self, server_pool, nick, username=None, realname=None):
-        super().__init__(nick)
+    def __init__(self, server_pool, nick, username=None, realname=None, bot=None):
+        super().__init__(nick, bot=bot)
         self.server_pool = server_pool
         self.server = None
         self.username = username or nick
@@ -108,7 +109,7 @@ class Client(botologist.protocol.Client):
         log.info("Starting IRC client")
 
         def sigterm_handler(signo, stack_frame):  # pylint: disable=unused-argument
-            self.stop("Terminating, probably back soon!")
+            self.stop(self._get_exit_msg())
 
         signal.signal(signal.SIGQUIT, sigterm_handler)
         signal.signal(signal.SIGTERM, sigterm_handler)
@@ -117,10 +118,16 @@ class Client(botologist.protocol.Client):
         try:
             self.connect()
         except (InterruptedError, SystemExit, KeyboardInterrupt):
-            self.stop("Terminating, probably back soon!")
+            self.stop(self._get_exit_msg())
         except:
             self.stop("An error occured!")
             raise
+
+    def _get_exit_msg(self):
+        return (
+            "Terminating after %s, probably back soon!"
+            % self.bot.get_uptime_human_readable()
+        )
 
     def connect(self):
         if self.irc_socket is not None:

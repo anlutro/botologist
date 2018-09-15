@@ -5,13 +5,13 @@ log = logging.getLogger(__name__)
 from botologist import protocol
 
 
-def get_client(config):
-    return Client(config.get("nick", "botologist"))
+def get_client(config, bot=None):
+    return Client(config.get("nick", "botologist"), bot=bot)
 
 
 class Client(protocol.Client):
-    def __init__(self, name):
-        super().__init__(name)
+    def __init__(self, name, bot=None):
+        super().__init__(name, bot=bot)
         self.user = None
         self.channel = None
 

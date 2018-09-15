@@ -31,20 +31,26 @@ def time_until(dt: datetime):
         dt = dateutil.parser.parse(dt)
     now = datetime.now(dt.tzinfo)
     if dt > now:
-        total_seconds = (dt - now).total_seconds()
-        seconds_left = total_seconds
-        days = max(0, math.floor(seconds_left / (3600 * 24)))
-        seconds_left -= 3600 * 24 * days
-        hours = max(0, math.floor(seconds_left / 3600))
-        seconds_left -= 3600 * hours
-        minutes = max(0, math.floor(seconds_left / 60))
+        return timedelta_human_readable(dt - now)
 
-        parts = []
-        if days > 0:
-            parts.append("%dd" % days)
-        if hours > 0:
-            parts.append("%dh" % hours)
-        if days == 0 and minutes > 0:
-            parts.append("%dm" % minutes)
-        if parts:
-            return " ".join(parts)
+
+def timedelta_human_readable(timedelta):
+    seconds = timedelta.total_seconds()
+    days = max(0, math.floor(seconds / (3600 * 24)))
+    seconds -= 3600 * 24 * days
+    hours = max(0, math.floor(seconds / 3600))
+    seconds -= 3600 * hours
+    minutes = max(0, math.floor(seconds / 60))
+    seconds -= 60 * minutes
+
+    parts = []
+    if days > 0:
+        parts.append("%dd" % days)
+    if hours > 0:
+        parts.append("%dh" % hours)
+    if days == 0 and minutes > 0:
+        parts.append("%dm" % minutes)
+    if hours == 0 and minutes < 10 and seconds > 0:
+        parts.append("%ds" % seconds)
+    if parts:
+        return " ".join(parts)

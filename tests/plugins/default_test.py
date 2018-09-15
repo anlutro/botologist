@@ -1,5 +1,5 @@
 import datetime
-import re
+from freezegun import freeze_time
 from tests.plugins import PluginTestCase
 
 
@@ -37,8 +37,7 @@ class DefaultPluginTest(PluginTestCase):
             "Cannot roll die with less than 2 sides!", self.cmd("roll 1d1")
         )
 
+    @freeze_time("2019-01-01 00:00:00")
     def test_uptime(self):
-        self.bot.started = datetime.datetime(2015, 1, 1, 12, 0, 0)
-        self.assertTrue(
-            re.match(r"\d+d \d{1,2}h \d{1,2}m \d{1,2}s", self.cmd("uptime"))
-        )
+        self.bot.started = datetime.datetime(2018, 12, 30, 12, 30, 30)
+        self.assertEqual(self.cmd("uptime"), "1d 11h")
