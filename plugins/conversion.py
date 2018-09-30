@@ -47,78 +47,70 @@ def get_conversion_result(query):
 _rate_expr = re.compile(
     r'<Cube currency=["\']([A-Za-z]{3})["\'] rate=["\']([\d.]+)["\']/>'
 )
+_currency_data = {}
+_currency_aliases = {"NIS": "ILS", "EURO": "EUR"}
 
 
 def get_currency_data():
+    now = datetime.datetime.now()
+    last_fetch = _currency_data.get("_timestamp")
+    print(now, last_fetch)
+    if last_fetch and (now - last_fetch).total_seconds() < 3600:
+        return _currency_data
+
     url = "http://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml"
     try:
         response = requests.get(url, timeout=2)
     except requests.exceptions.RequestException:
         log.warning("ECB exchange data request failed", exc_info=True)
-        return {}
+        return _currency_data
 
     matches = _rate_expr.findall(response.text)
-    currency_data = {}
+    new_data = {}
     for currency, exchange_rate in matches:
-        currency_data[currency.upper()] = float(exchange_rate)
-    log.info("Found %d currencies", len(currency_data))
+        new_data[currency.upper()] = float(exchange_rate)
+    log.info("Found %d currencies", len(new_data))
+    new_data["_timestamp"] = now
 
-    return currency_data
+    _currency_data.clear()
+    _currency_data.update(new_data)
+
+    return new_data
 
 
-class Currency:
-    last_fetch = None
-    currency_data = None
-    aliases = {"NIS": "ILS", "EURO": "EUR"}
-
-    @classmethod
-    def currencies(cls):
-        cls.load()
-        return cls.currency_data.keys()
-
-    @classmethod
-    def convert(cls, amount, from_cur, to_cur):
-        cls.load()
-
-        try:
-            amount = float(amount)
-        except ValueError:
-            return None
-
-        from_cur = from_cur.upper()
-        to_cur = to_cur.upper()
-
-        if from_cur in cls.aliases:
-            from_cur = cls.aliases[from_cur]
-        if to_cur in cls.aliases:
-            to_cur = cls.aliases[to_cur]
-
-        if from_cur == to_cur:
-            return None
-
-        if from_cur == "EUR":
-            if to_cur not in cls.currency_data:
-                return None
-            return amount * cls.currency_data[to_cur]
-        if to_cur == "EUR":
-            if from_cur not in cls.currency_data:
-                return None
-            return amount / cls.currency_data[from_cur]
-
-        if from_cur in cls.currency_data and to_cur in cls.currency_data:
-            amount = amount / cls.currency_data[from_cur]
-            return amount * cls.currency_data[to_cur]
-
+def convert_currency(amount, from_cur, to_cur):
+    try:
+        amount = float(amount)
+    except ValueError:
         return None
 
-    @classmethod
-    def load(cls):
-        now = datetime.datetime.now()
-        if cls.last_fetch:
-            diff = now - cls.last_fetch
-        if not cls.last_fetch or diff.seconds > 3600:
-            cls.currency_data = get_currency_data()
-            cls.last_fetch = now
+    currency_data = get_currency_data()
+
+    from_cur = from_cur.upper()
+    to_cur = to_cur.upper()
+
+    if from_cur in _currency_aliases:
+        from_cur = _currency_aliases[from_cur]
+    if to_cur in _currency_aliases:
+        to_cur = _currency_aliases[to_cur]
+
+    if from_cur == to_cur:
+        return None
+
+    if from_cur == "EUR":
+        if to_cur not in currency_data:
+            return None
+        return amount * currency_data[to_cur]
+    if to_cur == "EUR":
+        if from_cur not in currency_data:
+            return None
+        return amount / currency_data[from_cur]
+
+    if from_cur in currency_data and to_cur in currency_data:
+        amount = amount / currency_data[from_cur]
+        return amount * currency_data[to_cur]
+
+    return None
 
 
 def _conversion_regex():
@@ -160,7 +152,7 @@ class ConversionPlugin(botologist.plugin.Plugin):
         if "," in conv_to:
             retvals = []
             for conv_to in conv_to.split(","):
-                result = Currency.convert(real_amount, conv_from, conv_to)
+                result = convert_currency(real_amount, conv_from, conv_to)
                 if result:
                     format_result = format_number(result)
                     retvals.append("{} {}".format(format_result, conv_to))
@@ -168,7 +160,7 @@ class ConversionPlugin(botologist.plugin.Plugin):
                 format_amount = format_number(real_amount)
                 return "{} {} = {}".format(format_amount, conv_from, ", ".join(retvals))
         else:
-            result = Currency.convert(real_amount, conv_from, conv_to)
+            result = convert_currency(real_amount, conv_from, conv_to)
             if result:
                 format_amount = format_number(real_amount)
                 format_result = format_number(result)

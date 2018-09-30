@@ -1,5 +1,35 @@
-import unittest.mock as mock
+import datetime
+import unittest
+from unittest import mock
+
+import freezegun
+
 from tests.plugins import PluginTestCase
+from plugins.conversion import get_currency_data
+
+
+class GetCurrencyDataTest(unittest.TestCase):
+    def test_uses_cached_data_if_recent_enough(self):
+        currency_data = {"_timestamp": datetime.datetime(2018, 9, 30, 15, 30)}
+        get_patch = mock.patch("requests.get")
+        data_patch = mock.patch.dict("plugins.conversion._currency_data", currency_data)
+        with freezegun.freeze_time(
+            "2018-09-30 16:00:00"
+        ), data_patch, get_patch as get_mock:
+            assert get_currency_data() == currency_data
+            get_mock.assert_not_called()
+        with freezegun.freeze_time(
+            "2018-09-30 17:00:00"
+        ), data_patch, get_patch as get_mock:
+            get_mock.return_value = mock.Mock(text="")
+            assert get_currency_data() == {
+                "_timestamp": datetime.datetime(2018, 9, 30, 17, 0)
+            }
+            get_mock.assert_called_once_with(
+                "http://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml",
+                timeout=2,
+            )
+
 
 ddg_f = "plugins.conversion.get_duckduckgo_data"
 ecb_f = "plugins.conversion.get_currency_data"
@@ -7,10 +37,8 @@ ecb_f = "plugins.conversion.get_currency_data"
 
 class ConversionPluginTest(PluginTestCase):
     def create_plugin(self):
-        from plugins.conversion import ConversionPlugin, Currency
+        from plugins.conversion import ConversionPlugin
 
-        Currency.last_fetch = None
-        Currency.currency_data = None
         return ConversionPlugin(self.bot, self.channel)
 
     @mock.patch(ddg_f, return_value={"AnswerType": "conversions", "Answer": "TEST"})
