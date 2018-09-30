@@ -54,7 +54,6 @@ _currency_aliases = {"NIS": "ILS", "EURO": "EUR"}
 def get_currency_data():
     now = datetime.datetime.now()
     last_fetch = _currency_data.get("_timestamp")
-    print(now, last_fetch)
     if last_fetch and (now - last_fetch).total_seconds() < 3600:
         return _currency_data
 
