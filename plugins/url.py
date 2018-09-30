@@ -83,7 +83,7 @@ def show_link_titles(text):
             continue
         title = match.group(1).strip()
         title = urllib.parse.unquote(title)
-        title = html.unquote(title)
+        title = html.unescape(title)
         titles[url] = title
 
     ret = []
