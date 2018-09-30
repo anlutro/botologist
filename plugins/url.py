@@ -1,3 +1,4 @@
+import html
 import logging
 import urllib.parse
 
@@ -80,7 +81,9 @@ def show_link_titles(text):
         match = re.search(r"\<title\>([^<]+)\<\/title\>", resp.text)
         if not match:
             continue
-        title = urllib.parse.unquote(match.group(1).strip())
+        title = match.group(1).strip()
+        title = urllib.parse.unquote(title)
+        title = html.unquote(title)
         titles[url] = title
 
     ret = []
