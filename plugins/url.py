@@ -1,6 +1,5 @@
 import logging
-
-log = logging.getLogger(__name__)
+import urllib.parse
 
 import re
 import requests
@@ -8,6 +7,7 @@ import requests.exceptions
 
 import botologist.plugin
 
+log = logging.getLogger(__name__)
 
 url_shorteners = r"|".join(
     (
@@ -80,7 +80,8 @@ def show_link_titles(text):
         match = re.search(r"\<title\>([^<]+)\<\/title\>", resp.text)
         if not match:
             continue
-        titles[url] = match.group(1).strip()
+        title = urllib.parse.unquote(match.group(1).strip())
+        titles[url] = title
 
     ret = []
     for url, title in titles.items():
