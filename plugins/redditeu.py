@@ -79,6 +79,7 @@ class Raziel:
         "braziel",
         "dadziel",
         "radisson",
+        "radish",
     )
 
     @classmethod
