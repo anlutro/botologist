@@ -168,7 +168,7 @@ class Client(botologist.protocol.Client):
             self.connect_thread = threading.Timer(time, self._connect)
             self.reconnect_timer = self.connect_thread
         else:
-            self.connect_thread = threading.Thread(self._connect)
+            self.connect_thread = threading.Thread(target=self._connect)
 
         self.connect_thread.start()
 
