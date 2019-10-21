@@ -1,3 +1,5 @@
+branches: [master]
+
 language: python
 
 python:
