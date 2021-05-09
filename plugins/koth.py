@@ -22,7 +22,7 @@ class KothPlugin(botologist.plugin.Plugin):
             if cmd.args[0] == "start":
                 return self.start()
             if cmd.args[0] == "next":
-                return self.next()
+                return self.next()  # pylint: disable=not-callable
             if cmd.args[0] == "close":
                 return self.close()
             if cmd.args[0] == "end":

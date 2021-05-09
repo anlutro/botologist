@@ -8,7 +8,7 @@ try:
 except AttributeError:
     import html.parser
 
-    unescape_html = html.parser.HTMLParser().unescape
+    unescape_html = html.parser.HTMLParser().unescape  # pylint: disable=no-member
 
 import dateutil.parser
 import pytz
