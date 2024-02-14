@@ -26,5 +26,5 @@ six==1.11.0
 spotipy==2.22.1
 toml==0.10.2
 tweepy==3.7.0
-urllib3==1.26.5
+urllib3==1.26.18
 wrapt==1.12.1
